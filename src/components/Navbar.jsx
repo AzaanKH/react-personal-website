@@ -8,7 +8,7 @@ const Navbar = () => {
     e.preventDefault();
     const element = document.getElementById(targetId);
     if (element) {
-      const navbarHeight = 60; // Adjust this value based on actual navbar height
+      const navbarHeight = targetId === 'azaan-khalfe' ? 120 : 60;
       const elementPosition = element.getBoundingClientRect().top;
       const offsetPosition = elementPosition + window.pageYOffset - navbarHeight;
       
@@ -33,6 +33,15 @@ const Navbar = () => {
 
         <div className="collapse navbar-collapse" id="navbarNav">
           <ul className="navbar-nav">
+            <li className="nav-item">
+              <a 
+                className="nav-link" 
+                href="#azaan-khalfe"
+                onClick={(e) => handleScrollTo(e, 'azaan-khalfe')}
+              >
+                Home
+              </a>
+            </li>
             <li className="nav-item">
               <a 
                 className="nav-link" 
