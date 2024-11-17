@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
+import ContactForm from './ContactForm';
 
 const Header = () => {
+  const [showContactForm, setShowContactForm] = useState(false);
+
   return (
     <section className="header-section text-center">
       <div className="container">
@@ -23,11 +26,12 @@ const Header = () => {
           >
             <i className="fab fa-linkedin"></i>
           </a>
-          <a href="mailto:azaankhalfe@gmail.com">
+          <a onClick={() => setShowContactForm(true)} style={{ cursor: 'pointer' }}>
             <i className="fas fa-envelope"></i>
           </a>
         </div>
       </div>
+      {showContactForm && <ContactForm onClose={() => setShowContactForm(false)} />}
     </section>
   );
 };

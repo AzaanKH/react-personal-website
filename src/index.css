@@ -10,6 +10,7 @@
   --section-bg: #ffffff;
   --heading-color: #333333;
   --nav-text: #333333;
+  --overlay-bg: rgba(0, 0, 0, 0.6);
 }
 
 [data-bs-theme="dark"] {
@@ -22,6 +23,7 @@
   --section-bg: #121212;
   --heading-color: #ffffff;
   --nav-text: #ffffff;
+  --overlay-bg: rgba(0, 0, 0, 0.75);
 }
 
 body {
@@ -393,4 +395,181 @@ html {
 .scroll-animation.visible {
   opacity: 1;
   transform: translateY(0);
+}
+
+/* Contact Form Styles */
+
+.contact-form-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: fadeIn 0.3s ease;
+}
+
+.contact-form-container {
+  background: var(--card-bg);
+  padding: 2.5rem;
+  border-radius: 15px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  animation: slideIn 0.4s ease;
+  position: relative;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bs-body-bg);
+  color: var(--bs-body-color);
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  outline: none;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 12px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.submit-btn:hover {
+  background: #0056b3;
+  transform: translateY(-1px);
+}
+
+.submit-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.close-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--bs-body-color);
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.close-btn:hover {
+  transform: scale(1.1);
+}
+.contact-form-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.contact-form-container {
+  background: var(--card-bg);
+  padding: 2.5rem;
+  border-radius: 15px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  animation: slideIn 0.4s ease;
+  position: relative;
+  filter: none !important;
+  backdrop-filter: none;
+  z-index: 10000;
+}
+
+.no-blur {
+  filter: none !important;
+  backdrop-filter: none !important;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+/* Add blur to body when form is open */
+body.form-open {
+  overflow: hidden;
+}
+
+body.form-open #content-wrapper {
+  filter: blur(8px);
+  transition: filter 0.3s ease;
+  pointer-events: none; /* Prevent interaction with background */
+  z-index: 1;
+}
+
+/* Update overlay styles */
+.contact-form-container {
+  background: var(--card-bg);
+  padding: 2.5rem;
+  border-radius: 15px;
+  width: 90%;
+  max-width: 500px;
+  position: relative;
+  filter: none; /* Ensure no blur is applied */
+  z-index: 10000;
+}
+
+/* Keep form container clear */
+.contact-form-container {
+  background: var(--card-bg);
+  padding: 2.5rem;
+  border-radius: 15px;
+  width: 90%;
+  max-width: 500px;
+  position: relative;
+  filter: none; /* Ensure no blur is applied */
+  z-index: 10000;
+}
+
+.contact-form-overlay {
+  z-index: 9999;
 }
