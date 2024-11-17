@@ -2,10 +2,10 @@ import React, { Suspense, lazy, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import { ThemeProvider } from './context/ThemeContext';
 
-const Header = lazy(() => import('./components/Header'));
-const About = lazy(() => import('./components/About'));
-const Projects = lazy(() => import('./components/Projects'));
-const Resume = lazy(() => import('./components/Resume'));
+import Header from './components/Header';
+import About from './components/About';
+import Projects from './components/Projects';
+import Resume from './components/Resume';
 
 const App = () => {
   useEffect(() => {
