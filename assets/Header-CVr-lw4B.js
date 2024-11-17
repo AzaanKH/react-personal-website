@@ -1,4 +1,4 @@
-import{r as t,j as e}from"./index-DzBq-Y8X.js";const h=({onClose:n})=>{const[a,c]=t.useState({name:"",email:"",message:""}),[l,i]=t.useState(!1);t.useEffect(()=>(document.body.classList.add("form-open"),()=>{document.body.classList.remove("form-open")}),[]);const o=s=>{const{name:r,value:d}=s.target;c(u=>({...u,[r]:d}))},m=async s=>{s.preventDefault(),i(!0);try{const r=`mailto:azaankhalfe@gmail.com?subject=Message from ${a.name}&body=${encodeURIComponent(`Name: ${a.name}
+import{r as t,j as e}from"./index-279rSsVb.js";const h=({onClose:n})=>{const[a,c]=t.useState({name:"",email:"",message:""}),[l,i]=t.useState(!1);t.useEffect(()=>(document.body.classList.add("form-open"),()=>{document.body.classList.remove("form-open")}),[]);const o=s=>{const{name:r,value:d}=s.target;c(u=>({...u,[r]:d}))},m=async s=>{s.preventDefault(),i(!0);try{const r=`mailto:azaankhalfe@gmail.com?subject=Message from ${a.name}&body=${encodeURIComponent(`Name: ${a.name}
 Email: ${a.email}
 
 Message:
