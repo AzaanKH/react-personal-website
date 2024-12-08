@@ -26,7 +26,10 @@ const Header = () => {
           >
             <i className="fab fa-linkedin"></i>
           </a>
-          <a onClick={() => setShowContactForm(true)} style={{ cursor: 'pointer' }}>
+          <a 
+            onClick={() => setShowContactForm(true)} 
+            style={{ cursor: 'pointer' }}
+          >
             <i className="fas fa-envelope"></i>
           </a>
         </div>

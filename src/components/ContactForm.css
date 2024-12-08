@@ -1,0 +1,82 @@
+/* ContactForm.css */
+.contact-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  background: var(--card-background);
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-input,
+.form-textarea {
+  width: 100%;
+  padding: 0.8rem;
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  background: var(--input-background);
+  color: var(--text-primary);
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.form-textarea {
+  min-height: 150px;
+  resize: vertical;
+}
+
+.form-input:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px rgba(var(--accent-color-rgb), 0.2);
+}
+
+.submit-btn {
+  padding: 0.8rem 1.5rem;
+  background: var(--accent-color);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.submit-btn:hover {
+  background: var(--accent-color-hover);
+}
+
+.submit-btn:disabled {
+  background: var(--disabled-color);
+  cursor: not-allowed;
+}
+
+.form-message {
+  padding: 1rem;
+  border-radius: 5px;
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.form-message.success {
+  background: var(--success-background);
+  color: var(--success-text);
+}
+
+.form-message.error {
+  background: var(--error-background);
+  color: var(--error-text);
+}
