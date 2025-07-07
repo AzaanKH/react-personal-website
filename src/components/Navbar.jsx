@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
 
 const Navbar = () => {
@@ -19,8 +20,26 @@ const Navbar = () => {
     }
   };
 
+  const navItemVariants = {
+    hidden: { opacity: 0, y: -20 },
+    visible: i => ({
+      opacity: 1,
+      y: 0,
+      transition: {
+        delay: i * 0.1,
+        duration: 0.5,
+        ease: "easeOut"
+      }
+    })
+  };
+
   return (
-    <nav className="navbar navbar-expand-lg navbar-light">
+    <motion.nav 
+      className="navbar navbar-expand-lg navbar-light"
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      transition={{ type: "spring", stiffness: 100, damping: 15 }}
+    >
       <div className="container">
         <button 
           className="navbar-toggler" 
@@ -33,7 +52,13 @@ const Navbar = () => {
 
         <div className="collapse navbar-collapse" id="navbarNav">
           <ul className="navbar-nav">
-            <li className="nav-item">
+            <motion.li 
+              className="nav-item"
+              custom={0}
+              initial="hidden"
+              animate="visible"
+              variants={navItemVariants}
+            >
               <a 
                 className="nav-link" 
                 href="#azaan-khalfe"
@@ -41,8 +66,14 @@ const Navbar = () => {
               >
                 Home
               </a>
-            </li>
-            <li className="nav-item">
+            </motion.li>
+            <motion.li 
+              className="nav-item"
+              custom={1}
+              initial="hidden"
+              animate="visible"
+              variants={navItemVariants}
+            >
               <a 
                 className="nav-link" 
                 href="#bio"
@@ -50,8 +81,14 @@ const Navbar = () => {
               >
                 About
               </a>
-            </li>
-            <li className="nav-item">
+            </motion.li>
+            <motion.li 
+              className="nav-item"
+              custom={2}
+              initial="hidden"
+              animate="visible"
+              variants={navItemVariants}
+            >
               <a 
                 className="nav-link" 
                 href="#projects"
@@ -59,8 +96,14 @@ const Navbar = () => {
               >
                 Projects
               </a>
-            </li>
-            <li className="nav-item">
+            </motion.li>
+            <motion.li 
+              className="nav-item"
+              custom={3}
+              initial="hidden"
+              animate="visible"
+              variants={navItemVariants}
+            >
               <a 
                 className="nav-link" 
                 href="/khalfe_azaan_resume_24.pdf"
@@ -69,22 +112,33 @@ const Navbar = () => {
               >
                 Resume
               </a>
-            </li>
+            </motion.li>
           </ul>
-          <div className="d-flex align-items-center ms-auto">
+          <motion.div 
+            className="d-flex align-items-center ms-auto"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5, duration: 0.5 }}
+          >
             <span className="me-2">Theme</span>
-            <label className="theme-switch">
+            <motion.label 
+              className="theme-switch"
+              whileTap={{ scale: 0.9 }}
+            >
               <input
                 type="checkbox"
                 checked={isDarkMode}
                 onChange={toggleTheme}
               />
-              <span className="slider"></span>
-            </label>
-          </div>
+              <motion.span 
+                className="slider"
+                animate={{ backgroundColor: isDarkMode ? "#007bff" : "#ccc" }}
+              ></motion.span>
+            </motion.label>
+          </motion.div>
         </div>
       </div>
-    </nav>
+    </motion.nav>
   );
 };
 

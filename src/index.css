@@ -1,6 +1,62 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
+  /* Light mode variables */
+  --color-light-0: #1A1B1E;
+  --color-light-1: #2C2E33;
+  --color-light-2: #373A40;
+  --color-light-3: #5C5F66;
+  --color-light-4: #F1F3F5;
+  --color-light-5: #E9ECEF;
+  --color-light-6: #DEE2E6;
+  --color-light-7: #F8F9FA;
+  --color-light-8: #FFFFFF;
+  --color-light-9: #F8F9FA;
+  --color-primary-light: #74C0FC;
+  --color-primary: #228BE6;
+  --color-primary-dark: #1971C2;
+  
+  /* Bootstrap overrides for light mode */
+  --bs-body-bg: var(--color-light-8);
+  --bs-body-color: var(--color-light-0);
+  --bs-border-color: var(--color-light-6);
+}
+
+[data-bs-theme="dark"] {
+  /* Dark mode variables */
+  --color-dark-0: #C1C2C5;
+  --color-dark-1: #A6A7AB;
+  --color-dark-2: #909296;
+  --color-dark-3: #5C5F66;
+  --color-dark-4: #373A40;
+  --color-dark-5: #2C2E33;
+  --color-dark-6: #25262B;
+  --color-dark-7: #1A1B1E;
+  --color-dark-8: #141517;
+  --color-dark-9: #101113;
+  --color-primary-light: #339AF0;
+  --color-primary: #228BE6;
+  --color-primary-dark: #1C7ED6;
+  
+  /* Bootstrap overrides for dark mode */
+  --bs-body-bg: var(--color-dark-7);
+  --bs-body-color: var(--color-dark-0);
+  --bs-border-color: var(--color-dark-5);
+}
+
+/* Smooth theme transitions */
+body {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.card, .btn, .form-control, .navbar {
+  transition: background-color 0.3s ease, 
+              color 0.3s ease, 
+              border-color 0.3s ease,
+              box-shadow 0.3s ease;
+}
+
+:root {
   --bs-body-bg: #ffffff;
   --bs-body-color: #333333;
   --card-bg: #ffffff;

@@ -1,4 +1,5 @@
-import React, { Suspense, lazy, useEffect } from 'react';
+import React, { Suspense, lazy } from 'react';
+import { AnimatePresence, motion, LayoutGroup } from 'framer-motion';
 import Navbar from './components/Navbar';
 import { ThemeProvider } from './context/ThemeContext';
 
@@ -6,62 +7,83 @@ import Header from './components/Header';
 import About from './components/About';
 import Projects from './components/Projects';
 import Resume from './components/Resume';
+import ScrollProgressBar from './components/ScrollProgressBar';
+import CursorFollower from './components/CursorFollower';
 
 const App = () => {
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
-          }
-        });
-      },
-      { 
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
-      }
-    );
-
-    const timer = setTimeout(() => {
-      document.querySelectorAll('.scroll-animation').forEach((el) => {
-        observer.observe(el);
-      });
-    }, 100);
-
-    return () => {
-      observer.disconnect();
-      clearTimeout(timer);
-    };
-  }, []);
-
   return (
     <ThemeProvider>
-      <div className="app">
-        <Navbar />
-        <Suspense fallback={
-          <div className="d-flex justify-content-center align-items-center min-vh-100">
-            <div className="spinner-border text-primary" role="status">
-              <span className="visually-hidden">Loading...</span>
+      <LayoutGroup>
+        <div className="app">
+          {/* Add scroll progress bar */}
+          <ScrollProgressBar />
+          
+          {/* Add cursor follower */}
+          {/* <CursorFollower /> */}
+          
+          <Navbar />
+          <Suspense fallback={
+            <div className="d-flex justify-content-center align-items-center min-vh-100">
+              <motion.div 
+                className="spinner-border text-primary" 
+                role="status"
+                animate={{ rotate: 360 }}
+                transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+              >
+                <span className="visually-hidden">Loading...</span>
+              </motion.div>
             </div>
-          </div>
-        }>
-          <div id="content-wrapper">
-            <section id="header" className="scroll-animation">
-              <Header />
-            </section>
-            <section id="about" className="scroll-animation">
-              <About />
-            </section>
-            <section id="projects" className="scroll-animation">
-              <Projects />
-            </section>
-            <section id="resume" className="scroll-animation">
-              <Resume />
-            </section>
-          </div>
-        </Suspense>
-      </div>
+          }>
+            <AnimatePresence>
+              <motion.div id="content-wrapper">
+                <motion.section 
+                  id="header"
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.8 }}
+                  layout
+                >
+                  <Header />
+                </motion.section>
+                
+                <motion.section 
+                  id="about"
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  viewport={{ once: true, amount: 0.3 }}
+                  transition={{ duration: 0.8 }}
+                  layout
+                >
+                  <About />
+                </motion.section>
+                
+                <motion.section 
+                  id="projects"
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  viewport={{ once: true, amount: 0.3 }}
+                  transition={{ duration: 0.8 }}
+                  layout
+                >
+                  <Projects />
+                </motion.section>
+                
+                <motion.section 
+                  id="resume"
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  viewport={{ once: true, amount: 0.3 }}
+                  transition={{ duration: 0.8 }}
+                  layout
+                >
+                  <Resume />
+                </motion.section>
+              </motion.div>
+            </AnimatePresence>
+          </Suspense>
+        </div>
+      </LayoutGroup>
     </ThemeProvider>
   );
 };

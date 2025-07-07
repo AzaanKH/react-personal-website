@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import emailjs from '@emailjs/browser';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   TextField,
   Button,
@@ -98,6 +99,13 @@ const ContactForm = ({ onClose }) => {
           boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
         }
       }}
+      TransitionComponent={motion.div}
+      TransitionProps={{
+        initial: { opacity: 0, scale: 0.8 },
+        animate: { opacity: 1, scale: 1 },
+        exit: { opacity: 0, scale: 0.8 },
+        transition: { duration: 0.3 }
+      }}
     >
       <DialogTitle sx={{ 
         textAlign: 'center', 
@@ -105,7 +113,13 @@ const ContactForm = ({ onClose }) => {
         position: 'relative',
         color: 'var(--heading-color)',
       }}>
-        Get In Touch
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.3 }}
+        >
+          Get In Touch
+        </motion.div>
         <IconButton
           aria-label="close"
           onClick={onClose}
@@ -116,7 +130,12 @@ const ContactForm = ({ onClose }) => {
             color: 'var(--bs-body-color)',
           }}
         >
-          <CloseIcon />
+          <motion.div
+            whileHover={{ rotate: 90 }}
+            transition={{ duration: 0.2 }}
+          >
+            <CloseIcon />
+          </motion.div>
         </IconButton>
       </DialogTitle>
 
@@ -131,131 +150,170 @@ const ContactForm = ({ onClose }) => {
             pt: 2,
           }}
         >
-          <TextField
-            fullWidth
-            label="Your Name"
-            name="from_name"
-            value={formData.from_name}
-            onChange={handleChange}
-            required
-            variant="outlined"
-            sx={{
-              '& .MuiInputLabel-root': {
-                color: 'var(--bs-body-color)',
-              },
-              '& .MuiOutlinedInput-root': {
-                backgroundColor: 'var(--card-bg)',
-                color: 'var(--bs-body-color)',
-                '& fieldset': {
-                  borderColor: 'var(--border-color)',
-                },
-                '&:hover fieldset': {
-                  borderColor: '#007bff',
-                },
-                '&.Mui-focused fieldset': {
-                  borderColor: '#007bff',
-                },
-              },
-            }}
-          />
-          <TextField
-            fullWidth
-            label="Your Email"
-            name="from_email"
-            type="email"
-            value={formData.from_email}
-            onChange={handleChange}
-            required
-            variant="outlined"
-            sx={{
-              '& .MuiInputLabel-root': {
-                color: 'var(--bs-body-color)',
-              },
-              '& .MuiOutlinedInput-root': {
-                backgroundColor: 'var(--card-bg)',
-                color: 'var(--bs-body-color)',
-                '& fieldset': {
-                  borderColor: 'var(--border-color)',
-                },
-                '&:hover fieldset': {
-                  borderColor: '#007bff',
-                },
-                '&.Mui-focused fieldset': {
-                  borderColor: '#007bff',
-                },
-              },
-            }}
-          />
-          <TextField
-            fullWidth
-            label="Message"
-            name="message"
-            multiline
-            rows={4}
-            value={formData.message}
-            onChange={handleChange}
-            required
-            variant="outlined"
-            sx={{
-              '& .MuiInputLabel-root': {
-                color: 'var(--bs-body-color)',
-              },
-              '& .MuiOutlinedInput-root': {
-                backgroundColor: 'var(--card-bg)',
-                color: 'var(--bs-body-color)',
-                '& fieldset': {
-                  borderColor: 'var(--border-color)',
-                },
-                '&:hover fieldset': {
-                  borderColor: '#007bff',
-                },
-                '&.Mui-focused fieldset': {
-                  borderColor: '#007bff',
-                },
-              },
-            }}
-          />
-          <Button
-            type="submit"
-            variant="contained"
-            fullWidth
-            disabled={status.submitting}
-            sx={{
-              mt: 2,
-              py: 1.5,
-              bgcolor: '#007bff',
-              color: 'white',
-              fontSize: '1rem',
-              fontWeight: 500,
-              borderRadius: 2,
-              textTransform: 'none',
-              '&:hover': {
-                bgcolor: '#0056b3',
-                transform: 'translateY(-2px)',
-                boxShadow: '0 4px 15px rgba(0,123,255,0.3)',
-              },
-              transition: 'all 0.3s ease',
-            }}
+          <motion.div
+            initial={{ x: -30, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ delay: 0.1, duration: 0.4 }}
           >
-            {status.submitting ? 'Sending...' : 'Send Message'}
-          </Button>
+            <TextField
+              fullWidth
+              label="Your Name"
+              name="from_name"
+              value={formData.from_name}
+              onChange={handleChange}
+              required
+              variant="outlined"
+              sx={{
+                '& .MuiInputLabel-root': {
+                  color: 'var(--bs-body-color)',
+                },
+                '& .MuiOutlinedInput-root': {
+                  backgroundColor: 'var(--card-bg)',
+                  color: 'var(--bs-body-color)',
+                  '& fieldset': {
+                    borderColor: 'var(--border-color)',
+                  },
+                  '&:hover fieldset': {
+                    borderColor: '#007bff',
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: '#007bff',
+                  },
+                },
+              }}
+            />
+          </motion.div>
+          
+          <motion.div
+            initial={{ x: -30, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.4 }}
+          >
+            <TextField
+              fullWidth
+              label="Your Email"
+              name="from_email"
+              type="email"
+              value={formData.from_email}
+              onChange={handleChange}
+              required
+              variant="outlined"
+              sx={{
+                '& .MuiInputLabel-root': {
+                  color: 'var(--bs-body-color)',
+                },
+                '& .MuiOutlinedInput-root': {
+                  backgroundColor: 'var(--card-bg)',
+                  color: 'var(--bs-body-color)',
+                  '& fieldset': {
+                    borderColor: 'var(--border-color)',
+                  },
+                  '&:hover fieldset': {
+                    borderColor: '#007bff',
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: '#007bff',
+                  },
+                },
+              }}
+            />
+          </motion.div>
+          
+          <motion.div
+            initial={{ x: -30, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ delay: 0.3, duration: 0.4 }}
+          >
+            <TextField
+              fullWidth
+              label="Message"
+              name="message"
+              multiline
+              rows={4}
+              value={formData.message}
+              onChange={handleChange}
+              required
+              variant="outlined"
+              sx={{
+                '& .MuiInputLabel-root': {
+                  color: 'var(--bs-body-color)',
+                },
+                '& .MuiOutlinedInput-root': {
+                  backgroundColor: 'var(--card-bg)',
+                  color: 'var(--bs-body-color)',
+                  '& fieldset': {
+                    borderColor: 'var(--border-color)',
+                  },
+                  '&:hover fieldset': {
+                    borderColor: '#007bff',
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: '#007bff',
+                  },
+                },
+              }}
+            />
+          </motion.div>
+          
+          <motion.div
+            initial={{ y: 30, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.4, duration: 0.4 }}
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+          >
+            <Button
+              type="submit"
+              variant="contained"
+              fullWidth
+              disabled={status.submitting}
+              sx={{
+                mt: 2,
+                py: 1.5,
+                bgcolor: '#007bff',
+                color: 'white',
+                fontSize: '1rem',
+                fontWeight: 500,
+                borderRadius: 2,
+                textTransform: 'none',
+                '&:hover': {
+                  bgcolor: '#0056b3',
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 4px 15px rgba(0,123,255,0.3)',
+                },
+                transition: 'all 0.3s ease',
+              }}
+            >
+              {status.submitting ? 'Sending...' : 'Send Message'}
+            </Button>
+          </motion.div>
         </Box>
       </DialogContent>
 
-      <Snackbar
-        open={status.alert.open}
-        autoHideDuration={6000}
-        onClose={handleCloseAlert}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert
-          onClose={handleCloseAlert}
-          severity={status.alert.severity}
-          variant="filled"
-        >
-          {status.alert.message}
-        </Alert>
-      </Snackbar>
+      <AnimatePresence>
+        {status.alert.open && (
+          <Snackbar
+            open={status.alert.open}
+            autoHideDuration={6000}
+            onClose={handleCloseAlert}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 50 }}
+            >
+              <Alert
+                onClose={handleCloseAlert}
+                severity={status.alert.severity}
+                variant="filled"
+              >
+                {status.alert.message}
+              </Alert>
+            </motion.div>
+          </Snackbar>
+        )}
+      </AnimatePresence>
     </Dialog>
   );
 };
