@@ -1,16 +1,31 @@
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, useState, useEffect } from 'react';
 import { AnimatePresence, motion, LayoutGroup } from 'framer-motion';
 import Navbar from './components/Navbar';
 import { ThemeProvider } from './context/ThemeContext';
 
 import Header from './components/Header';
-import About from './components/About';
-import Projects from './components/Projects';
+import AdaptiveLayout from './components/AdaptiveLayout';
 import Resume from './components/Resume';
 import ScrollProgressBar from './components/ScrollProgressBar';
 import CursorFollower from './components/CursorFollower';
 
+// Import the layout switcher for development/testing
+// import { LayoutSwitcher } from './components/AdaptiveLayout';
+// import SteamDebugTester from './components/SteamDebugTester';
+
 const App = () => {
+  const [layoutKey, setLayoutKey] = useState(0);
+
+  // Listen for layout changes to trigger re-render
+  useEffect(() => {
+    const handleLayoutChange = () => {
+      setLayoutKey(prev => prev + 1);
+    };
+
+    window.addEventListener('layoutChange', handleLayoutChange);
+    return () => window.removeEventListener('layoutChange', handleLayoutChange);
+  }, []);
+
   return (
     <ThemeProvider>
       <LayoutGroup>
@@ -18,10 +33,17 @@ const App = () => {
           {/* Add scroll progress bar */}
           <ScrollProgressBar />
           
-          {/* Add cursor follower */}
+          {/* Add cursor follower - uncomment if desired */}
           {/* <CursorFollower /> */}
           
           <Navbar />
+
+          {/* Layout Switcher - only show in development */}
+          {/* {process.env.NODE_ENV === 'development' && <LayoutSwitcher />} */}
+          
+          {/* Steam Debug Tester - only show in development */}
+          {/* {process.env.NODE_ENV === 'development' && <SteamDebugTester />} */}
+          
           <Suspense fallback={
             <div className="d-flex justify-content-center align-items-center min-vh-100">
               <motion.div 
@@ -35,7 +57,7 @@ const App = () => {
             </div>
           }>
             <AnimatePresence>
-              <motion.div id="content-wrapper">
+              <motion.div id="content-wrapper" key={layoutKey}>
                 <motion.section 
                   id="header"
                   initial={{ opacity: 0 }}
@@ -47,27 +69,16 @@ const App = () => {
                   <Header />
                 </motion.section>
                 
-                <motion.section 
-                  id="about"
+                {/* Use AdaptiveLayout instead of individual components */}
+                <motion.div
                   initial={{ opacity: 0 }}
                   whileInView={{ opacity: 1 }}
-                  viewport={{ once: true, amount: 0.3 }}
+                  viewport={{ once: true, amount: 0.1 }}
                   transition={{ duration: 0.8 }}
                   layout
                 >
-                  <About />
-                </motion.section>
-                
-                <motion.section 
-                  id="projects"
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  viewport={{ once: true, amount: 0.3 }}
-                  transition={{ duration: 0.8 }}
-                  layout
-                >
-                  <Projects />
-                </motion.section>
+                  <AdaptiveLayout />
+                </motion.div>
                 
                 <motion.section 
                   id="resume"
