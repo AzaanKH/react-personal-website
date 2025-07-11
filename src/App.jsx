@@ -7,14 +7,10 @@ import Header from './components/Header';
 import AdaptiveLayout from './components/AdaptiveLayout';
 import Resume from './components/Resume';
 import ScrollProgressBar from './components/ScrollProgressBar';
-import CursorFollower from './components/CursorFollower';
-
-// Import the layout switcher for development/testing
-// import { LayoutSwitcher } from './components/AdaptiveLayout';
-// import SteamDebugTester from './components/SteamDebugTester';
 
 const App = () => {
   const [layoutKey, setLayoutKey] = useState(0);
+  const [headerComplete, setHeaderComplete] = useState(false);
 
   // Listen for layout changes to trigger re-render
   useEffect(() => {
@@ -26,23 +22,23 @@ const App = () => {
     return () => window.removeEventListener('layoutChange', handleLayoutChange);
   }, []);
 
+  // Simulate header animation completion
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setHeaderComplete(true);
+    }, 2000); // Header animations complete after 2 seconds
+
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <ThemeProvider>
       <LayoutGroup>
         <div className="app">
-          {/* Add scroll progress bar */}
+          {/* Scroll progress bar */}
           <ScrollProgressBar />
           
-          {/* Add cursor follower - uncomment if desired */}
-          {/* <CursorFollower /> */}
-          
           <Navbar />
-
-          {/* Layout Switcher - only show in development */}
-          {/* {process.env.NODE_ENV === 'development' && <LayoutSwitcher />} */}
-          
-          {/* Steam Debug Tester - only show in development */}
-          {/* {process.env.NODE_ENV === 'development' && <SteamDebugTester />} */}
           
           <Suspense fallback={
             <div className="d-flex justify-content-center align-items-center min-vh-100">
@@ -58,28 +54,47 @@ const App = () => {
           }>
             <AnimatePresence>
               <motion.div id="content-wrapper" key={layoutKey}>
+                {/* Header Section - Loads First */}
                 <motion.section 
                   id="header"
                   initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  viewport={{ once: true }}
+                  animate={{ opacity: 1 }}
                   transition={{ duration: 0.8 }}
                   layout
                 >
                   <Header />
                 </motion.section>
                 
-                {/* Use AdaptiveLayout instead of individual components */}
+                {/* Enhanced Bento Grid - Loads After Header with Smooth Transition */}
                 <motion.div
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  viewport={{ once: true, amount: 0.1 }}
-                  transition={{ duration: 0.8 }}
+                  initial={{ opacity: 0, y: 50 }}
+                  animate={{ 
+                    opacity: headerComplete ? 1 : 0, 
+                    y: headerComplete ? 0 : 50 
+                  }}
+                  transition={{ 
+                    duration: 0.8, 
+                    delay: headerComplete ? 0 : 0.5,
+                    ease: "easeOut" 
+                  }}
                   layout
                 >
                   <AdaptiveLayout />
                 </motion.div>
                 
+                {/* Projects Section - Continues the Flow */}
+                <motion.section 
+                  id="projects"
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.3 }}
+                  transition={{ duration: 0.8, delay: 0.2 }}
+                  layout
+                >
+                  {/* Projects will be rendered by AdaptiveLayout */}
+                </motion.section>
+                
+                {/* Resume Section - Optional, or can be integrated into bento */}
                 <motion.section 
                   id="resume"
                   initial={{ opacity: 0 }}
@@ -87,6 +102,7 @@ const App = () => {
                   viewport={{ once: true, amount: 0.3 }}
                   transition={{ duration: 0.8 }}
                   layout
+                  style={{ display: 'none' }} // Hidden since resume is now in Goals card
                 >
                   <Resume />
                 </motion.section>

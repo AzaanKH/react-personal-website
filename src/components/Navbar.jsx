@@ -114,27 +114,52 @@ const Navbar = () => {
               </a>
             </motion.li>
           </ul>
+          
+          {/* Beautiful Clean Theme Toggle */}
           <motion.div 
             className="d-flex align-items-center ms-auto"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5, duration: 0.5 }}
           >
-            <span className="me-2">Theme</span>
-            <motion.label 
-              className="theme-switch"
+            <motion.button
+              onClick={toggleTheme}
+              className="theme-toggle-btn"
+              style={{ 
+                border: 'none',
+                background: 'rgba(0, 123, 255, 0.08)',
+                color: isDarkMode ? '#ffd43b' : '#495057',
+                fontSize: '1.3rem',
+                width: '45px',
+                height: '45px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease'
+              }}
+              whileHover={{ 
+                scale: 1.1, 
+                background: isDarkMode 
+                  ? 'rgba(255, 212, 59, 0.15)' 
+                  : 'rgba(73, 80, 87, 0.15)',
+                boxShadow: isDarkMode 
+                  ? '0 4px 15px rgba(255, 212, 59, 0.3)'
+                  : '0 4px 15px rgba(73, 80, 87, 0.3)'
+              }}
               whileTap={{ scale: 0.9 }}
+              title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
             >
-              <input
-                type="checkbox"
-                checked={isDarkMode}
-                onChange={toggleTheme}
+              <motion.i 
+                className={isDarkMode ? 'fas fa-sun' : 'fas fa-moon'}
+                animate={{ 
+                  rotate: isDarkMode ? [0, 360] : [360, 0],
+                  scale: [1, 1.1, 1]
+                }}
+                transition={{ duration: 0.5 }}
               />
-              <motion.span 
-                className="slider"
-                animate={{ backgroundColor: isDarkMode ? "#007bff" : "#ccc" }}
-              ></motion.span>
-            </motion.label>
+            </motion.button>
           </motion.div>
         </div>
       </div>

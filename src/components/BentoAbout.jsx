@@ -2,12 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { motion, useAnimation, useMotionValue, useTransform } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
 import SteamBentoCard from './SteamBentoCard';
+import ContactForm from './ContactForm';
 
 const BentoAbout = () => {
   const { isDarkMode } = useTheme();
   const [hoveredCard, setHoveredCard] = useState(null);
+  const [showContactForm, setShowContactForm] = useState(false);
   
-  // Unique animation variants for different cards
+  // Reading progress - easy to update in one place
+  const readingProgress = 15; // Update this percentage as you progress
+  
+  // Enhanced animation variants for the centerpiece
   const cardAnimations = {
     bio: {
       initial: { opacity: 0, rotateY: -90, scale: 0.5 },
@@ -24,8 +29,8 @@ const BentoAbout = () => {
       },
       hover: { 
         scale: 1.02, 
-        rotateY: 5,
-        boxShadow: "0 20px 40px rgba(34, 139, 230, 0.3)",
+        rotateY: 3,
+        boxShadow: "0 25px 50px rgba(34, 139, 230, 0.3)",
         transition: { type: "spring", stiffness: 300 }
       }
     },
@@ -45,8 +50,8 @@ const BentoAbout = () => {
       hover: { 
         scale: 1.05, 
         rotate: 2,
-        y: -10,
-        boxShadow: "0 15px 30px rgba(40, 192, 87, 0.4)",
+        y: -12,
+        boxShadow: "0 20px 40px rgba(40, 192, 87, 0.4)",
         transition: { type: "spring", stiffness: 400 }
       }
     },
@@ -66,8 +71,29 @@ const BentoAbout = () => {
       hover: { 
         scale: 1.08, 
         rotate: -3,
-        boxShadow: "0 18px 35px rgba(255, 193, 7, 0.4)",
+        boxShadow: "0 20px 40px rgba(23, 162, 184, 0.4)",
         transition: { type: "spring", stiffness: 350 }
+      }
+    },
+    reading: {
+      initial: { opacity: 0, y: 50, skewX: 10 },
+      animate: { 
+        opacity: 1, 
+        y: 0, 
+        skewX: 0,
+        transition: { 
+          type: "spring", 
+          damping: 18, 
+          stiffness: 160,
+          delay: 0.35
+        }
+      },
+      hover: { 
+        scale: 1.03, 
+        skewX: -1,
+        y: -10,
+        boxShadow: "0 25px 50px rgba(129, 140, 248, 0.3)",
+        transition: { type: "spring", stiffness: 300 }
       }
     },
     goals: {
@@ -86,8 +112,8 @@ const BentoAbout = () => {
       hover: { 
         scale: 1.03, 
         skewY: -1,
-        y: -8,
-        boxShadow: "0 25px 50px rgba(23, 162, 184, 0.3)",
+        y: -10,
+        boxShadow: "0 25px 50px rgba(255, 193, 7, 0.3)",
         transition: { type: "spring", stiffness: 300 }
       }
     },
@@ -105,10 +131,10 @@ const BentoAbout = () => {
         }
       },
       hover: { 
-        scale: 1.1, 
+        scale: 1.05, 
         y: -15,
-        rotateZ: 5,
-        boxShadow: "0 20px 40px rgba(174, 62, 201, 0.4)",
+        rotateZ: 2,
+        boxShadow: "0 25px 50px rgba(174, 62, 201, 0.4)",
         transition: { type: "spring", stiffness: 400 }
       }
     }
@@ -124,24 +150,24 @@ const BentoAbout = () => {
     }
   };
 
-  // Pulse animation for connect button
-  const pulseAnimation = {
-    scale: [1, 1.05, 1],
+  // Page turning animation for reading card
+  const pageAnimation = {
+    rotateY: [0, 5, -5, 0],
     transition: {
-      duration: 2,
+      duration: 4,
       repeat: Infinity,
       ease: "easeInOut"
     }
   };
 
-  // Bento grid content with enhanced animations
+  // Enhanced bento cards with integrated contact/resume
   const bentoCards = [
     {
       id: 'bio',
-      title: 'About Me',
+      title: 'Background',
       gridArea: 'bio',
       className: 'bento-bio',
-      gradient: 'linear-gradient(135deg, rgba(34, 139, 230, 0.1), rgba(34, 139, 230, 0.05))',
+      gradient: 'linear-gradient(135deg, rgba(34, 139, 230, 0.08), rgba(34, 139, 230, 0.03))',
       content: (
         <div className="p-4">
           <div className="d-flex align-items-center mb-3">
@@ -151,11 +177,12 @@ const BentoAbout = () => {
               whileHover={{ rotate: 360, scale: 1.2 }}
               transition={{ duration: 0.6 }}
             >
-              <i className="fas fa-user-graduate text-primary" style={{ fontSize: '2rem' }}></i>
+              <i className="fas fa-user-graduate text-primary" style={{ fontSize: '2.5rem' }}></i>
             </motion.div>
             <div>
               <motion.h5 
                 className="mb-1"
+                style={{ fontSize: '1.4rem', fontWeight: '600' }}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.7, duration: 0.5 }}
@@ -174,12 +201,14 @@ const BentoAbout = () => {
           </div>
           <motion.p 
             className="mb-0"
+            style={{ fontSize: '1rem', lineHeight: '1.6' }}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1, duration: 0.5 }}
           >
             Recent CS graduate passionate about systems engineering and distributed computing. 
-            Eager to contribute fresh perspectives to innovative tech projects.
+            Eager to contribute fresh perspectives to innovative tech projects and tackle challenging 
+            problems in fault-tolerant systems.
           </motion.p>
         </div>
       )
@@ -190,7 +219,7 @@ const BentoAbout = () => {
       title: 'Technical Focus',
       gridArea: 'skills',
       className: 'bento-skills',
-      gradient: 'linear-gradient(135deg, rgba(40, 192, 87, 0.1), rgba(40, 192, 87, 0.05))',
+      gradient: 'linear-gradient(135deg, rgba(40, 192, 87, 0.08), rgba(40, 192, 87, 0.03))',
       content: (
         <div className="p-4">
           <div className="d-flex align-items-center mb-3">
@@ -200,10 +229,11 @@ const BentoAbout = () => {
               whileHover={{ scale: 1.3, rotateY: 180 }}
               transition={{ duration: 0.4 }}
             >
-              <i className="fas fa-code text-success" style={{ fontSize: '2rem' }}></i>
+              <i className="fas fa-code text-success" style={{ fontSize: '2.2rem' }}></i>
             </motion.div>
             <motion.h5 
               className="mb-0"
+              style={{ fontSize: '1.3rem', fontWeight: '600' }}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.8, duration: 0.5 }}
@@ -211,12 +241,12 @@ const BentoAbout = () => {
               Distributed Systems
             </motion.h5>
           </div>
-          <div className="d-flex flex-wrap gap-2">
+          <div className="d-flex flex-wrap gap-2 mb-3">
             {['Java', 'Systems Design', 'Algorithms', 'Networking'].map((skill, index) => (
               <motion.span
                 key={index}
-                className="badge bg-light text-dark px-2 py-1"
-                style={{ fontSize: '0.8rem' }}
+                className="badge bg-light text-dark px-3 py-2"
+                style={{ fontSize: '0.85rem', borderRadius: '12px' }}
                 initial={{ opacity: 0, scale: 0, rotate: -180 }}
                 animate={{ opacity: 1, scale: 1, rotate: 0 }}
                 transition={{ 
@@ -236,7 +266,7 @@ const BentoAbout = () => {
             ))}
           </div>
           <motion.p 
-            className="mt-3 mb-0 small"
+            className="mb-0 small"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1.4, duration: 0.5 }}
@@ -252,7 +282,7 @@ const BentoAbout = () => {
       title: 'Gaming Profile',
       gridArea: 'interests',
       className: 'bento-interests',
-      gradient: 'linear-gradient(135deg, rgba(23, 162, 184, 0.1), rgba(23, 162, 184, 0.05))',
+      gradient: 'linear-gradient(135deg, rgba(23, 162, 184, 0.08), rgba(23, 162, 184, 0.03))',
       content: (
         <SteamBentoCard 
           isHovered={hoveredCard === 'interests'}
@@ -261,13 +291,95 @@ const BentoAbout = () => {
         />
       )
     },
+
+    {
+      id: 'reading',
+      title: 'Currently Reading',
+      gridArea: 'reading',
+      className: 'bento-reading',
+      gradient: 'linear-gradient(135deg, rgba(129, 140, 248, 0.08), rgba(129, 140, 248, 0.03))',
+      content: (
+        <div className="p-4">
+          <div className="d-flex align-items-center mb-3">
+            <motion.div 
+              className="me-3"
+              animate={hoveredCard === 'reading' ? pageAnimation : floatingAnimation}
+              whileHover={{ scale: 1.3, rotateZ: 15 }}
+              transition={{ duration: 0.4 }}
+            >
+              <i className="fas fa-book-open" style={{ fontSize: '2.2rem', color: '#818cf8' }}></i>
+            </motion.div>
+            <motion.h5 
+              className="mb-0"
+              style={{ fontSize: '1.3rem', fontWeight: '600' }}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 1, duration: 0.5 }}
+            >
+              Learning Journey
+            </motion.h5>
+          </div>
+          
+          <motion.div 
+            className="book-info"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.2, duration: 0.5 }}
+          >
+            <div className="fw-medium mb-2" style={{ 
+              color: isDarkMode ? '#c1c2c5' : '#1a1b1e',
+              fontSize: '1rem'
+            }}>
+              System Design Interview Vol. 2
+            </div>
+            <small className="text-muted d-block mb-2">
+              by Alex Xu
+            </small>
+            <div className="d-flex align-items-center">
+              <motion.div 
+                className="progress-bar-container"
+                style={{
+                  flex: 1,
+                  height: '6px',
+                  background: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+                  borderRadius: '3px',
+                  overflow: 'hidden',
+                  marginRight: '12px'
+                }}
+              >
+                <motion.div
+                  style={{
+                    height: '100%',
+                    background: 'linear-gradient(90deg, #818cf8, #a5b4fc)',
+                    borderRadius: '3px'
+                  }}
+                  initial={{ width: '0%' }}
+                  animate={{ width: `${readingProgress}%` }}
+                  transition={{ delay: 1.5, duration: 1.5, ease: "easeOut" }}
+                />
+              </motion.div>
+              <small className="text-muted fw-medium">{readingProgress}%</small>
+            </div>
+          </motion.div>
+          
+          <motion.p 
+            className="mt-3 mb-0 small"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.6, duration: 0.5 }}
+          >
+            Deep-diving into advanced system design patterns and architecture principles.
+          </motion.p>
+        </div>
+      )
+    },
     
     {
       id: 'goals',
       title: 'Professional Goals',
       gridArea: 'goals',
       className: 'bento-goals',
-      gradient: 'linear-gradient(135deg, rgba(23, 162, 184, 0.1), rgba(23, 162, 184, 0.05))',
+      gradient: 'linear-gradient(135deg, rgba(255, 193, 7, 0.08), rgba(255, 193, 7, 0.03))',
       content: (
         <div className="p-4">
           <div className="d-flex align-items-center mb-3">
@@ -280,10 +392,11 @@ const BentoAbout = () => {
               transition={{ duration: 1.5, repeat: Infinity }}
               whileHover={{ scale: 1.4, rotate: 45 }}
             >
-              <i className="fas fa-rocket text-info" style={{ fontSize: '2rem' }}></i>
+              <i className="fas fa-rocket text-warning" style={{ fontSize: '2.2rem' }}></i>
             </motion.div>
             <motion.h5 
               className="mb-0"
+              style={{ fontSize: '1.3rem', fontWeight: '600' }}
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1, duration: 0.5 }}
@@ -291,30 +404,54 @@ const BentoAbout = () => {
               Looking Forward
             </motion.h5>
           </div>
-          <ul className="list-unstyled small mb-0">
-            {[
-              'Tackle challenging distributed system problems',
-              'Push boundaries of what\'s possible with code',
-              'Contribute fresh perspectives to innovative projects'
-            ].map((goal, index) => (
-              <motion.li 
-                key={index}
-                className="mb-2"
-                initial={{ opacity: 0, x: -30 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 1.2 + (index * 0.1), type: "spring", stiffness: 100 }}
-                whileHover={{ x: 10, color: '#17a2b8' }}
-              >
-                <motion.i 
-                  className="fas fa-check text-success me-2"
-                  initial={{ scale: 0, rotate: -180 }}
-                  animate={{ scale: 1, rotate: 0 }}
-                  transition={{ delay: 1.3 + (index * 0.1), type: "spring" }}
-                ></motion.i>
-                {goal}
-              </motion.li>
-            ))}
-          </ul>
+          
+          <motion.p 
+            className="mb-3"
+            style={{ fontSize: '0.95rem', lineHeight: '1.5' }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.2, duration: 0.5 }}
+          >
+            Tackle challenging distributed system problems and push boundaries of what's possible with code. 
+            Ready to contribute to innovative projects.
+          </motion.p>
+          
+          {/* Integrated Resume Button */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.4, duration: 0.5 }}
+          >
+            <motion.a
+              href="/khalfe_azaan_resume_24.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-warning btn-lg"
+              style={{
+                background: 'linear-gradient(135deg, #ffc107, #ff8f00)',
+                border: 'none',
+                borderRadius: '12px',
+                padding: '12px 24px',
+                fontSize: '0.95rem',
+                fontWeight: '600',
+                color: '#000',
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+              whileHover={{ 
+                scale: 1.05,
+                background: 'linear-gradient(135deg, #ff8f00, #e65100)',
+                color: '#fff',
+                boxShadow: '0 8px 25px rgba(255, 193, 7, 0.4)'
+              }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <i className="fas fa-file-alt"></i>
+              View Resume
+            </motion.a>
+          </motion.div>
         </div>
       )
     },
@@ -324,49 +461,135 @@ const BentoAbout = () => {
       title: 'Let\'s Connect',
       gridArea: 'connect',
       className: 'bento-connect',
-      gradient: 'linear-gradient(135deg, rgba(174, 62, 201, 0.1), rgba(174, 62, 201, 0.05))',
+      gradient: 'linear-gradient(135deg, rgba(174, 62, 201, 0.08), rgba(174, 62, 201, 0.03))',
       content: (
-        <div className="p-4 text-center">
-          <motion.div 
-            className="mb-3"
-            animate={hoveredCard === 'connect' ? {
-              rotate: [0, 360],
-              scale: [1, 1.2, 1]
-            } : floatingAnimation}
-            transition={{ duration: 2, repeat: Infinity }}
-            whileHover={{ rotate: 720, scale: 1.4 }}
-          >
-            <i className="fas fa-handshake text-primary" style={{ fontSize: '2.5rem' }}></i>
-          </motion.div>
+        <div className="p-4">
+          <div className="d-flex align-items-center mb-3">
+            <motion.div 
+              className="mb-3"
+              animate={hoveredCard === 'connect' ? {
+                rotate: [0, 360],
+                scale: [1, 1.2, 1]
+              } : floatingAnimation}
+              transition={{ duration: 2, repeat: Infinity }}
+              whileHover={{ rotate: 720, scale: 1.4 }}
+            >
+              <i className="fas fa-handshake text-primary" style={{ fontSize: '2.5rem' }}></i>
+            </motion.div>
+            <motion.h5 
+              className="mb-0"
+              style={{ fontSize: '1.3rem', fontWeight: '600' }}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 1.1, duration: 0.5 }}
+            >
+              Let's Connect
+            </motion.h5>
+          </div>
+          
           <motion.p 
-            className="mb-3 small"
+            className="mb-3"
+            style={{ fontSize: '0.95rem' }}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.1, duration: 0.5 }}
+            transition={{ delay: 1.2, duration: 0.5 }}
           >
-            Ready to explore how we can create something amazing together!
+            Ready to explore how we can create something amazing together! Feel free to reach out.
           </motion.p>
-          <motion.button
-            className="btn btn-outline-primary btn-sm"
-            animate={pulseAnimation}
-            whileHover={{ 
-              scale: 1.1, 
-              backgroundColor: '#007bff',
-              color: '#fff',
-              boxShadow: '0 5px 15px rgba(0,123,255,0.4)'
-            }}
-            whileTap={{ scale: 0.9 }}
-            onClick={() => {
-              document.querySelector('a[href*="linkedin"]')?.click();
-            }}
+          
+          {/* Enhanced Contact Options */}
+          <motion.div
+            className="contact-actions d-flex gap-3 align-items-center flex-wrap"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.4, duration: 0.5 }}
           >
-            <motion.i 
-              className="fab fa-linkedin me-2"
-              animate={{ rotate: [0, 20, -20, 0] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            ></motion.i>
-            Connect
-          </motion.button>
+            <motion.button
+              onClick={() => setShowContactForm(true)}
+              className="contact-btn"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '45px',
+                height: '45px',
+                background: 'rgba(0, 123, 255, 0.1)',
+                color: '#007bff',
+                borderRadius: '12px',
+                border: 'none',
+                fontSize: '1.2rem',
+                cursor: 'pointer'
+              }}
+              whileHover={{ 
+                background: '#007bff',
+                color: '#fff',
+                scale: 1.1,
+                y: -2
+              }}
+              whileTap={{ scale: 0.9 }}
+              title="Send Email"
+            >
+              <i className="fas fa-envelope"></i>
+            </motion.button>
+            
+            <motion.a
+              href="https://www.linkedin.com/in/azaan-khalfe-43b90b221/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="contact-btn"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '45px',
+                height: '45px',
+                background: 'rgba(0, 123, 255, 0.1)',
+                color: '#007bff',
+                borderRadius: '12px',
+                textDecoration: 'none',
+                fontSize: '1.2rem'
+              }}
+              whileHover={{ 
+                background: '#0077b5',
+                color: '#fff',
+                scale: 1.1,
+                y: -2
+              }}
+              whileTap={{ scale: 0.9 }}
+              title="LinkedIn Profile"
+            >
+              <i className="fab fa-linkedin"></i>
+            </motion.a>
+            
+            <motion.a
+              href="https://github.com/AzaanKH"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="contact-btn"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '45px',
+                height: '45px',
+                background: 'rgba(0, 123, 255, 0.1)',
+                color: '#007bff',
+                borderRadius: '12px',
+                textDecoration: 'none',
+                fontSize: '1.2rem'
+              }}
+              whileHover={{ 
+                background: '#333',
+                color: '#fff',
+                scale: 1.1,
+                y: -2
+              }}
+              whileTap={{ scale: 0.9 }}
+              title="GitHub Profile"
+            >
+              <i className="fab fa-github"></i>
+            </motion.a>
+          </motion.div>
         </div>
       )
     }
@@ -384,7 +607,7 @@ const BentoAbout = () => {
   };
 
   return (
-    <section id="bio" className="section py-5">
+    <section id="bio" className="section py-5" style={{ background: '#f8f9fa' }}>
       <div className="container">
         <motion.h2 
           className="section-title text-center"
@@ -397,29 +620,31 @@ const BentoAbout = () => {
             stiffness: 200,
             duration: 0.8 
           }}
+          style={{ fontSize: '2.5rem', fontWeight: '600', marginBottom: '3rem' }}
         >
           About Me
         </motion.h2>
         
         <motion.div 
-          className="bento-grid"
+          className="enhanced-bento-grid"
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.2 }}
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-            gridTemplateRows: 'repeat(3, auto)',
-            gap: '1.5rem',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+            gridTemplateRows: 'repeat(4, minmax(200px, auto))',
+            gap: '2rem',
             gridTemplateAreas: `
               "bio bio bio"
-              "skills interests goals"
+              "skills interests reading"
+              "goals goals goals"
               "connect connect connect"
             `,
             '--card-bg': isDarkMode ? '#25262B' : '#ffffff',
             '--card-border': isDarkMode ? '#2C2E33' : '#dee2e6',
-            '--card-shadow': isDarkMode ? '0 4px 12px rgba(0,0,0,0.3)' : '0 2px 8px rgba(0,0,0,0.1)'
+            '--card-shadow': isDarkMode ? '0 8px 25px rgba(0,0,0,0.3)' : '0 4px 20px rgba(0,0,0,0.08)'
           }}
         >
           {bentoCards.map((card, index) => (
@@ -435,8 +660,8 @@ const BentoAbout = () => {
               style={{
                 gridArea: card.gridArea,
                 background: `${card.gradient}, var(--card-bg)`,
-                border: '1px solid var(--card-border)',
-                borderRadius: '16px',
+                border: '2px solid var(--card-border)',
+                borderRadius: '20px',
                 boxShadow: 'var(--card-shadow)',
                 overflow: 'hidden',
                 cursor: 'pointer',
@@ -465,25 +690,26 @@ const BentoAbout = () => {
         {/* Enhanced responsive styles */}
         <style jsx>{`
           @media (max-width: 768px) {
-            .bento-grid {
+            .enhanced-bento-grid {
               grid-template-columns: 1fr !important;
               grid-template-areas: 
                 "bio"
                 "skills"
                 "interests"
+                "reading"
                 "goals"
                 "connect" !important;
-              gap: 1rem !important;
+              gap: 1.5rem !important;
             }
           }
           
           @media (max-width: 992px) and (min-width: 769px) {
-            .bento-grid {
+            .enhanced-bento-grid {
               grid-template-columns: repeat(2, 1fr) !important;
               grid-template-areas: 
                 "bio bio"
                 "skills interests"
-                "goals connect"
+                "reading goals"
                 "connect connect" !important;
             }
           }
@@ -511,6 +737,9 @@ const BentoAbout = () => {
           }
         `}</style>
       </div>
+      
+      {/* Contact Form Modal */}
+      {showContactForm && <ContactForm onClose={() => setShowContactForm(false)} />}
     </section>
   );
 };

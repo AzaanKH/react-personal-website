@@ -57,21 +57,6 @@ const AdaptiveLayout = () => {
 
   return (
     <div className="adaptive-layout">
-      {/* Debug info in development */}
-      {process.env.NODE_ENV === 'development' && (
-        <motion.div 
-          className="position-fixed top-0 end-0 m-3 p-2 bg-info text-white rounded"
-          style={{ zIndex: 1050, fontSize: '0.8rem' }}
-          initial={{ opacity: 0, x: 100 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 1 }}
-        >
-          <strong>Layout:</strong> {layoutConfig.currentLayout}
-          <br />
-          <strong>About:</strong> {currentConfig.aboutSection.type}
-        </motion.div>
-      )}
-
       {/* About Section */}
       <AnimatePresence mode="wait">
         {renderAboutSection()}
