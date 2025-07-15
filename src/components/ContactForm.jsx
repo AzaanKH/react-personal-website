@@ -39,6 +39,43 @@ const ContactForm = ({ onClose }) => {
     setStatus(prev => ({ ...prev, submitting: true }));
 
     try {
+      // Optional rate limiting check (fail-safe - won't break if it fails)
+      let rateLimitMessage = '';
+      try {
+        const rateLimitResponse = await fetch('/.netlify/functions/rate-check', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ check: true })
+        });
+
+        if (rateLimitResponse.status === 429) {
+          const rateLimitResult = await rateLimitResponse.json();
+          setStatus({
+            submitting: false,
+            alert: {
+              open: true,
+              message: rateLimitResult.message || 'Too many submissions. Please wait before trying again.',
+              severity: 'warning'
+            }
+          });
+          return;
+        }
+
+        // If rate limiting is working, add a note
+        if (rateLimitResponse.ok) {
+          const rateLimitResult = await rateLimitResponse.json();
+          if (rateLimitResult.status === 'active') {
+            rateLimitMessage = ' (Protected by rate limiting)';
+          }
+        }
+      } catch (rateLimitError) {
+        // Rate limiting failed, but continue with email sending
+        console.log('Rate limiting check failed, proceeding anyway:', rateLimitError.message);
+      }
+
+      // Send email via EmailJS (always attempt this)
       const response = await emailjs.send(
         import.meta.env.VITE_EMAILJS_SERVICE_ID,
         import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
@@ -57,7 +94,7 @@ const ContactForm = ({ onClose }) => {
         submitting: false,
         alert: {
           open: true,
-          message: 'Message sent successfully!',
+          message: 'Message sent successfully!' + rateLimitMessage,
           severity: 'success'
         }
       });
