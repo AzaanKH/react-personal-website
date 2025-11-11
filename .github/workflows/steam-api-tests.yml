@@ -1,0 +1,62 @@
+name: Steam API Integration Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  steam-api-tests:
+    name: Test Steam API Integration
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Create test environment file
+      run: |
+        echo "STEAM_API_KEY=${{ secrets.STEAM_API_KEY }}" >> .env.test
+        echo "STEAM_ID=${{ secrets.STEAM_ID }}" >> .env.test
+        echo "TEST_BASE_URL=https://your-site.netlify.app" >> .env.test
+      
+    - name: Build project
+      run: npm run build
+      env:
+        STEAM_API_KEY: ${{ secrets.STEAM_API_KEY }}
+        STEAM_ID: ${{ secrets.STEAM_ID }}
+        VITE_EMAILJS_PUBLIC_KEY: ${{ secrets.VITE_EMAILJS_PUBLIC_KEY }}
+        VITE_EMAILJS_SERVICE_ID: ${{ secrets.VITE_EMAILJS_SERVICE_ID }}
+        VITE_EMAILJS_TEMPLATE_ID: ${{ secrets.VITE_EMAILJS_TEMPLATE_ID }}
+        
+    - name: Run Steam API Tests (Production)
+      run: |
+        if [ -f .env.test ]; then
+          export $(cat .env.test | xargs)
+          npm run test:steam
+        else
+          echo "⚠️  No test environment configured, skipping Steam API tests"
+          echo "To enable Steam API tests, add STEAM_API_KEY and STEAM_ID to GitHub secrets"
+        fi
+      continue-on-error: true
+      
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: steam-api-test-results
+        path: |
+          .env.test
+          tests/steam-api/
+        retention-days: 7

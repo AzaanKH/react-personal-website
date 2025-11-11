@@ -72,7 +72,9 @@ const ContactForm = ({ onClose }) => {
         }
       } catch (rateLimitError) {
         // Rate limiting failed, but continue with email sending
-        console.log('Rate limiting check failed, proceeding anyway:', rateLimitError.message);
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Rate limiting check failed, proceeding anyway:', rateLimitError.message);
+        }
       }
 
       // Send email via EmailJS (always attempt this)
@@ -88,7 +90,9 @@ const ContactForm = ({ onClose }) => {
         import.meta.env.VITE_EMAILJS_PUBLIC_KEY
       );
 
-      console.log('EmailJS Response:', response);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('EmailJS Response:', response);
+      }
       
       setStatus({
         submitting: false,

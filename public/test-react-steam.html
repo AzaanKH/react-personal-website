@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>React Steam Hook Test</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .loading { background: #fff3cd; }
+        .error { background: #f8d7da; }
+        .success { background: #d4edda; }
+        pre { background: #f8f9fa; padding: 10px; overflow: auto; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // Simplified Steam hook for testing
+        function useSteamData(endpoints) {
+            const [steamData, setSteamData] = useState({});
+            const [loading, setLoading] = useState(true);
+            const [error, setError] = useState(null);
+
+            useEffect(() => {
+                async function fetchData() {
+                    try {
+                        setLoading(true);
+                        setError(null);
+                        
+                        console.log('Test Hook: Starting fetch for endpoints:', endpoints);
+
+                        const responses = await Promise.all(
+                            endpoints.map(async (endpoint) => {
+                                try {
+                                    const url = `/.netlify/functions/steam-proxy.cjs?endpoint=${endpoint}`;
+                                    console.log('Test Hook: Fetching', url);
+                                    
+                                    const response = await fetch(url);
+                                    
+                                    if (!response.ok) {
+                                        const errorText = await response.text();
+                                        console.log('Test Hook: Error for', endpoint, ':', errorText);
+                                        return { endpoint, data: null, success: false, error: `${response.status}: ${errorText}` };
+                                    }
+
+                                    const data = await response.json();
+                                    console.log('Test Hook: Success for', endpoint, '- data keys:', Object.keys(data));
+                                    return { endpoint, data, success: true };
+                                } catch (fetchError) {
+                                    console.log('Test Hook: Fetch error for', endpoint, ':', fetchError.message);
+                                    return { endpoint, data: null, success: false, error: fetchError.message };
+                                }
+                            })
+                        );
+
+                        console.log('Test Hook: Processing responses:', responses);
+
+                        const newSteamData = {};
+                        let hasAnyData = false;
+
+                        responses.forEach(({ endpoint, data, success, error }) => {
+                            console.log(`Test Hook: Processing ${endpoint}:`, { success, error, hasData: !!data });
+                            
+                            if (success && data) {
+                                switch (endpoint) {
+                                    case 'profile':
+                                        const player = data.response?.players?.[0];
+                                        console.log('Test Hook: Profile data:', player);
+                                        newSteamData.profile = player || null;
+                                        if (player) {
+                                            hasAnyData = true;
+                                        }
+                                        break;
+                                    case 'recent':
+                                        const games = data.response?.games || [];
+                                        console.log('Test Hook: Recent games:', games.length);
+                                        newSteamData.recentGames = games;
+                                        if (games.length > 0) {
+                                            hasAnyData = true;
+                                        }
+                                        break;
+                                }
+                            }
+                        });
+
+                        console.log('Test Hook: Final result:', { hasAnyData, newSteamData });
+
+                        if (hasAnyData) {
+                            setSteamData(newSteamData);
+                        } else {
+                            throw new Error('No Steam data received from any endpoint');
+                        }
+                    } catch (err) {
+                        console.error('Test Hook: Error:', err);
+                        setError(err.message);
+                    } finally {
+                        setLoading(false);
+                    }
+                }
+
+                fetchData();
+            }, []);
+
+            return {
+                steamData,
+                loading,
+                error,
+                hasProfile: !!steamData.profile,
+                hasRecentGames: !!(steamData.recentGames?.length)
+            };
+        }
+
+        function SteamTest() {
+            const { steamData, loading, error, hasProfile, hasRecentGames } = useSteamData(['profile', 'recent']);
+
+            return (
+                <div className="container">
+                    <h1>Steam API Test</h1>
+                    
+                    <div className={`status ${loading ? 'loading' : error ? 'error' : 'success'}`}>
+                        <strong>Status:</strong> {loading ? 'Loading...' : error ? `Error: ${error}` : 'Success!'}
+                    </div>
+
+                    <div>
+                        <strong>Has Profile:</strong> {hasProfile ? 'Yes' : 'No'}<br/>
+                        <strong>Has Recent Games:</strong> {hasRecentGames ? 'Yes' : 'No'}
+                    </div>
+
+                    {steamData.profile && (
+                        <div>
+                            <h3>Profile Data</h3>
+                            <pre>{JSON.stringify(steamData.profile, null, 2)}</pre>
+                        </div>
+                    )}
+
+                    {steamData.recentGames && (
+                        <div>
+                            <h3>Recent Games ({steamData.recentGames.length})</h3>
+                            <pre>{JSON.stringify(steamData.recentGames, null, 2)}</pre>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        ReactDOM.render(<SteamTest />, document.getElementById('root'));
+    </script>
+</body>
+</html>

@@ -11,7 +11,7 @@ const SteamStatsDashboard = () => {
     level: null
   });
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('overview');
+  // const [activeTab, setActiveTab] = useState('overview'); // Unused for now
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -44,7 +44,7 @@ const SteamStatsDashboard = () => {
         );
 
         // Process responses
-        const newSteamData = { ...steamData };
+        const newSteamData = { profile: null, recentGames: [], gameLibrary: [], level: null };
         responses.forEach(({ key, data, success }) => {
           if (success && data) {
             switch (key) {
@@ -74,7 +74,7 @@ const SteamStatsDashboard = () => {
     };
 
     fetchAllSteamData();
-  }, []);
+  }, []); // Dependencies handled inside effect
 
   // Calculate stats
   const getStats = () => {

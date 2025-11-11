@@ -3,6 +3,13 @@
   publish = "dist"
   functions = "netlify/functions"
 
+[dev]
+  command = "npm run dev"
+  targetPort = 3000
+  port = 8888
+  autoLaunch = false
+
+# Don't redirect files that actually exist in public folder
 [[redirects]]
   from = "/*"
   to = "/index.html"

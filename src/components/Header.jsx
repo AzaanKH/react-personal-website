@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import ContactForm from './ContactForm';
+import ContactFormShadcn from './ContactFormShadcn';
 
 const Header = () => {
   const [showContactForm, setShowContactForm] = useState(false);
@@ -30,7 +30,7 @@ const Header = () => {
   };
 
   return (
-    <section className="header-section text-center">
+    <section className="header-section text-center" style={{ backgroundColor: 'hsl(var(--background))' }}>
       <div className="container">
         {/* Quick name introduction */}
         <motion.h1 
@@ -78,6 +78,7 @@ const Header = () => {
               rel={link.href ? "noopener noreferrer" : undefined}
               className="social-link-clean"
               style={{ cursor: 'pointer' }}
+              aria-label={link.label}
               initial={{ opacity: 0, y: 20, scale: 0.8 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ 
@@ -129,7 +130,10 @@ const Header = () => {
         </motion.div>
       </div>
       
-      {showContactForm && <ContactForm onClose={() => setShowContactForm(false)} />}
+      <ContactFormShadcn 
+        open={showContactForm} 
+        onClose={() => setShowContactForm(false)} 
+      />
     </section>
   );
 };

@@ -33,8 +33,15 @@ export default defineConfig({
       '@': resolve(__dirname, './src'),
     },
   },
-  // Enable SPA fallback
+  // Enable SPA fallback and proxy Netlify functions
   server: {
     historyApiFallback: true,
+    proxy: {
+      '/.netlify/functions': {
+        target: 'http://localhost:8888',
+        changeOrigin: true,
+        secure: false
+      }
+    }
   }
 })

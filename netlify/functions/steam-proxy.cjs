@@ -1,6 +1,8 @@
 exports.handler = async (event, context) => {
   const headers = {
-    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Origin': process.env.NETLIFY && process.env.CONTEXT === 'production'
+      ? 'https://azaankhalfe.netlify.app' 
+      : '*',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Access-Control-Allow-Methods': 'GET, OPTIONS',
     'Content-Type': 'application/json'
@@ -22,7 +24,17 @@ exports.handler = async (event, context) => {
     const STEAM_API_KEY = process.env.STEAM_API_KEY;
     const STEAM_ID = process.env.STEAM_ID;
     
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Steam API: Environment check:', {
+        hasApiKey: !!STEAM_API_KEY,
+        hasSteamId: !!STEAM_ID,
+        nodeEnv: process.env.NODE_ENV,
+        netlifyContext: process.env.CONTEXT
+      });
+    }
+    
     if (!STEAM_API_KEY) {
+      console.log('ERROR: Steam API key not configured');
       return {
         statusCode: 500,
         headers,
@@ -35,6 +47,10 @@ exports.handler = async (event, context) => {
 
     const { queryStringParameters } = event;
     const { endpoint, steamid, appid, count = '10' } = queryStringParameters || {};
+    
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`Steam API: Processing ${endpoint} request`);
+    }
     
     const targetSteamId = steamid || STEAM_ID;
     
@@ -91,15 +107,22 @@ exports.handler = async (event, context) => {
         };
     }
 
-    console.log(`Fetching Steam data from: ${steamUrl}`);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`Steam API: Fetching data from Steam Web API`);
+    }
     
     const response = await fetch(steamUrl);
     
     if (!response.ok) {
+      const errorText = await response.text();
+      console.log('ERROR: Steam API error response:', errorText);
       throw new Error(`Steam API returned ${response.status}: ${response.statusText}`);
     }
     
     const data = await response.json();
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`Steam API: Successfully fetched ${endpoint} data`);
+    }
 
     const enrichedData = {
       ...data,

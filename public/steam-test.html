@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Steam API Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .result { margin: 10px 0; padding: 10px; border: 1px solid #ccc; background: #f9f9f9; }
+        .error { background: #ffe6e6; border-color: #ff9999; }
+        .success { background: #e6ffe6; border-color: #99ff99; }
+        button { padding: 10px 20px; margin: 5px; font-size: 16px; }
+        pre { white-space: pre-wrap; word-wrap: break-word; }
+    </style>
+</head>
+<body>
+    <h1>Steam API Test</h1>
+    
+    <div>
+        <button onclick="testEndpoint('profile')">Test Profile</button>
+        <button onclick="testEndpoint('recent')">Test Recent Games</button>
+        <button onclick="testEndpoint('games')">Test Game Library</button>
+        <button onclick="testEndpoint('level')">Test Steam Level</button>
+    </div>
+    
+    <div id="results"></div>
+
+    <script>
+        async function testEndpoint(endpoint) {
+            const resultsDiv = document.getElementById('results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = 'result';
+            
+            try {
+                const url = `/.netlify/functions/steam-proxy.cjs?endpoint=${endpoint}`;
+                console.log('Testing URL:', url);
+                
+                resultDiv.innerHTML = `<h3>Testing ${endpoint}...</h3><p>URL: ${url}</p>`;
+                resultsDiv.appendChild(resultDiv);
+                
+                const response = await fetch(url);
+                const responseText = await response.text();
+                
+                console.log('Response status:', response.status);
+                console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+                console.log('Response text:', responseText);
+                
+                if (response.ok) {
+                    try {
+                        const data = JSON.parse(responseText);
+                        resultDiv.className = 'result success';
+                        resultDiv.innerHTML = `
+                            <h3>✅ ${endpoint} - SUCCESS</h3>
+                            <p><strong>Status:</strong> ${response.status}</p>
+                            <p><strong>Response:</strong></p>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        `;
+                    } catch (parseError) {
+                        resultDiv.className = 'result error';
+                        resultDiv.innerHTML = `
+                            <h3>❌ ${endpoint} - JSON Parse Error</h3>
+                            <p><strong>Status:</strong> ${response.status}</p>
+                            <p><strong>Parse Error:</strong> ${parseError.message}</p>
+                            <p><strong>Raw Response:</strong></p>
+                            <pre>${responseText}</pre>
+                        `;
+                    }
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `
+                        <h3>❌ ${endpoint} - HTTP Error</h3>
+                        <p><strong>Status:</strong> ${response.status}</p>
+                        <p><strong>Response:</strong></p>
+                        <pre>${responseText}</pre>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    <h3>❌ ${endpoint} - Network Error</h3>
+                    <p><strong>Error:</strong> ${error.message}</p>
+                    <p><strong>Stack:</strong></p>
+                    <pre>${error.stack}</pre>
+                `;
+            }
+        }
+        
+        // Test all endpoints on page load
+        window.onload = function() {
+            console.log('Steam API Test page loaded');
+            console.log('Testing all endpoints...');
+            testEndpoint('profile');
+            setTimeout(() => testEndpoint('recent'), 1000);
+        };
+    </script>
+</body>
+</html>

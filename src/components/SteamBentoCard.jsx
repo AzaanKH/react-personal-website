@@ -1,11 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
 import { useSteamData } from '../hooks/useSteamData';
 
-const SteamBentoCard = ({ isHovered, onHover, onHoverEnd }) => {
+const SteamBentoCard = ({ isHovered, onHover: _onHover, onHoverEnd: _onHoverEnd }) => {
   const { isDarkMode } = useTheme();
   const [currentGame, setCurrentGame] = useState(null);
+
+  // Memoize the endpoints and options to prevent unnecessary re-renders
+  const steamEndpoints = useMemo(() => ['profile', 'recent'], []);
+  const steamOptions = useMemo(() => ({ 
+    enableDebug: false,
+    autoRefresh: false 
+  }), []);
 
   // Use the Steam data hook - NO DEBUG
   const { 
@@ -13,12 +20,9 @@ const SteamBentoCard = ({ isHovered, onHover, onHoverEnd }) => {
     loading, 
     error, 
     hasProfile,
-    hasRecentGames,
+    hasRecentGames: _hasRecentGames,
     formatPlaytime
-  } = useSteamData(['profile', 'recent'], { 
-    enableDebug: false,
-    autoRefresh: false 
-  });
+  } = useSteamData(steamEndpoints, steamOptions);
 
   // Set initial current game when Steam data loads
   useEffect(() => {
@@ -59,8 +63,21 @@ const SteamBentoCard = ({ isHovered, onHover, onHoverEnd }) => {
     );
   }
 
-  // Error state - CLEAN (no debug info)
-  if (error || !hasProfile) {
+  // Debug logging removed for production
+  // Uncomment below for debugging if needed:
+  // console.log('🔍 SteamBentoCard Render:', {
+  //   loading,
+  //   error,
+  //   hasProfile,
+  //   steamDataKeys: Object.keys(steamData),
+  //   profileExists: !!steamData.profile,
+  //   recentGamesCount: steamData.recentGames?.length || 0,
+  //   timestamp: new Date().toISOString()
+  // });
+
+  // Only show error state if we have an error AND no profile data at all
+  // This prevents flickering when data is temporarily unavailable
+  if (error && !hasProfile && !loading) {
     return (
       <div className="p-4">
         <div className="d-flex align-items-center mb-3">
@@ -97,11 +114,29 @@ const SteamBentoCard = ({ isHovered, onHover, onHoverEnd }) => {
         <small className="text-muted d-block">
           Gaming helps me unwind while staying engaged with complex problem-solving.
         </small>
+        
+        
       </div>
     );
   }
 
   const { profile: player } = steamData;
+
+  // If we don't have profile data yet, show loading or wait
+  if (!player) {
+    return (
+      <div className="p-4 text-center">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+          className="mb-2"
+        >
+          <i className="fab fa-steam text-info" style={{ fontSize: '2rem' }}></i>
+        </motion.div>
+        <small className="text-muted d-block">Loading Steam profile...</small>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4">
@@ -117,11 +152,12 @@ const SteamBentoCard = ({ isHovered, onHover, onHoverEnd }) => {
         >
           <motion.img
             src={player.avatar}
-            alt="Steam Avatar"
+            alt={`${player.personaname}'s Steam avatar`}
             className="rounded-circle"
             style={{ width: '48px', height: '48px' }}
             whileHover={{ scale: 1.2, rotate: 360 }}
             transition={{ duration: 0.5 }}
+            loading="lazy"
           />
           <motion.div
             className="position-absolute bottom-0 end-0"
@@ -193,10 +229,11 @@ const SteamBentoCard = ({ isHovered, onHover, onHoverEnd }) => {
             <div className="d-flex align-items-center">
               <motion.img
                 src={`https://media.steampowered.com/steamcommunity/public/images/apps/${currentGame.appid}/${currentGame.img_icon_url}.jpg`}
-                alt={currentGame.name}
+                alt={`${currentGame.name} game icon`}
                 className="rounded me-3"
                 style={{ width: '40px', height: '40px' }}
                 whileHover={{ rotate: 10, scale: 1.1 }}
+                loading="lazy"
                 onError={(e) => {
                   // Fallback to a default game icon
                   e.target.src = `data:image/svg+xml,${encodeURIComponent(`
@@ -256,7 +293,7 @@ const SteamBentoCard = ({ isHovered, onHover, onHoverEnd }) => {
           transition={{ delay: 0.5 }}
         >
           <div className="d-flex justify-content-center gap-1">
-            {steamData.recentGames?.slice(0, 3).map((game, index) => (
+            {steamData.recentGames?.slice(0, 3).map((game, _index) => (
               <motion.div
                 key={game.appid}
                 className="rounded-circle"

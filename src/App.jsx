@@ -1,7 +1,8 @@
-import React, { Suspense, lazy, useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { AnimatePresence, motion, LayoutGroup } from 'framer-motion';
 import Navbar from './components/Navbar';
 import { ThemeProvider } from './context/ThemeContext';
+import ErrorBoundary from './components/ErrorBoundary';
 
 import Header from './components/Header';
 import AdaptiveLayout from './components/AdaptiveLayout';
@@ -32,19 +33,21 @@ const App = () => {
   }, []);
 
   return (
-    <ThemeProvider>
-      <LayoutGroup>
-        <div className="app">
-          {/* Scroll progress bar */}
-          <ScrollProgressBar />
-          
-          <Navbar />
-          
-          <Suspense fallback={
+    <ErrorBoundary>
+      <ThemeProvider>
+        <LayoutGroup>
+          <div className="app">
+            {/* Scroll progress bar */}
+            <ScrollProgressBar />
+
+            <Navbar />
+
+            <Suspense fallback={
             <div className="d-flex justify-content-center align-items-center min-vh-100">
               <motion.div 
                 className="spinner-border text-primary" 
                 role="status"
+                aria-label="Loading content"
                 animate={{ rotate: 360 }}
                 transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
               >
@@ -109,9 +112,10 @@ const App = () => {
               </motion.div>
             </AnimatePresence>
           </Suspense>
-        </div>
-      </LayoutGroup>
-    </ThemeProvider>
+          </div>
+        </LayoutGroup>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 };
 

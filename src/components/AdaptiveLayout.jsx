@@ -2,10 +2,9 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getCurrentLayoutConfig, LAYOUT_TYPES, layoutConfig } from '../config/layoutConfig';
 
-// Import both layout components
-import About from './About';
-import BentoAbout from './BentoAbout';
-import Projects from './Projects';
+// Import active layout components
+import BentoAboutEnhanced from './BentoAboutEnhanced';
+import ProjectsShadcn from './ProjectsShadcn';
 
 const AdaptiveLayout = () => {
   const currentConfig = getCurrentLayoutConfig();
@@ -23,20 +22,24 @@ const AdaptiveLayout = () => {
   // Render About section based on configuration
   const renderAboutSection = () => {
     const aboutConfig = currentConfig.aboutSection;
-    
+
+    // Currently only using bento-grid layout (HYBRID mode)
+    // Traditional About component archived in archive/unused-components/
     switch (aboutConfig.type) {
       case 'bento-grid':
         return (
-          <motion.div key="bento-about" {...layoutTransition}>
-            <BentoAbout />
+          <motion.div key="bento-about-enhanced" {...layoutTransition}>
+            <BentoAboutEnhanced />
           </motion.div>
         );
-      
+
       case 'paragraphs':
       default:
+        // Fallback to bento-grid if paragraphs layout requested
+        // (About.jsx component is archived)
         return (
-          <motion.div key="traditional-about" {...layoutTransition}>
-            <About />
+          <motion.div key="bento-about-fallback" {...layoutTransition}>
+            <BentoAboutEnhanced />
           </motion.div>
         );
     }
@@ -44,13 +47,12 @@ const AdaptiveLayout = () => {
 
   // Render Projects section based on configuration  
   const renderProjectsSection = () => {
-    const projectsConfig = currentConfig.projectsSection;
+    const _projectsConfig = currentConfig.projectsSection;
     
-    // For now, we'll keep the existing Projects component
-    // But this is where you could add different project layout types
+    // Use shadcn-styled Projects component to match the theme
     return (
-      <motion.div key="projects" {...layoutTransition}>
-        <Projects />
+      <motion.div key="projects-shadcn" {...layoutTransition}>
+        <ProjectsShadcn />
       </motion.div>
     );
   };

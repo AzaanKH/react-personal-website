@@ -1,4 +1,54 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap') layer(fonts);
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 84% 4.9%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 94.1%;
+  }
+}
 
 :root {
   /* Light mode variables */
@@ -84,8 +134,8 @@ body {
 
 body {
   font-family: 'Inter', sans-serif;
-  background-color: var(--bs-body-bg);
-  color: var(--bs-body-color);
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
   transition: background-color 0.3s ease, color 0.3s ease;
   font-size: 1.1rem;
   line-height: 1.6;
@@ -95,23 +145,74 @@ body {
 
 /* Clean navbar styling */
 .navbar {
-  background-color: var(--nav-bg) !important;
+  background-color: hsl(var(--background) / 0.95) !important;
   transition: background-color 0.3s ease;
   padding: 1rem 0;
   position: sticky;
   top: 0;
   z-index: 1000;
   backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid hsl(var(--border));
 }
 
 .navbar .nav-link {
-  color: var(--nav-text) !important;
+  color: #333333 !important; /* Fallback color */
+  color: hsl(var(--foreground)) !important;
   font-size: 1.1rem;
   font-weight: 500;
   padding: 0.5rem 1rem !important;
   transition: color 0.3s ease;
   position: relative;
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Ensure navbar items are visible and laid out horizontally */
+.navbar-expand-lg .navbar-nav {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 1rem !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.navbar-expand-lg .navbar-nav .nav-item {
+  display: inline-block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.navbar-expand-lg .navbar-collapse {
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  width: 100% !important;
+}
+
+/* Force the container to be flex */
+.navbar .container {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+/* Ensure navbar is expanded on desktop */
+@media (min-width: 992px) {
+  .navbar-expand-lg .navbar-collapse {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+}
+
+/* Make sure theme toggle is visible */
+.theme-toggle-btn {
+  display: flex !important;
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
 .navbar .nav-link:hover {
@@ -154,9 +255,7 @@ body {
 
 /* Enhanced header section for Option D */
 .header-section {
-  background: linear-gradient(135deg, 
-    var(--header-bg) 0%, 
-    rgba(248, 249, 250, 0.8) 100%);
+  background: hsl(var(--background)) !important;
   padding: 5rem 0 4rem 0;
   margin-bottom: 0;
   position: relative;
@@ -271,7 +370,7 @@ body {
 }
 
 .bento-card {
-  background-color: var(--card-bg);
+  background-color: hsl(var(--card));
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   height: 100%;
   min-height: 200px;
@@ -344,8 +443,13 @@ body {
 
 /* Dark mode enhancements */
 [data-bs-theme="dark"] .navbar {
-  background-color: rgba(31, 31, 31, 0.95) !important;
+  background-color: hsl(var(--background) / 0.95) !important;
   backdrop-filter: blur(10px);
+}
+
+[data-bs-theme="dark"] .navbar .nav-link {
+  color: #ffffff !important; /* Dark mode fallback */
+  color: hsl(var(--foreground)) !important;
 }
 
 [data-bs-theme="dark"] .navbar-toggler-icon {
@@ -358,8 +462,13 @@ body {
     rgba(26, 27, 30, 0.8) 100%);
 }
 
+/* Ensure bio section matches other sections */
+#bio {
+  background: hsl(var(--background)) !important;
+}
+
 [data-bs-theme="dark"] #bio {
-  background: var(--color-dark-8) !important;
+  background: hsl(var(--background)) !important;
 }
 
 [data-bs-theme="dark"] .social-link-clean {
@@ -382,32 +491,59 @@ body {
   .header-section {
     padding: 4rem 0 3rem 0;
   }
-  
+
   .header-section h1 {
     font-size: 2.5rem !important;
   }
-  
+
   .header-section p.lead {
     font-size: 1.1rem;
   }
-  
+
   .social-link-clean {
     width: 50px;
     height: 50px;
     font-size: 1.2rem;
   }
-  
+
   .section-title {
     font-size: 2rem;
   }
-  
+
   .enhanced-bento-grid {
     padding: 0 10px;
     grid-template-rows: repeat(6, minmax(180px, auto)) !important;
   }
-  
+
   .bento-card {
     min-height: 180px !important;
+  }
+}
+
+/* Navbar mobile responsiveness */
+@media (max-width: 991px) {
+  .navbar-collapse {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+
+  .navbar-nav {
+    flex-direction: column !important;
+    width: 100%;
+    gap: 0.25rem;
+  }
+
+  .navbar-nav .nav-item {
+    width: 100%;
+  }
+
+  .navbar-nav .nav-link {
+    width: 100%;
+    text-align: left;
+  }
+
+  .theme-toggle-btn {
+    margin-top: 1rem;
   }
 }
 
@@ -474,7 +610,7 @@ html {
 }
 
 .contact-form-container {
-  background: var(--card-bg);
+  background: hsl(var(--card));
   padding: 2.5rem;
   border-radius: 20px;
   width: 90%;
@@ -482,7 +618,7 @@ html {
   position: relative;
   z-index: 10000;
   box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
-  border: 1px solid var(--border-color);
+  border: 1px solid hsl(var(--border));
 }
 
 .form-group {
@@ -494,10 +630,10 @@ html {
 .form-group textarea {
   width: 100%;
   padding: 12px 16px;
-  border: 2px solid var(--border-color);
+  border: 2px solid hsl(var(--border));
   border-radius: 12px;
-  background: var(--bs-body-bg);
-  color: var(--bs-body-color);
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
   font-size: 1rem;
   transition: all 0.3s ease;
 }

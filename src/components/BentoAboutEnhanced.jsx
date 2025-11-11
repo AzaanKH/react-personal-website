@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { motion, useAnimation, useMotionValue, useTransform } from 'framer-motion';
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
 import SteamBentoCard from './SteamBentoCard';
-import ContactForm from './ContactForm';
+import ContactFormShadcn from './ContactFormShadcn';
 
-const BentoAbout = () => {
+const BentoAboutEnhanced = () => {
   const { isDarkMode } = useTheme();
   const [hoveredCard, setHoveredCard] = useState(null);
   const [showContactForm, setShowContactForm] = useState(false);
@@ -160,14 +160,14 @@ const BentoAbout = () => {
     }
   };
 
-  // Enhanced bento cards with integrated contact/resume
+  // Enhanced bento cards with shadcn-inspired styling
   const bentoCards = [
     {
       id: 'bio',
       title: 'Background',
       gridArea: 'bio',
       className: 'bento-bio',
-      gradient: 'linear-gradient(135deg, rgba(34, 139, 230, 0.08), rgba(34, 139, 230, 0.03))',
+      gradient: 'linear-gradient(135deg, hsl(var(--primary) / 0.08), hsl(var(--primary) / 0.03))',
       content: (
         <div className="p-4">
           <div className="d-flex align-items-center mb-3">
@@ -177,12 +177,16 @@ const BentoAbout = () => {
               whileHover={{ rotate: 360, scale: 1.2 }}
               transition={{ duration: 0.6 }}
             >
-              <i className="fas fa-user-graduate text-primary" style={{ fontSize: '2.5rem' }}></i>
+              <i className="fas fa-user-graduate" style={{ fontSize: '2.5rem', color: 'hsl(var(--primary))' }}></i>
             </motion.div>
             <div>
               <motion.h5 
                 className="mb-1"
-                style={{ fontSize: '1.4rem', fontWeight: '600' }}
+                style={{ 
+                  fontSize: '1.4rem', 
+                  fontWeight: '600',
+                  color: 'hsl(var(--card-foreground))'
+                }}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.7, duration: 0.5 }}
@@ -190,7 +194,7 @@ const BentoAbout = () => {
                 Computer Science Graduate
               </motion.h5>
               <motion.small 
-                className="text-muted"
+                style={{ color: 'hsl(var(--muted-foreground))' }}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.9, duration: 0.5 }}
@@ -201,7 +205,11 @@ const BentoAbout = () => {
           </div>
           <motion.p 
             className="mb-0"
-            style={{ fontSize: '1rem', lineHeight: '1.6' }}
+            style={{ 
+              fontSize: '1rem', 
+              lineHeight: '1.6',
+              color: 'hsl(var(--card-foreground))'
+            }}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1, duration: 0.5 }}
@@ -233,7 +241,11 @@ const BentoAbout = () => {
             </motion.div>
             <motion.h5 
               className="mb-0"
-              style={{ fontSize: '1.3rem', fontWeight: '600' }}
+              style={{ 
+                fontSize: '1.3rem', 
+                fontWeight: '600',
+                color: 'hsl(var(--card-foreground))'
+              }}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.8, duration: 0.5 }}
@@ -245,8 +257,14 @@ const BentoAbout = () => {
             {['Java', 'Systems Design', 'Algorithms', 'Networking'].map((skill, index) => (
               <motion.span
                 key={index}
-                className="badge bg-light text-dark px-3 py-2"
-                style={{ fontSize: '0.85rem', borderRadius: '12px' }}
+                className="px-3 py-2"
+                style={{ 
+                  fontSize: '0.85rem', 
+                  borderRadius: '12px',
+                  backgroundColor: 'hsl(var(--secondary))',
+                  color: 'hsl(var(--secondary-foreground))',
+                  border: '1px solid hsl(var(--border))'
+                }}
                 initial={{ opacity: 0, scale: 0, rotate: -180 }}
                 animate={{ opacity: 1, scale: 1, rotate: 0 }}
                 transition={{ 
@@ -267,6 +285,7 @@ const BentoAbout = () => {
           </div>
           <motion.p 
             className="mb-0 small"
+            style={{ color: 'hsl(var(--muted-foreground))' }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1.4, duration: 0.5 }}
@@ -311,7 +330,11 @@ const BentoAbout = () => {
             </motion.div>
             <motion.h5 
               className="mb-0"
-              style={{ fontSize: '1.3rem', fontWeight: '600' }}
+              style={{ 
+                fontSize: '1.3rem', 
+                fontWeight: '600',
+                color: 'hsl(var(--card-foreground))'
+              }}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 1, duration: 0.5 }}
@@ -327,12 +350,12 @@ const BentoAbout = () => {
             transition={{ delay: 1.2, duration: 0.5 }}
           >
             <div className="fw-medium mb-2" style={{ 
-              color: isDarkMode ? '#c1c2c5' : '#1a1b1e',
+              color: 'hsl(var(--card-foreground))',
               fontSize: '1rem'
             }}>
               System Design Interview Vol. 2
             </div>
-            <small className="text-muted d-block mb-2">
+            <small style={{ color: 'hsl(var(--muted-foreground))' }} className="d-block mb-2">
               by Alex Xu
             </small>
             <div className="d-flex align-items-center">
@@ -341,7 +364,7 @@ const BentoAbout = () => {
                 style={{
                   flex: 1,
                   height: '6px',
-                  background: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+                  backgroundColor: 'hsl(var(--muted))',
                   borderRadius: '3px',
                   overflow: 'hidden',
                   marginRight: '12px'
@@ -358,12 +381,13 @@ const BentoAbout = () => {
                   transition={{ delay: 1.5, duration: 1.5, ease: "easeOut" }}
                 />
               </motion.div>
-              <small className="text-muted fw-medium">{readingProgress}%</small>
+              <small style={{ color: 'hsl(var(--muted-foreground))' }} className="fw-medium">{readingProgress}%</small>
             </div>
           </motion.div>
           
           <motion.p 
             className="mt-3 mb-0 small"
+            style={{ color: 'hsl(var(--muted-foreground))' }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1.6, duration: 0.5 }}
@@ -396,7 +420,11 @@ const BentoAbout = () => {
             </motion.div>
             <motion.h5 
               className="mb-0"
-              style={{ fontSize: '1.3rem', fontWeight: '600' }}
+              style={{ 
+                fontSize: '1.3rem', 
+                fontWeight: '600',
+                color: 'hsl(var(--card-foreground))'
+              }}
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1, duration: 0.5 }}
@@ -407,7 +435,11 @@ const BentoAbout = () => {
           
           <motion.p 
             className="mb-3"
-            style={{ fontSize: '0.95rem', lineHeight: '1.5' }}
+            style={{ 
+              fontSize: '0.95rem', 
+              lineHeight: '1.5',
+              color: 'hsl(var(--card-foreground))'
+            }}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.2, duration: 0.5 }}
@@ -478,7 +510,11 @@ const BentoAbout = () => {
             </motion.div>
             <motion.h5 
               className="mb-0"
-              style={{ fontSize: '1.3rem', fontWeight: '600' }}
+              style={{ 
+                fontSize: '1.3rem', 
+                fontWeight: '600',
+                color: 'hsl(var(--card-foreground))'
+              }}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 1.1, duration: 0.5 }}
@@ -489,7 +525,10 @@ const BentoAbout = () => {
           
           <motion.p 
             className="mb-3"
-            style={{ fontSize: '0.95rem' }}
+            style={{ 
+              fontSize: '0.95rem',
+              color: 'hsl(var(--card-foreground))'
+            }}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.2, duration: 0.5 }}
@@ -513,16 +552,16 @@ const BentoAbout = () => {
                 justifyContent: 'center',
                 width: '45px',
                 height: '45px',
-                background: 'rgba(0, 123, 255, 0.1)',
-                color: '#007bff',
+                backgroundColor: 'hsl(var(--primary) / 0.1)',
+                color: 'hsl(var(--primary))',
                 borderRadius: '12px',
-                border: 'none',
+                border: '1px solid hsl(var(--border))',
                 fontSize: '1.2rem',
                 cursor: 'pointer'
               }}
               whileHover={{ 
-                background: '#007bff',
-                color: '#fff',
+                backgroundColor: 'hsl(var(--primary))',
+                color: 'hsl(var(--primary-foreground))',
                 scale: 1.1,
                 y: -2
               }}
@@ -543,14 +582,15 @@ const BentoAbout = () => {
                 justifyContent: 'center',
                 width: '45px',
                 height: '45px',
-                background: 'rgba(0, 123, 255, 0.1)',
-                color: '#007bff',
+                backgroundColor: 'hsl(var(--primary) / 0.1)',
+                color: 'hsl(var(--primary))',
                 borderRadius: '12px',
+                border: '1px solid hsl(var(--border))',
                 textDecoration: 'none',
                 fontSize: '1.2rem'
               }}
               whileHover={{ 
-                background: '#0077b5',
+                backgroundColor: '#0077b5',
                 color: '#fff',
                 scale: 1.1,
                 y: -2
@@ -572,14 +612,15 @@ const BentoAbout = () => {
                 justifyContent: 'center',
                 width: '45px',
                 height: '45px',
-                background: 'rgba(0, 123, 255, 0.1)',
-                color: '#007bff',
+                backgroundColor: 'hsl(var(--primary) / 0.1)',
+                color: 'hsl(var(--primary))',
                 borderRadius: '12px',
+                border: '1px solid hsl(var(--border))',
                 textDecoration: 'none',
                 fontSize: '1.2rem'
               }}
               whileHover={{ 
-                background: '#333',
+                backgroundColor: '#333',
                 color: '#fff',
                 scale: 1.1,
                 y: -2
@@ -607,7 +648,7 @@ const BentoAbout = () => {
   };
 
   return (
-    <section id="bio" className="section py-5" style={{ background: '#f8f9fa' }}>
+    <section id="bio" className="section py-5" style={{ backgroundColor: 'hsl(var(--background))' }}>
       <div className="container">
         <motion.h2 
           className="section-title text-center"
@@ -620,7 +661,12 @@ const BentoAbout = () => {
             stiffness: 200,
             duration: 0.8 
           }}
-          style={{ fontSize: '2.5rem', fontWeight: '600', marginBottom: '3rem' }}
+          style={{ 
+            fontSize: '2.5rem', 
+            fontWeight: '600', 
+            marginBottom: '3rem',
+            color: 'hsl(var(--foreground))'
+          }}
         >
           About Me
         </motion.h2>
@@ -642,12 +688,12 @@ const BentoAbout = () => {
               "goals goals goals"
               "connect connect connect"
             `,
-            '--card-bg': isDarkMode ? '#25262B' : '#ffffff',
-            '--card-border': isDarkMode ? '#2C2E33' : '#dee2e6',
+            '--card-bg': 'hsl(var(--background))',
+            '--card-border': 'hsl(var(--border))',
             '--card-shadow': isDarkMode ? '0 8px 25px rgba(0,0,0,0.3)' : '0 4px 20px rgba(0,0,0,0.08)'
           }}
         >
-          {bentoCards.map((card, index) => (
+          {bentoCards.map((card, _index) => (
             <motion.div
               key={card.id}
               className={`bento-card ${card.className}`}
@@ -660,7 +706,7 @@ const BentoAbout = () => {
               style={{
                 gridArea: card.gridArea,
                 background: `${card.gradient}, var(--card-bg)`,
-                border: '2px solid var(--card-border)',
+                border: '1px solid var(--card-border)',
                 borderRadius: '20px',
                 boxShadow: 'var(--card-shadow)',
                 overflow: 'hidden',
@@ -739,9 +785,12 @@ const BentoAbout = () => {
       </div>
       
       {/* Contact Form Modal */}
-      {showContactForm && <ContactForm onClose={() => setShowContactForm(false)} />}
+      <ContactFormShadcn 
+        open={showContactForm} 
+        onClose={() => setShowContactForm(false)} 
+      />
     </section>
   );
 };
 
-export default BentoAbout;
+export default BentoAboutEnhanced;

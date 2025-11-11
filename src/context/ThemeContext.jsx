@@ -37,10 +37,15 @@ export const ThemeProvider = ({ children }) => {
     if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
       setIsDarkMode(true);
       document.documentElement.setAttribute('data-bs-theme', 'dark');
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
     }
     
     return () => {
-      document.head.removeChild(style);
+      if (document.head.contains(style)) {
+        document.head.removeChild(style);
+      }
     };
   }, []);
 
@@ -50,8 +55,13 @@ export const ThemeProvider = ({ children }) => {
     setIsDarkMode(prev => {
       const newValue = !prev;
       
-      // Update the document attribute
+      // Update the document attribute and class for shadcn/ui
       document.documentElement.setAttribute('data-bs-theme', newValue ? 'dark' : 'light');
+      if (newValue) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
       
       // Store preference
       localStorage.setItem('theme', newValue ? 'dark' : 'light');

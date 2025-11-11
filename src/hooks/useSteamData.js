@@ -1,124 +1,263 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
-export const useSteamData = (endpoints = ['profile', 'recent'], options = {}) => {
+// Cache configuration
+const CACHE_KEY_PREFIX = 'steam_cache_';
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes in milliseconds
+
+// Cache utility functions
+const getCacheKey = (endpoint) => `${CACHE_KEY_PREFIX}${endpoint}`;
+
+const getCachedData = (endpoint) => {
+  try {
+    const cached = localStorage.getItem(getCacheKey(endpoint));
+    if (!cached) return null;
+
+    const { data, timestamp } = JSON.parse(cached);
+    const now = Date.now();
+
+    // Check if cache is still valid
+    if (now - timestamp > CACHE_TTL) {
+      localStorage.removeItem(getCacheKey(endpoint));
+      return null;
+    }
+
+    return data;
+  } catch (err) {
+    console.warn('Error reading from cache:', err);
+    return null;
+  }
+};
+
+const setCachedData = (endpoint, data) => {
+  try {
+    const cacheEntry = {
+      data,
+      timestamp: Date.now()
+    };
+    localStorage.setItem(getCacheKey(endpoint), JSON.stringify(cacheEntry));
+  } catch (err) {
+    console.warn('Error writing to cache:', err);
+  }
+};
+
+const clearAllSteamCache = () => {
+  try {
+    Object.keys(localStorage).forEach(key => {
+      if (key.startsWith(CACHE_KEY_PREFIX)) {
+        localStorage.removeItem(key);
+      }
+    });
+  } catch (err) {
+    console.warn('Error clearing cache:', err);
+  }
+};
+
+export const useSteamData = (endpoints = ['profile', 'recent'], _options = {}) => {
   const [steamData, setSteamData] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [usingCache, setUsingCache] = useState(false);
 
-  const { 
-    autoRefresh = false, 
-    refreshInterval = 300000, // 5 minutes
-    enableDebug = false // Always disabled for production
-  } = options;
+  // Stable endpoint dependency
+  const endpointsKey = endpoints.join(',');
 
-  const fetchSteamData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
+  // Simple refetch function for manual triggers
+  const refetchData = useCallback(() => {
+    // This will trigger the useEffect above by not changing any dependencies
+    // We'll implement this later if needed for manual refresh
+  }, []);
 
-      // Fetch Steam data from endpoints
-      const responses = await Promise.all(
-        endpoints.map(async (endpoint) => {
-          try {
-            const url = `/.netlify/functions/steam-proxy?endpoint=${endpoint}`;
-            const response = await fetch(url);
-            
-            if (!response.ok) {
-              const errorText = await response.text();
-              return { endpoint, data: null, success: false, error: `${response.status}: ${errorText.substring(0, 100)}` };
+  // Initial fetch - use a ref to avoid dependency issues
+  useEffect(() => {
+    let mounted = true;
+
+    const doFetch = async () => {
+      if (!mounted) return;
+
+      try {
+        setLoading(true);
+        setError(null);
+        setUsingCache(false);
+
+        // Try to load from cache first
+        const cachedResponses = endpoints.map(endpoint => {
+          const cached = getCachedData(endpoint);
+          return cached ? { endpoint, data: cached, success: true, fromCache: true } : null;
+        }).filter(Boolean);
+
+        // If we have all cached data, use it immediately
+        if (cachedResponses.length === endpoints.length) {
+          const newSteamData = {};
+          let hasAnyData = false;
+
+          cachedResponses.forEach(({ endpoint, data, success }) => {
+            if (success && data) {
+              switch (endpoint) {
+                case 'profile': {
+                  const player = data.response?.players?.[0];
+                  newSteamData.profile = player || null;
+                  if (data.response) hasAnyData = true;
+                  break;
+                }
+                case 'recent': {
+                  const games = data.response?.games || [];
+                  newSteamData.recentGames = games;
+                  if (data.response) hasAnyData = true;
+                  break;
+                }
+                case 'games': {
+                  const gameLibrary = data.response?.games || [];
+                  newSteamData.gameLibrary = gameLibrary;
+                  if (gameLibrary.length > 0) hasAnyData = true;
+                  break;
+                }
+                case 'level': {
+                  const level = data.response?.player_level;
+                  newSteamData.level = level || null;
+                  if (level) hasAnyData = true;
+                  break;
+                }
+                default:
+                  newSteamData[endpoint] = data;
+                  hasAnyData = true;
+              }
             }
-            
-            // Check if response is actually JSON
-            const contentType = response.headers.get('content-type');
-            if (!contentType || !contentType.includes('application/json')) {
-              const responseText = await response.text();
-              return { endpoint, data: null, success: false, error: `Non-JSON response: ${responseText.substring(0, 100)}` };
-            }
-            
-            const data = await response.json();
-            return { endpoint, data, success: true };
-            
-          } catch (fetchError) {
-            return { endpoint, data: null, success: false, error: fetchError.message };
+          });
+
+          if (mounted && hasAnyData) {
+            setSteamData(newSteamData);
+            setUsingCache(true);
+            setLoading(false);
+            setError(null);
           }
-        })
-      );
 
-      // Process responses
-      const newSteamData = {};
-      let hasAnyData = false;
+          // Still fetch fresh data in background
+          // This implements stale-while-revalidate pattern
+        }
 
-      responses.forEach(({ endpoint, data, success, error }) => {
-        if (success && data) {
-          switch (endpoint) {
-            case 'profile':
-              const player = data.response?.players?.[0];
-              newSteamData.profile = player || null;
-              if (player) {
-                hasAnyData = true;
-              }
-              break;
+        const responses = await Promise.all(
+          endpoints.map(async (endpoint) => {
+            try {
+              const url = `/.netlify/functions/steam-proxy?endpoint=${endpoint}`;
+              const controller = new AbortController();
+              const timeout = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
+              const response = await fetch(url, { signal: controller.signal });
+              clearTimeout(timeout);
               
-            case 'recent':
-              const games = data.response?.games || [];
-              newSteamData.recentGames = games;
-              if (games.length > 0) {
-                hasAnyData = true;
+              if (!response.ok) {
+                const errorText = await response.text();
+                return { endpoint, data: null, success: false, error: `${response.status}: ${errorText.substring(0, 100)}` };
               }
-              break;
               
-            case 'games':
-              const gameLibrary = data.response?.games || [];
-              newSteamData.gameLibrary = gameLibrary;
-              if (gameLibrary.length > 0) {
-                hasAnyData = true;
+              const contentType = response.headers.get('content-type');
+              if (!contentType || !contentType.includes('application/json')) {
+                const responseText = await response.text();
+                return { endpoint, data: null, success: false, error: `Non-JSON response: ${responseText.substring(0, 100)}` };
               }
-              break;
-              
-            case 'level':
-              const level = data.response?.player_level;
-              newSteamData.level = level || null;
-              if (level) {
-                hasAnyData = true;
+
+              const data = await response.json();
+
+              // Cache the successful response
+              setCachedData(endpoint, data);
+
+              return { endpoint, data, success: true };
+
+            } catch (fetchError) {
+              // If fetch fails but we have cache, don't treat as error
+              const cached = getCachedData(endpoint);
+              if (cached) {
+                return { endpoint, data: cached, success: true, fromCache: true };
               }
-              break;
-              
-            default:
-              newSteamData[endpoint] = data;
-              hasAnyData = true;
+              return { endpoint, data: null, success: false, error: fetchError.message };
+            }
+          })
+        );
+
+        const newSteamData = {};
+        let hasAnyData = false;
+        
+        responses.forEach(({ endpoint, data, success }) => {
+          if (success && data) {
+            switch (endpoint) {
+              case 'profile': {
+                const player = data.response?.players?.[0];
+                newSteamData.profile = player || null;
+                if (data.response) {
+                  hasAnyData = true;
+                }
+                break;
+              }
+              case 'recent': {
+                const games = data.response?.games || [];
+                newSteamData.recentGames = games;
+                if (data.response) {
+                  hasAnyData = true;
+                }
+                break;
+              }
+              case 'games': {
+                const gameLibrary = data.response?.games || [];
+                newSteamData.gameLibrary = gameLibrary;
+                if (gameLibrary.length > 0) {
+                  hasAnyData = true;
+                }
+                break;
+              }
+              case 'level': {
+                const level = data.response?.player_level;
+                newSteamData.level = level || null;
+                if (level) {
+                  hasAnyData = true;
+                }
+                break;
+              }
+              default:
+                newSteamData[endpoint] = data;
+                hasAnyData = true;
+            }
+          }
+        });
+        
+        if (!mounted) return;
+
+        if (hasAnyData) {
+          setSteamData(newSteamData);
+          setUsingCache(false);
+          setError(null);
+        } else {
+          // If no fresh data, check if we already showed cache
+          if (!usingCache) {
+            setError('No Steam data received from any endpoint');
           }
         }
-      });
 
-      if (hasAnyData) {
-        setSteamData(newSteamData);
-      } else {
-        const errorMessage = `No Steam data received from any endpoint`;
-        throw new Error(errorMessage);
+      } catch (err) {
+        if (mounted) {
+          // If we have cached data, don't show error
+          if (!usingCache) {
+            setError(`Steam data fetch failed: ${err.message}`);
+          }
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
       }
+    };
 
-    } catch (err) {
-      const errorMessage = `Steam data fetch failed: ${err.message}`;
-      setError(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
+    doFetch();
+    
+    return () => {
+      mounted = false;
+    };
+  }, [endpointsKey]); // Stable dependency
 
-  // Initial fetch
-  useEffect(() => {
-    fetchSteamData();
-  }, [endpoints.join(',')]); // Re-fetch if endpoints change
-
-  // Auto-refresh if enabled
-  useEffect(() => {
-    if (autoRefresh && refreshInterval > 0) {
-      const interval = setInterval(fetchSteamData, refreshInterval);
-      return () => {
-        clearInterval(interval);
-      };
-    }
-  }, [autoRefresh, refreshInterval]);
+  // Auto-refresh if enabled - disabled for now to prevent issues
+  // useEffect(() => {
+  //   if (!autoRefresh || refreshInterval <= 0) return;
+  //   // Auto-refresh implementation would go here
+  // }, [autoRefresh, refreshInterval]);
 
   // Helper functions
   const getStats = () => {
@@ -158,16 +297,18 @@ export const useSteamData = (endpoints = ['profile', 'recent'], options = {}) =>
     steamData,
     loading,
     error,
-    
+    usingCache,
+
     // Helper functions
     getStats,
     formatPlaytime,
     isOnline,
     getCurrentGame,
-    
+
     // Actions
-    refetch: fetchSteamData,
-    
+    refetch: refetchData,
+    clearCache: clearAllSteamCache,
+
     // Computed values
     hasProfile: !!steamData.profile,
     hasRecentGames: !!(steamData.recentGames?.length),

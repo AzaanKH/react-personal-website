@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, useSpring } from 'framer-motion';
 
 const CursorFollower = () => {

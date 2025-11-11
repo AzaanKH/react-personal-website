@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
 
 // Mantine-inspired dark theme color palette
@@ -71,7 +71,7 @@ const ProjectCard = ({
     }, 50);
     
     return () => clearTimeout(delay);
-  }, [isDarkMode]);
+  }, [isDarkMode, colors.border, colors.dark0, colors.dark6, colors.light0, colors.light8]);
 
   // Get unique accent color for each card
   const getAccentColor = () => {
