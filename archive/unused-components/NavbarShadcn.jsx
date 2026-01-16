@@ -109,7 +109,7 @@ const NavbarShadcn = () => {
                 className="text-foreground hover:text-primary transition-colors"
               >
                 <a
-                  href="/khalfe_azaan_resume_24.pdf"
+                  href="azaan_resume_.pdf"
                   target="_blank"
                   rel="noopener noreferrer"
                 >

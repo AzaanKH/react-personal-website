@@ -30,39 +30,28 @@ const Header = () => {
   };
 
   return (
-    <section className="header-section text-center" style={{ backgroundColor: 'hsl(var(--background))' }}>
-      <div className="container">
+    <section className="header-section text-center bg-background">
+      <div className="container mx-auto px-4">
         {/* Quick name introduction */}
-        <motion.h1 
-          className="display-4 mb-3" 
+        <motion.h1
+          className="text-4xl md:text-5xl lg:text-6xl font-bold mb-2"
           id="azaan-khalfe"
           {...headerSequence.name}
-          style={{ 
-            fontSize: 'clamp(2.5rem, 5vw, 4rem)',
-            fontWeight: '700',
-            marginBottom: '0.5rem'
-          }}
         >
           Azaan Khalfe
         </motion.h1>
-        
+
         {/* Clean subtitle */}
         <motion.p
-          className="lead mb-4"
+          className="text-xl md:text-2xl opacity-85 font-normal mb-8"
           {...headerSequence.subtitle}
-          style={{ 
-            fontSize: '1.25rem',
-            opacity: 0.85,
-            fontWeight: '400',
-            marginBottom: '2rem'
-          }}
         >
           Computer Science Graduate | Systems Engineer
         </motion.p>
-        
+
         {/* Social links with staggered animation */}
-        <motion.div 
-          className="social-links d-flex justify-content-center gap-4"
+        <motion.div
+          className="flex justify-center gap-4"
           {...headerSequence.social}
         >
           {[
@@ -70,25 +59,24 @@ const Header = () => {
             { href: "https://www.linkedin.com/in/azaan-khalfe-43b90b221/", icon: "fab fa-linkedin", delay: 0.2, label: "LinkedIn" },
             { onClick: () => setShowContactForm(true), icon: "fas fa-envelope", delay: 0.3, label: "Email" }
           ].map((link, index) => (
-            <motion.a 
+            <motion.a
               key={index}
               href={link.href}
               onClick={link.onClick}
               target={link.href ? "_blank" : undefined}
               rel={link.href ? "noopener noreferrer" : undefined}
-              className="social-link-clean"
-              style={{ cursor: 'pointer' }}
+              className="social-link-clean cursor-pointer"
               aria-label={link.label}
               initial={{ opacity: 0, y: 20, scale: 0.8 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ 
-                delay: 0.8 + link.delay, 
+              transition={{
+                delay: 0.8 + link.delay,
                 duration: 0.4,
                 type: "spring",
                 stiffness: 200
               }}
-              whileHover={{ 
-                scale: 1.15, 
+              whileHover={{
+                scale: 1.15,
                 y: -3,
                 transition: { duration: 0.2 }
               }}
@@ -101,38 +89,33 @@ const Header = () => {
         </motion.div>
 
         {/* Scroll indicator */}
-        <motion.div 
-          className="scroll-indicator mt-5"
+        <motion.div
+          className="scroll-indicator mt-12"
           {...headerSequence.indicator}
         >
           <motion.div
-            animate={{ 
+            animate={{
               y: [0, 8, 0],
             }}
-            transition={{ 
+            transition={{
               duration: 2,
               repeat: Infinity,
               ease: "easeInOut"
             }}
           >
-            <i 
-              className="fas fa-chevron-down text-muted" 
-              style={{ fontSize: '1.3rem', opacity: 0.6 }}
+            <i
+              className="fas fa-chevron-down text-muted-foreground text-xl opacity-60"
             ></i>
           </motion.div>
-          <small className="text-muted d-block mt-2" style={{ 
-            fontSize: '0.8rem', 
-            letterSpacing: '0.5px',
-            textTransform: 'uppercase'
-          }}>
+          <small className="text-muted-foreground block mt-2 text-xs tracking-wide uppercase">
             Scroll to explore
           </small>
         </motion.div>
       </div>
-      
-      <ContactFormShadcn 
-        open={showContactForm} 
-        onClose={() => setShowContactForm(false)} 
+
+      <ContactFormShadcn
+        open={showContactForm}
+        onClose={() => setShowContactForm(false)}
       />
     </section>
   );

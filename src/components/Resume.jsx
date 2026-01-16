@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 
 const Resume = () => {
-  const pdfPath = '/khalfe_azaan_resume_24.pdf';
+  const pdfPath = 'azaan_resume_.pdf';
   return (
     <section id="resume" className="section py-5">
       <div className="container text-center">

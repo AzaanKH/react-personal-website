@@ -423,7 +423,7 @@ const BentoAbout = () => {
             transition={{ delay: 1.4, duration: 0.5 }}
           >
             <motion.a
-              href="/khalfe_azaan_resume_24.pdf"
+              href="/azaan_resume_.pdf"
               target="_blank"
               rel="noopener noreferrer"
               className="btn btn-warning btn-lg"

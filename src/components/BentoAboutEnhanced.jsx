@@ -3,6 +3,11 @@ import { motion } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
 import SteamBentoCard from './SteamBentoCard';
 import ContactFormShadcn from './ContactFormShadcn';
+import { Progress } from './ui/progress';
+import { Badge } from './ui/badge';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
+import { Separator } from './ui/separator';
+import { Github, Linkedin, Mail, FileText } from 'lucide-react';
 
 const BentoAboutEnhanced = () => {
   const { isDarkMode } = useTheme();
@@ -170,31 +175,26 @@ const BentoAboutEnhanced = () => {
       gradient: 'linear-gradient(135deg, hsl(var(--primary) / 0.08), hsl(var(--primary) / 0.03))',
       content: (
         <div className="p-4">
-          <div className="d-flex align-items-center mb-3">
-            <motion.div 
-              className="me-3"
+          <div className="flex items-center mb-3">
+            <motion.div
+              className="mr-3"
               animate={hoveredCard === 'bio' ? floatingAnimation : {}}
               whileHover={{ rotate: 360, scale: 1.2 }}
               transition={{ duration: 0.6 }}
             >
-              <i className="fas fa-user-graduate" style={{ fontSize: '2.5rem', color: 'hsl(var(--primary))' }}></i>
+              <i className="fas fa-user-graduate text-[2.5rem] text-primary"></i>
             </motion.div>
             <div>
-              <motion.h5 
-                className="mb-1"
-                style={{ 
-                  fontSize: '1.4rem', 
-                  fontWeight: '600',
-                  color: 'hsl(var(--card-foreground))'
-                }}
+              <motion.h5
+                className="mb-1 text-2xl font-semibold text-card-foreground"
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.7, duration: 0.5 }}
               >
                 Computer Science Graduate
               </motion.h5>
-              <motion.small 
-                style={{ color: 'hsl(var(--muted-foreground))' }}
+              <motion.small
+                className="text-muted-foreground"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.9, duration: 0.5 }}
@@ -203,19 +203,14 @@ const BentoAboutEnhanced = () => {
               </motion.small>
             </div>
           </div>
-          <motion.p 
-            className="mb-0"
-            style={{ 
-              fontSize: '1rem', 
-              lineHeight: '1.6',
-              color: 'hsl(var(--card-foreground))'
-            }}
+          <motion.p
+            className="mb-0 text-base leading-relaxed text-card-foreground"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1, duration: 0.5 }}
           >
-            Recent CS graduate passionate about systems engineering and distributed computing. 
-            Eager to contribute fresh perspectives to innovative tech projects and tackle challenging 
+            Recent CS graduate passionate about systems engineering and distributed computing.
+            Eager to contribute fresh perspectives to innovative tech projects and tackle challenging
             problems in fault-tolerant systems.
           </motion.p>
         </div>
@@ -230,22 +225,17 @@ const BentoAboutEnhanced = () => {
       gradient: 'linear-gradient(135deg, rgba(40, 192, 87, 0.08), rgba(40, 192, 87, 0.03))',
       content: (
         <div className="p-4">
-          <div className="d-flex align-items-center mb-3">
-            <motion.div 
-              className="me-3"
+          <div className="flex items-center mb-3">
+            <motion.div
+              className="mr-3"
               animate={hoveredCard === 'skills' ? floatingAnimation : {}}
               whileHover={{ scale: 1.3, rotateY: 180 }}
               transition={{ duration: 0.4 }}
             >
-              <i className="fas fa-code text-success" style={{ fontSize: '2.2rem' }}></i>
+              <i className="fas fa-code text-green-500 text-[2.2rem]"></i>
             </motion.div>
-            <motion.h5 
-              className="mb-0"
-              style={{ 
-                fontSize: '1.3rem', 
-                fontWeight: '600',
-                color: 'hsl(var(--card-foreground))'
-              }}
+            <motion.h5
+              className="mb-0 text-xl font-semibold text-card-foreground"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.8, duration: 0.5 }}
@@ -253,39 +243,33 @@ const BentoAboutEnhanced = () => {
               Distributed Systems
             </motion.h5>
           </div>
-          <div className="d-flex flex-wrap gap-2 mb-3">
+          <div className="flex flex-wrap gap-2 mb-3">
             {['Java', 'Systems Design', 'Algorithms', 'Networking'].map((skill, index) => (
-              <motion.span
+              <motion.div
                 key={index}
-                className="px-3 py-2"
-                style={{ 
-                  fontSize: '0.85rem', 
-                  borderRadius: '12px',
-                  backgroundColor: 'hsl(var(--secondary))',
-                  color: 'hsl(var(--secondary-foreground))',
-                  border: '1px solid hsl(var(--border))'
-                }}
                 initial={{ opacity: 0, scale: 0, rotate: -180 }}
                 animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                transition={{ 
-                  delay: 1 + (index * 0.1), 
-                  type: "spring", 
-                  stiffness: 200 
+                transition={{
+                  delay: 1 + (index * 0.1),
+                  type: "spring",
+                  stiffness: 200
                 }}
-                whileHover={{ 
-                  scale: 1.1, 
-                  rotate: 5,
-                  backgroundColor: '#28a745',
-                  color: '#fff'
+                whileHover={{
+                  scale: 1.1,
+                  rotate: 5
                 }}
               >
-                {skill}
-              </motion.span>
+                <Badge
+                  variant="secondary"
+                  className="px-3 py-2 text-sm rounded-xl cursor-default hover:bg-green-500 hover:text-white transition-colors"
+                >
+                  {skill}
+                </Badge>
+              </motion.div>
             ))}
           </div>
-          <motion.p 
-            className="mb-0 small"
-            style={{ color: 'hsl(var(--muted-foreground))' }}
+          <motion.p
+            className="mb-0 text-sm text-muted-foreground"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1.4, duration: 0.5 }}
@@ -319,22 +303,17 @@ const BentoAboutEnhanced = () => {
       gradient: 'linear-gradient(135deg, rgba(129, 140, 248, 0.08), rgba(129, 140, 248, 0.03))',
       content: (
         <div className="p-4">
-          <div className="d-flex align-items-center mb-3">
-            <motion.div 
-              className="me-3"
+          <div className="flex items-center mb-3">
+            <motion.div
+              className="mr-3"
               animate={hoveredCard === 'reading' ? pageAnimation : floatingAnimation}
               whileHover={{ scale: 1.3, rotateZ: 15 }}
               transition={{ duration: 0.4 }}
             >
-              <i className="fas fa-book-open" style={{ fontSize: '2.2rem', color: '#818cf8' }}></i>
+              <i className="fas fa-book-open text-[2.2rem] text-[#818cf8]"></i>
             </motion.div>
-            <motion.h5 
-              className="mb-0"
-              style={{ 
-                fontSize: '1.3rem', 
-                fontWeight: '600',
-                color: 'hsl(var(--card-foreground))'
-              }}
+            <motion.h5
+              className="mb-0 text-xl font-semibold text-card-foreground"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 1, duration: 0.5 }}
@@ -342,52 +321,45 @@ const BentoAboutEnhanced = () => {
               Learning Journey
             </motion.h5>
           </div>
-          
-          <motion.div 
+
+          <motion.div
             className="book-info"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.2, duration: 0.5 }}
           >
-            <div className="fw-medium mb-2" style={{ 
-              color: 'hsl(var(--card-foreground))',
-              fontSize: '1rem'
-            }}>
+            <div className="font-medium mb-2 text-card-foreground text-base">
               System Design Interview Vol. 2
             </div>
-            <small style={{ color: 'hsl(var(--muted-foreground))' }} className="d-block mb-2">
+            <small className="text-muted-foreground block mb-2">
               by Alex Xu
             </small>
-            <div className="d-flex align-items-center">
-              <motion.div 
-                className="progress-bar-container"
-                style={{
-                  flex: 1,
-                  height: '6px',
-                  backgroundColor: 'hsl(var(--muted))',
-                  borderRadius: '3px',
-                  overflow: 'hidden',
-                  marginRight: '12px'
-                }}
+            <div className="flex items-center gap-3">
+              <motion.div
+                className="flex-1"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1.5, duration: 0.5 }}
               >
-                <motion.div
-                  style={{
-                    height: '100%',
-                    background: 'linear-gradient(90deg, #818cf8, #a5b4fc)',
-                    borderRadius: '3px'
-                  }}
-                  initial={{ width: '0%' }}
-                  animate={{ width: `${readingProgress}%` }}
-                  transition={{ delay: 1.5, duration: 1.5, ease: "easeOut" }}
+                <Progress
+                  value={readingProgress}
+                  className="h-2 bg-muted"
+                  indicatorClassName="bg-gradient-to-r from-indigo-500 to-indigo-300"
                 />
               </motion.div>
-              <small style={{ color: 'hsl(var(--muted-foreground))' }} className="fw-medium">{readingProgress}%</small>
+              <motion.span
+                className="text-sm font-semibold text-indigo-400"
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 1.8, type: "spring" }}
+              >
+                {readingProgress}%
+              </motion.span>
             </div>
           </motion.div>
-          
-          <motion.p 
-            className="mt-3 mb-0 small"
-            style={{ color: 'hsl(var(--muted-foreground))' }}
+
+          <motion.p
+            className="mt-3 mb-0 text-sm text-muted-foreground"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1.6, duration: 0.5 }}
@@ -406,9 +378,9 @@ const BentoAboutEnhanced = () => {
       gradient: 'linear-gradient(135deg, rgba(255, 193, 7, 0.08), rgba(255, 193, 7, 0.03))',
       content: (
         <div className="p-4">
-          <div className="d-flex align-items-center mb-3">
-            <motion.div 
-              className="me-3"
+          <div className="flex items-center mb-3">
+            <motion.div
+              className="mr-3"
               animate={hoveredCard === 'goals' ? {
                 y: [-5, -15, -5],
                 rotate: [0, 10, -10, 0]
@@ -416,15 +388,10 @@ const BentoAboutEnhanced = () => {
               transition={{ duration: 1.5, repeat: Infinity }}
               whileHover={{ scale: 1.4, rotate: 45 }}
             >
-              <i className="fas fa-rocket text-warning" style={{ fontSize: '2.2rem' }}></i>
+              <i className="fas fa-rocket text-yellow-500 text-[2.2rem]"></i>
             </motion.div>
-            <motion.h5 
-              className="mb-0"
-              style={{ 
-                fontSize: '1.3rem', 
-                fontWeight: '600',
-                color: 'hsl(var(--card-foreground))'
-              }}
+            <motion.h5
+              className="mb-0 text-xl font-semibold text-card-foreground"
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1, duration: 0.5 }}
@@ -432,22 +399,17 @@ const BentoAboutEnhanced = () => {
               Looking Forward
             </motion.h5>
           </div>
-          
-          <motion.p 
-            className="mb-3"
-            style={{ 
-              fontSize: '0.95rem', 
-              lineHeight: '1.5',
-              color: 'hsl(var(--card-foreground))'
-            }}
+
+          <motion.p
+            className="mb-3 text-base leading-normal text-card-foreground"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.2, duration: 0.5 }}
           >
-            Tackle challenging distributed system problems and push boundaries of what's possible with code. 
+            Tackle challenging distributed system problems and push boundaries of what's possible with code.
             Ready to contribute to innovative projects.
           </motion.p>
-          
+
           {/* Integrated Resume Button */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -455,24 +417,14 @@ const BentoAboutEnhanced = () => {
             transition={{ delay: 1.4, duration: 0.5 }}
           >
             <motion.a
-              href="/khalfe_azaan_resume_24.pdf"
+              href="azaan_resume_.pdf"
               target="_blank"
               rel="noopener noreferrer"
-              className="btn btn-warning btn-lg"
+              className="inline-flex items-center gap-2 px-6 py-3 text-base font-semibold text-black rounded-xl border-0 no-underline transition-all"
               style={{
-                background: 'linear-gradient(135deg, #ffc107, #ff8f00)',
-                border: 'none',
-                borderRadius: '12px',
-                padding: '12px 24px',
-                fontSize: '0.95rem',
-                fontWeight: '600',
-                color: '#000',
-                textDecoration: 'none',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px'
+                background: 'linear-gradient(135deg, #ffc107, #ff8f00)'
               }}
-              whileHover={{ 
+              whileHover={{
                 scale: 1.05,
                 background: 'linear-gradient(135deg, #ff8f00, #e65100)',
                 color: '#fff',
@@ -496,8 +448,8 @@ const BentoAboutEnhanced = () => {
       gradient: 'linear-gradient(135deg, rgba(174, 62, 201, 0.08), rgba(174, 62, 201, 0.03))',
       content: (
         <div className="p-4">
-          <div className="d-flex align-items-center mb-3">
-            <motion.div 
+          <div className="flex items-center mb-3">
+            <motion.div
               className="mb-3"
               animate={hoveredCard === 'connect' ? {
                 rotate: [0, 360],
@@ -506,15 +458,10 @@ const BentoAboutEnhanced = () => {
               transition={{ duration: 2, repeat: Infinity }}
               whileHover={{ rotate: 720, scale: 1.4 }}
             >
-              <i className="fas fa-handshake text-primary" style={{ fontSize: '2.5rem' }}></i>
+              <i className="fas fa-handshake text-primary text-[2.5rem]"></i>
             </motion.div>
-            <motion.h5 
-              className="mb-0"
-              style={{ 
-                fontSize: '1.3rem', 
-                fontWeight: '600',
-                color: 'hsl(var(--card-foreground))'
-              }}
+            <motion.h5
+              className="mb-0 text-xl font-semibold text-card-foreground"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 1.1, duration: 0.5 }}
@@ -522,115 +469,77 @@ const BentoAboutEnhanced = () => {
               Let's Connect
             </motion.h5>
           </div>
-          
-          <motion.p 
-            className="mb-3"
-            style={{ 
-              fontSize: '0.95rem',
-              color: 'hsl(var(--card-foreground))'
-            }}
+
+          <motion.p
+            className="mb-3 text-base text-card-foreground"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.2, duration: 0.5 }}
           >
             Ready to explore how we can create something amazing together! Feel free to reach out.
           </motion.p>
-          
-          {/* Enhanced Contact Options */}
-          <motion.div
-            className="contact-actions d-flex gap-3 align-items-center flex-wrap"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.4, duration: 0.5 }}
-          >
-            <motion.button
-              onClick={() => setShowContactForm(true)}
-              className="contact-btn"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: '45px',
-                height: '45px',
-                backgroundColor: 'hsl(var(--primary) / 0.1)',
-                color: 'hsl(var(--primary))',
-                borderRadius: '12px',
-                border: '1px solid hsl(var(--border))',
-                fontSize: '1.2rem',
-                cursor: 'pointer'
-              }}
-              whileHover={{ 
-                backgroundColor: 'hsl(var(--primary))',
-                color: 'hsl(var(--primary-foreground))',
-                scale: 1.1,
-                y: -2
-              }}
-              whileTap={{ scale: 0.9 }}
-              title="Send Email"
+
+          {/* Enhanced Contact Options with Tooltips */}
+          <TooltipProvider delayDuration={200}>
+            <motion.div
+              className="flex gap-3 items-center flex-wrap"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.4, duration: 0.5 }}
             >
-              <i className="fas fa-envelope"></i>
-            </motion.button>
-            
-            <motion.a
-              href="https://www.linkedin.com/in/azaan-khalfe-43b90b221/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="contact-btn"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: '45px',
-                height: '45px',
-                backgroundColor: 'hsl(var(--primary) / 0.1)',
-                color: 'hsl(var(--primary))',
-                borderRadius: '12px',
-                border: '1px solid hsl(var(--border))',
-                textDecoration: 'none',
-                fontSize: '1.2rem'
-              }}
-              whileHover={{ 
-                backgroundColor: '#0077b5',
-                color: '#fff',
-                scale: 1.1,
-                y: -2
-              }}
-              whileTap={{ scale: 0.9 }}
-              title="LinkedIn Profile"
-            >
-              <i className="fab fa-linkedin"></i>
-            </motion.a>
-            
-            <motion.a
-              href="https://github.com/AzaanKH"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="contact-btn"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: '45px',
-                height: '45px',
-                backgroundColor: 'hsl(var(--primary) / 0.1)',
-                color: 'hsl(var(--primary))',
-                borderRadius: '12px',
-                border: '1px solid hsl(var(--border))',
-                textDecoration: 'none',
-                fontSize: '1.2rem'
-              }}
-              whileHover={{ 
-                backgroundColor: '#333',
-                color: '#fff',
-                scale: 1.1,
-                y: -2
-              }}
-              whileTap={{ scale: 0.9 }}
-              title="GitHub Profile"
-            >
-              <i className="fab fa-github"></i>
-            </motion.a>
-          </motion.div>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <motion.button
+                    onClick={() => setShowContactForm(true)}
+                    className="inline-flex items-center justify-center w-11 h-11 bg-primary/10 text-primary rounded-xl border border-border cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
+                    whileHover={{ scale: 1.1, y: -2 }}
+                    whileTap={{ scale: 0.9 }}
+                  >
+                    <Mail className="w-5 h-5" />
+                  </motion.button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Send me an email</p>
+                </TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <motion.a
+                    href="https://www.linkedin.com/in/azaan-khalfe-43b90b221/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center w-11 h-11 bg-primary/10 text-primary rounded-xl border border-border no-underline hover:bg-[#0077b5] hover:text-white transition-colors"
+                    whileHover={{ scale: 1.1, y: -2 }}
+                    whileTap={{ scale: 0.9 }}
+                  >
+                    <Linkedin className="w-5 h-5" />
+                  </motion.a>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Connect on LinkedIn</p>
+                </TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <motion.a
+                    href="https://github.com/AzaanKH"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center w-11 h-11 bg-primary/10 text-primary rounded-xl border border-border no-underline hover:bg-[#333] hover:text-white transition-colors"
+                    whileHover={{ scale: 1.1, y: -2 }}
+                    whileTap={{ scale: 0.9 }}
+                  >
+                    <Github className="w-5 h-5" />
+                  </motion.a>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>View my GitHub</p>
+                </TooltipContent>
+              </Tooltip>
+            </motion.div>
+          </TooltipProvider>
         </div>
       )
     }
@@ -648,24 +557,18 @@ const BentoAboutEnhanced = () => {
   };
 
   return (
-    <section id="bio" className="section py-5" style={{ backgroundColor: 'hsl(var(--background))' }}>
-      <div className="container">
-        <motion.h2 
-          className="section-title text-center"
+    <section id="bio" className="section py-20 bg-background">
+      <div className="container mx-auto px-4">
+        <motion.h2
+          className="section-title text-center text-4xl font-semibold mb-12 text-foreground"
           initial={{ opacity: 0, scale: 0.5, rotateX: -90 }}
           whileInView={{ opacity: 1, scale: 1, rotateX: 0 }}
           viewport={{ once: true, amount: 0.3 }}
-          transition={{ 
-            type: "spring", 
-            damping: 15, 
+          transition={{
+            type: "spring",
+            damping: 15,
             stiffness: 200,
-            duration: 0.8 
-          }}
-          style={{ 
-            fontSize: '2.5rem', 
-            fontWeight: '600', 
-            marginBottom: '3rem',
-            color: 'hsl(var(--foreground))'
+            duration: 0.8
           }}
         >
           About Me
@@ -738,7 +641,7 @@ const BentoAboutEnhanced = () => {
           @media (max-width: 768px) {
             .enhanced-bento-grid {
               grid-template-columns: 1fr !important;
-              grid-template-areas: 
+              grid-template-areas:
                 "bio"
                 "skills"
                 "interests"
@@ -748,11 +651,11 @@ const BentoAboutEnhanced = () => {
               gap: 1.5rem !important;
             }
           }
-          
+
           @media (max-width: 992px) and (min-width: 769px) {
             .enhanced-bento-grid {
               grid-template-columns: repeat(2, 1fr) !important;
-              grid-template-areas: 
+              grid-template-areas:
                 "bio bio"
                 "skills interests"
                 "reading goals"

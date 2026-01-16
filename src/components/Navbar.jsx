@@ -6,34 +6,15 @@ import { Sun, Moon } from 'lucide-react';
 const Navbar = () => {
   const { isDarkMode, toggleTheme } = useTheme();
 
-  const navLinkStyle = {
-    color: 'hsl(var(--foreground))',
-    textDecoration: 'none',
-    padding: '0.5rem 1rem',
-    borderRadius: '6px',
-    transition: 'all 0.3s ease',
-    fontWeight: '500'
-  };
-
-  const handleNavHover = (e, isEntering) => {
-    if (isEntering) {
-      e.target.style.backgroundColor = 'hsl(var(--accent))';
-      e.target.style.color = 'hsl(var(--accent-foreground))';
-    } else {
-      e.target.style.backgroundColor = 'transparent';
-      e.target.style.color = 'hsl(var(--foreground))';
-    }
-  };
-
   const handleScrollTo = (e, targetId) => {
     e.preventDefault();
     const element = document.getElementById(targetId);
-    
+
     if (element) {
       const navbarHeight = targetId === 'azaan-khalfe' ? 100 : 80;
       const elementPosition = element.getBoundingClientRect().top;
       const offsetPosition = elementPosition + window.pageYOffset - navbarHeight;
-      
+
       window.scrollTo({
         top: offsetPosition,
         behavior: 'smooth'
@@ -55,21 +36,15 @@ const Navbar = () => {
   };
 
   return (
-    <motion.nav 
-      className="navbar navbar-expand-lg navbar-light sticky-top"
-      style={{
-        backgroundColor: 'hsl(var(--background) / 0.95)',
-        backdropFilter: 'blur(10px)',
-        borderBottom: '1px solid hsl(var(--border))',
-        transition: 'all 0.3s ease'
-      }}
+    <motion.nav
+      className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border transition-all duration-300"
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ type: "spring", stiffness: 100, damping: 15 }}
     >
-      <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div className="container mx-auto px-4 flex justify-between items-center py-4">
         <button
-          className="navbar-toggler d-lg-none"
+          className="navbar-toggler lg:hidden"
           type="button"
           data-bs-toggle="collapse"
           data-bs-target="#navbarNav"
@@ -80,81 +55,65 @@ const Navbar = () => {
           <span className="navbar-toggler-icon"></span>
         </button>
 
-        <div className="navbar-collapse" id="navbarNav" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-          <ul className="navbar-nav" style={{ display: 'flex', flexDirection: 'row', gap: '1rem', margin: 0, padding: 0, listStyle: 'none' }}>
+        <div className="navbar-collapse flex justify-between items-center w-full" id="navbarNav">
+          <ul className="flex flex-row gap-4 m-0 p-0 list-none">
             <motion.li
-              className="nav-item"
+              className="inline-block m-0 p-0"
               custom={0}
               initial="hidden"
               animate="visible"
               variants={navItemVariants}
-              style={{ display: 'inline-block', margin: 0, padding: 0 }}
             >
-              <a 
-                className="nav-link" 
+              <a
+                className="text-foreground no-underline px-4 py-2 rounded-md transition-all duration-300 font-medium hover:bg-accent hover:text-accent-foreground"
                 href="#azaan-khalfe"
                 onClick={(e) => handleScrollTo(e, 'azaan-khalfe')}
-                style={navLinkStyle}
-                onMouseEnter={(e) => handleNavHover(e, true)}
-                onMouseLeave={(e) => handleNavHover(e, false)}
               >
                 Home
               </a>
             </motion.li>
             <motion.li
-              className="nav-item"
+              className="inline-block m-0 p-0"
               custom={1}
               initial="hidden"
               animate="visible"
               variants={navItemVariants}
-              style={{ display: 'inline-block', margin: 0, padding: 0 }}
             >
-              <a 
-                className="nav-link" 
+              <a
+                className="text-foreground no-underline px-4 py-2 rounded-md transition-all duration-300 font-medium hover:bg-accent hover:text-accent-foreground"
                 href="#bio"
                 onClick={(e) => handleScrollTo(e, 'bio')}
-                style={navLinkStyle}
-                onMouseEnter={(e) => handleNavHover(e, true)}
-                onMouseLeave={(e) => handleNavHover(e, false)}
               >
                 About
               </a>
             </motion.li>
             <motion.li
-              className="nav-item"
+              className="inline-block m-0 p-0"
               custom={2}
               initial="hidden"
               animate="visible"
               variants={navItemVariants}
-              style={{ display: 'inline-block', margin: 0, padding: 0 }}
             >
-              <a 
-                className="nav-link" 
+              <a
+                className="text-foreground no-underline px-4 py-2 rounded-md transition-all duration-300 font-medium hover:bg-accent hover:text-accent-foreground"
                 href="#projects"
                 onClick={(e) => handleScrollTo(e, 'projects')}
-                style={navLinkStyle}
-                onMouseEnter={(e) => handleNavHover(e, true)}
-                onMouseLeave={(e) => handleNavHover(e, false)}
               >
                 Projects
               </a>
             </motion.li>
             <motion.li
-              className="nav-item"
+              className="inline-block m-0 p-0"
               custom={3}
               initial="hidden"
               animate="visible"
               variants={navItemVariants}
-              style={{ display: 'inline-block', margin: 0, padding: 0 }}
             >
-              <a 
-                className="nav-link" 
-                href="/khalfe_azaan_resume_24.pdf"
+              <a
+                className="text-foreground no-underline px-4 py-2 rounded-md transition-all duration-300 font-medium hover:bg-accent hover:text-accent-foreground"
+                href="azaan_resume_.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
-                style={navLinkStyle}
-                onMouseEnter={(e) => handleNavHover(e, true)}
-                onMouseLeave={(e) => handleNavHover(e, false)}
               >
                 Resume
               </a>
@@ -163,48 +122,28 @@ const Navbar = () => {
 
           {/* Beautiful Clean Theme Toggle */}
           <motion.div
-            style={{ display: 'flex', alignItems: 'center' }}
+            className="flex items-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5, duration: 0.5 }}
           >
             <motion.button
               onClick={toggleTheme}
-              className="theme-toggle-btn"
-              style={{ 
-                border: '1px solid hsl(var(--border))',
-                backgroundColor: 'hsl(var(--background))',
-                color: 'hsl(var(--foreground))',
-                fontSize: '1.2rem',
-                width: '40px',
-                height: '40px',
-                borderRadius: '8px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease'
-              }}
-              whileHover={{ 
-                scale: 1.1, 
-                backgroundColor: 'hsl(var(--accent))',
-                borderColor: 'hsl(var(--ring))',
-                boxShadow: '0 4px 15px hsl(var(--primary) / 0.3)'
-              }}
+              className="border border-border bg-background text-foreground w-10 h-10 rounded-lg flex items-center justify-center cursor-pointer transition-all duration-300 hover:scale-110 hover:bg-accent hover:border-ring hover:shadow-lg hover:shadow-primary/30"
               whileTap={{ scale: 0.9 }}
               title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
             >
               <motion.div
-                animate={{ 
+                animate={{
                   rotate: isDarkMode ? [0, 360] : [360, 0],
                   scale: [1, 1.1, 1]
                 }}
                 transition={{ duration: 0.5 }}
               >
                 {isDarkMode ? (
-                  <Sun className="w-4 h-4" style={{color: '#ffd43b'}} />
+                  <Sun className="w-4 h-4 text-[#ffd43b]" />
                 ) : (
-                  <Moon className="w-4 h-4" style={{color: '#64748b'}} />
+                  <Moon className="w-4 h-4 text-[#64748b]" />
                 )}
               </motion.div>
             </motion.button>

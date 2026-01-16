@@ -2,6 +2,10 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
 import { useSteamData } from '../hooks/useSteamData';
+import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar';
+import { Badge } from './ui/badge';
+import { Button } from './ui/button';
+import { Gamepad2, ExternalLink } from 'lucide-react';
 
 const SteamBentoCard = ({ isHovered, onHover: _onHover, onHoverEnd: _onHoverEnd }) => {
   const { isDarkMode } = useTheme();
@@ -142,31 +146,28 @@ const SteamBentoCard = ({ isHovered, onHover: _onHover, onHoverEnd: _onHoverEnd 
     <div className="p-4">
       {/* Header with Steam info */}
       <div className="d-flex align-items-center mb-3">
-        <motion.div 
-          className="me-3 position-relative"
+        <motion.div
+          className="mr-3 relative"
           animate={isHovered ? {
             scale: [1, 1.1, 1],
             rotate: [0, 5, -5, 0]
           } : {}}
           transition={{ duration: 1.5, repeat: Infinity }}
         >
-          <motion.img
-            src={player.avatar}
-            alt={`${player.personaname}'s Steam avatar`}
-            className="rounded-circle"
-            style={{ width: '48px', height: '48px' }}
-            whileHover={{ scale: 1.2, rotate: 360 }}
-            transition={{ duration: 0.5 }}
-            loading="lazy"
-          />
+          <Avatar className="w-12 h-12 border-2 border-border">
+            <AvatarImage
+              src={player.avatar}
+              alt={`${player.personaname}'s Steam avatar`}
+              className="object-cover"
+            />
+            <AvatarFallback className="bg-cyan-500/20 text-cyan-500">
+              <Gamepad2 className="w-6 h-6" />
+            </AvatarFallback>
+          </Avatar>
           <motion.div
-            className="position-absolute bottom-0 end-0"
+            className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full border-2 border-background"
             style={{
-              width: '16px',
-              height: '16px',
               background: player.personastate === 1 ? '#4caf50' : '#9e9e9e',
-              border: '2px solid white',
-              borderRadius: '50%'
             }}
             animate={{
               scale: player.personastate === 1 ? [1, 1.2, 1] : 1
@@ -194,19 +195,22 @@ const SteamBentoCard = ({ isHovered, onHover: _onHover, onHoverEnd: _onHoverEnd 
           </motion.small>
         </div>
 
-        <motion.a
-          href={player.profileurl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="btn btn-outline-info btn-sm"
-          whileHover={{ 
-            scale: 1.05,
-            boxShadow: '0 4px 10px rgba(23, 162, 184, 0.3)'
-          }}
-          whileTap={{ scale: 0.95 }}
+        <Button
+          variant="outline"
+          size="sm"
+          asChild
+          className="hover:bg-cyan-500/20 hover:border-cyan-500 hover:text-cyan-500 transition-colors"
         >
-          <i className="fab fa-steam"></i>
-        </motion.a>
+          <motion.a
+            href={player.profileurl}
+            target="_blank"
+            rel="noopener noreferrer"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <ExternalLink className="w-4 h-4" />
+          </motion.a>
+        </Button>
       </div>
 
       {/* Current Game Display */}

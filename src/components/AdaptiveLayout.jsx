@@ -5,6 +5,7 @@ import { getCurrentLayoutConfig, LAYOUT_TYPES, layoutConfig } from '../config/la
 // Import active layout components
 import BentoAboutEnhanced from './BentoAboutEnhanced';
 import ProjectsShadcn from './ProjectsShadcn';
+import { Separator } from './ui/separator';
 
 const AdaptiveLayout = () => {
   const currentConfig = getCurrentLayoutConfig();
@@ -63,6 +64,17 @@ const AdaptiveLayout = () => {
       <AnimatePresence mode="wait">
         {renderAboutSection()}
       </AnimatePresence>
+
+      {/* Visual Separator */}
+      <motion.div
+        className="container mx-auto px-4 py-8"
+        initial={{ opacity: 0, scaleX: 0 }}
+        whileInView={{ opacity: 1, scaleX: 1 }}
+        viewport={{ once: true, amount: 0.5 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+      >
+        <Separator className="bg-gradient-to-r from-transparent via-border to-transparent h-[2px]" />
+      </motion.div>
 
       {/* Projects Section */}
       <AnimatePresence mode="wait">

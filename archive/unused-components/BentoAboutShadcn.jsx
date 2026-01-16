@@ -420,7 +420,7 @@ const BentoAboutShadcn = () => {
                   size="lg"
                 >
                   <motion.a
-                    href="/khalfe_azaan_resume_24.pdf"
+                    href="azaan_resume_.pdf"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2"

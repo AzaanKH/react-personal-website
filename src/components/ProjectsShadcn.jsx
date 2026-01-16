@@ -22,10 +22,10 @@ const projectsData = [
   {
     id: 2,
     title: "NFL Fantasy Picker",
-    description: "Developed a real-time Full Stack application using React and Node.js, dynamically predicting the top ten starting players and updating scores based on live data. Constructed and maintained an SQL database housing comprehensive data on 50+ NFL players with advanced analytics.",
+    description: "Architected a multi-source data pipeline with automatic fallback orchestration (Sleeper API → ESPN API → web scraping), processing 11,400+ player records. Designed PostgreSQL + TimescaleDB schema for time-series statistics across 17 weeks × 3 seasons. Built automated sync infrastructure with APScheduler and implemented comprehensive test suite (104 tests) achieving 80%+ coverage.",
     githubUrl: "https://github.com/AzaanKH/football",
     demoUrl: null,
-    tags: ["Python", "SQL", "Data Analysis", "Machine Learning", "React"],
+    tags: ["React", "Python", "Flask", "PostgreSQL", "TimescaleDB"],
     gradient: "linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(34, 197, 94, 0.05))",
     icon: TrendingUp,
     iconColor: "#22c55e"

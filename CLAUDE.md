@@ -6,6 +6,51 @@ This document contains comprehensive knowledge about the React portfolio website
 
 ---
 
+## 🚀 QUICK START - Development
+
+**IMPORTANT:** Always use `netlify dev` to run the development server (NOT `npm run dev`).
+
+```bash
+# Start the development server with Steam API support
+netlify dev
+
+# This will:
+# 1. Load environment variables from .env (STEAM_API_KEY, STEAM_ID, etc.)
+# 2. Start Netlify Functions on port 8888
+# 3. Start Vite dev server (proxied through Netlify)
+# 4. Enable Steam API integration
+```
+
+**Access the site at:** `http://localhost:8888`
+
+If you use `npm run dev` instead, the Steam API will NOT work because Netlify Functions won't be available.
+
+---
+
+## 📝 Recent Updates (January 2026)
+
+### New shadcn/ui Components Added
+- **avatar.jsx** - Used in SteamBentoCard for Steam profile picture with fallback
+- **progress.jsx** - Used in BentoAboutEnhanced for reading progress bar
+- **separator.jsx** - Used in AdaptiveLayout for animated section dividers
+- **tooltip.jsx** - Used in Connect section for social icon hover tooltips
+
+### Component Enhancements
+- **BentoAboutEnhanced.jsx**: Added Progress component for reading progress, Badge for skills, Tooltip for social icons, replaced Font Awesome with Lucide React icons
+- **SteamBentoCard.jsx**: Added Avatar component with fallback, Button component, Lucide icons
+- **AdaptiveLayout.jsx**: Added animated Separator between About and Projects sections
+- **ProjectsShadcn.jsx**: Updated NFL Fantasy Picker with detailed description and new tech tags
+
+### Icon Migration
+- Replaced Font Awesome icons with **Lucide React** for consistency with shadcn components
+- Icons used: Mail, Linkedin, Github, FileText, Gamepad2, ExternalLink, etc.
+
+### Files Updated
+- Resume: `public/azaan_resume_.pdf` (current resume file)
+- Projects: Updated description for NFL Fantasy Picker project
+
+---
+
 ## 📁 File Structure
 
 ```
@@ -366,19 +411,23 @@ my-portfolio/
 │   ├── steam-test.html                 # Additional Steam tests
 │   ├── debug-steam.html                # Steam debugging tools
 │   ├── test-react-steam.html           # React Steam integration test
-│   └── khalfe_azaan_resume_24.pdf      # Resume PDF
+│   └── azaan_resume_.pdf               # Resume PDF (CURRENT)
 │
 ├── src/
 │   ├── components/                     # React components
 │   │   ├── ui/                         # shadcn/ui components
 │   │   │   ├── alert.jsx
+│   │   │   ├── avatar.jsx              # Steam profile avatar
 │   │   │   ├── badge.jsx
 │   │   │   ├── button.jsx
 │   │   │   ├── card.jsx
 │   │   │   ├── dialog.jsx
 │   │   │   ├── input.jsx
 │   │   │   ├── label.jsx
-│   │   │   └── textarea.jsx
+│   │   │   ├── progress.jsx            # Reading progress bar
+│   │   │   ├── separator.jsx           # Section dividers
+│   │   │   ├── textarea.jsx
+│   │   │   └── tooltip.jsx             # Social icon tooltips
 │   │   │
 │   │   ├── About.jsx                   # Traditional about section
 │   │   ├── AdaptiveLayout.jsx          # Layout switcher component
@@ -599,15 +648,31 @@ switchLayout('bento'); // Changes to bento layout
 
 All in `src/components/ui/`:
 - **alert.jsx**: Alert messages with variants
-- **badge.jsx**: Tag/label components
+- **avatar.jsx**: User avatars with image and fallback (used in SteamBentoCard)
+- **badge.jsx**: Tag/label components (used for skill tags and project tags)
 - **button.jsx**: Button with variants (default, outline, ghost, etc.)
 - **card.jsx**: Card container with header/content/footer
 - **dialog.jsx**: Modal dialog (Radix UI Dialog)
 - **input.jsx**: Form input with focus states
 - **label.jsx**: Form labels
+- **progress.jsx**: Progress bar with customizable indicator (used for reading progress)
+- **separator.jsx**: Visual divider between sections
 - **textarea.jsx**: Multi-line text input
+- **tooltip.jsx**: Hover tooltips with TooltipProvider (used in Connect section)
 
 Built on **Radix UI primitives** for accessibility.
+
+**Radix UI Dependencies:**
+```json
+{
+  "@radix-ui/react-avatar": "^1.x",
+  "@radix-ui/react-dialog": "^1.x",
+  "@radix-ui/react-label": "^2.x",
+  "@radix-ui/react-progress": "^1.x",
+  "@radix-ui/react-separator": "^1.x",
+  "@radix-ui/react-slot": "^1.x",
+  "@radix-ui/react-tooltip": "^1.x"
+}
 
 ---
 
