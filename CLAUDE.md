@@ -1,738 +1,334 @@
 # Claude AI Memory - React Portfolio Project
 
-## 📋 Complete Project Documentation & Code Review
-
-This document contains comprehensive knowledge about the React portfolio website, including architecture, Steam API integration, code review findings, and maintenance guidelines.
-
----
-
-## 🚀 QUICK START - Development
+## Quick Start
 
 **IMPORTANT:** Always use `netlify dev` to run the development server (NOT `npm run dev`).
 
 ```bash
-# Start the development server with Steam API support
 netlify dev
-
-# This will:
-# 1. Load environment variables from .env (STEAM_API_KEY, STEAM_ID, etc.)
-# 2. Start Netlify Functions on port 8888
-# 3. Start Vite dev server (proxied through Netlify)
-# 4. Enable Steam API integration
+# Loads .env, starts Netlify Functions on port 8888, proxies Vite dev server
+# Access at: http://localhost:8888
 ```
 
-**Access the site at:** `http://localhost:8888`
-
-If you use `npm run dev` instead, the Steam API will NOT work because Netlify Functions won't be available.
+If you use `npm run dev` instead, Netlify Functions (Steam API, weather, rate limiting) won't be available.
 
 ---
 
-## 📝 Recent Updates (January 2026)
+## Architecture Overview
 
-### New shadcn/ui Components Added
-- **avatar.jsx** - Used in SteamBentoCard for Steam profile picture with fallback
-- **progress.jsx** - Used in BentoAboutEnhanced for reading progress bar
-- **separator.jsx** - Used in AdaptiveLayout for animated section dividers
-- **tooltip.jsx** - Used in Connect section for social icon hover tooltips
+**"Architectural Minimalism" (v8)** — state-based multi-page app. Pages swap via `activePage` state in `App.jsx`. No router library.
 
-### Component Enhancements
-- **BentoAboutEnhanced.jsx**: Added Progress component for reading progress, Badge for skills, Tooltip for social icons, replaced Font Awesome with Lucide React icons
-- **SteamBentoCard.jsx**: Added Avatar component with fallback, Button component, Lucide icons
-- **AdaptiveLayout.jsx**: Added animated Separator between About and Projects sections
-- **ProjectsShadcn.jsx**: Updated NFL Fantasy Picker with detailed description and new tech tags
+**Pages:** Home, Projects, Gaming, Contact
+**Navigation:** Gravity-shift nav bar (bottom on Home, top on other pages) with spring physics
+**Design language:** Terracotta accent, bone/ink palette, Space Grotesk + Cormorant Garamond fonts, grain texture overlay
 
-### Icon Migration
-- Replaced Font Awesome icons with **Lucide React** for consistency with shadcn components
-- Icons used: Mail, Linkedin, Github, FileText, Gamepad2, ExternalLink, etc.
+### Tech Stack
 
-### Files Updated
-- Resume: `public/azaan_resume_.pdf` (current resume file)
-- Projects: Updated description for NFL Fantasy Picker project
+| Layer | Technology |
+|-------|-----------|
+| Framework | React 18.3.1 + Vite 5.4.10 |
+| Styling | Tailwind CSS 3.4.17 (pure — no Bootstrap, no shadcn/Radix) |
+| Animation | Motion 12.29.2 (`motion/react` — the renamed Framer Motion) |
+| Icons | Lucide React |
+| Contact | EmailJS + Upstash Redis rate limiting |
+| Steam API | Netlify Functions proxy (`steam-proxy.cjs`) |
+| Weather | Netlify Function proxy (`weather.js`) → Open-Meteo API (free, no key) |
+| Dark mode | `useDarkMode` hook (system/light/dark cycle, localStorage) |
+| Deployment | Netlify (azaankhalfe.netlify.app) |
 
----
+### Key Design Decisions
 
-## 📁 File Structure
-
-```
-src/
-├── hooks/
-│   └── useSteamData.js          # Main Steam data hook
-├── components/
-│   └── SteamBentoCard.jsx       # Steam profile display component
-└── config/
-    └── layoutConfig.js          # Layout configuration
-
-netlify/functions/
-├── steam-proxy.cjs              # Steam API proxy function
-└── steam-test.cjs               # Environment testing function
-
-public/
-└── steam-direct-test.html       # Direct API testing page
-```
+- **No router** — `activePage` state + `AnimatePresence` for page transitions
+- **No component library** — pure Tailwind with CSS custom properties (`--color-*`)
+- **No Context API** — dark mode via `useDarkMode` hook (simpler than ThemeContext)
+- **`motion/react`** — the `motion` package (not legacy `framer-motion`)
+- **`MotionConfig reducedMotion="user"`** — respects `prefers-reduced-motion` globally
 
 ---
 
-## 🔧 Steam API Integration Components
-
-### 1. **Steam Proxy Function** (`netlify/functions/steam-proxy.cjs`)
-- **Purpose**: Securely proxy Steam Web API requests
-- **Endpoints**: `profile`, `recent`, `games`, `level`
-- **Environment Variables**: `STEAM_API_KEY`, `STEAM_ID`
-- **CORS**: Configured for development (`*`) and production (specific domain)
-
-### 2. **Steam Data Hook** (`src/hooks/useSteamData.js`)
-- **Purpose**: Fetch and manage Steam data state
-- **Key Features**: Automatic error handling, data caching, loading states
-- **Critical**: Uses stable useEffect to prevent infinite re-renders
-
-### 3. **Steam Bento Card** (`src/components/SteamBentoCard.jsx`)
-- **Purpose**: Display Steam profile and recent games
-- **Features**: Game cycling, loading states, error fallbacks
-- **Layout**: Part of the Enhanced Bento Grid system
-
----
-
-## 🚨 Common Issues & Solutions
-
-### **Issue 1: "Functions Not Found" / 404 Errors**
-
-**Symptoms:**
-- Network errors when fetching `/.netlify/functions/steam-proxy`
-- Steam component shows error state
-
-**Root Cause:**
-- Netlify functions only available on port 8888 (Netlify dev)
-- React app trying to access functions from port 3000 (Vite dev)
-
-**Solution:**
-```javascript
-// vite.config.js - Proxy configuration
-server: {
-  proxy: {
-    '/.netlify/functions': {
-      target: 'http://localhost:8888',
-      changeOrigin: true,
-      secure: false
-    }
-  }
-}
-```
-
-**Prevention:**
-- Always use `netlify dev` instead of `npm run dev` directly
-- Verify proxy configuration in vite.config.js
-- Test functions directly at `http://localhost:8888/steam-direct-test.html`
-
----
-
-### **Issue 2: Component Flickering / Infinite Re-renders**
-
-**Symptoms:**
-- Steam component constantly switching between loading/error/success states
-- Console logs showing repeated API calls
-- Poor user experience with flashing content
-
-**Root Causes:**
-1. **useCallback Dependencies**: Function recreation causing infinite loops
-2. **Non-memoized Props**: New objects/arrays passed to hooks on every render
-3. **Unstable useEffect Dependencies**: Dependencies changing on every render
-
-**Solutions:**
-
-1. **Avoid useCallback for fetch functions in hooks:**
-```javascript
-// ❌ BAD - Creates infinite loops
-const fetchSteamData = useCallback(async () => {
-  // fetch logic
-}, [endpoints]); // endpoints array changes every render
-
-// ✅ GOOD - Inline in useEffect
-useEffect(() => {
-  const doFetch = async () => {
-    // fetch logic here
-  };
-  doFetch();
-}, [endpoints.join(',')]); // Stable string dependency
-```
-
-2. **Memoize props in components:**
-```javascript
-// ❌ BAD - New objects every render
-const steamData = useSteamData(['profile', 'recent'], { autoRefresh: false });
-
-// ✅ GOOD - Memoized props
-const steamEndpoints = useMemo(() => ['profile', 'recent'], []);
-const steamOptions = useMemo(() => ({ autoRefresh: false }), []);
-const steamData = useSteamData(steamEndpoints, steamOptions);
-```
-
-3. **Use mounted flags for cleanup:**
-```javascript
-useEffect(() => {
-  let mounted = true;
-  
-  const fetchData = async () => {
-    // ... fetch logic ...
-    if (!mounted) return; // Prevent state updates after unmount
-    setSomeState(data);
-  };
-  
-  return () => { mounted = false; };
-}, []);
-```
-
----
-
-### **Issue 3: Environment Variables Not Found**
-
-**Symptoms:**
-- "Steam API key not configured" errors
-- Environment test function shows `hasApiKey: false`
-
-**Root Cause:**
-- Missing `.env` file
-- Incorrect environment variable names
-- Netlify dev not loading environment variables
-
-**Solution:**
-1. **Create `.env` file in project root:**
-```env
-STEAM_API_KEY=your_actual_steam_api_key_here
-STEAM_ID=your_actual_steam_id_here
-```
-
-2. **Verify with test function:**
-- Visit `http://localhost:8888/steam-direct-test.html`
-- Click "Test Environment" to verify variables are loaded
-
-**Prevention:**
-- Always test environment variables before debugging other issues
-- Use steam-test.cjs function to verify API key presence
-- Never commit actual API keys to repository
-
----
-
-### **Issue 4: CORS Errors**
-
-**Symptoms:**
-- "Access-Control-Allow-Origin" errors in console
-- Steam API requests blocked by browser
-
-**Root Cause:**
-- Overly restrictive CORS configuration
-- Wrong origin settings for development
-
-**Solution:**
-```javascript
-// netlify/functions/steam-proxy.cjs
-const headers = {
-  'Access-Control-Allow-Origin': process.env.NETLIFY && process.env.CONTEXT === 'production'
-    ? 'https://azaankhalfe.netlify.app' 
-    : '*', // Allow all origins in development
-};
-```
-
----
-
-## 🧪 Testing & Debugging
-
-### **1. Direct API Testing**
-- **URL**: `http://localhost:8888/steam-direct-test.html`
-- **Purpose**: Test Steam functions without React
-- **Use When**: First step in troubleshooting any Steam issues
-
-### **2. Environment Testing**
-```javascript
-// Browser console test
-fetch('/.netlify/functions/steam-test')
-  .then(r => r.json())
-  .then(console.log);
-```
-
-### **3. React Component Debug**
-- Enable debug logging in `SteamBentoCard.jsx`
-- Check console for state changes and re-render patterns
-- Monitor network tab for API call frequency
-
----
-
-## ⚡ Performance Optimizations
-
-### **1. Stable Dependencies**
-- Use `useMemo` for static arrays/objects
-- Use `endpoints.join(',')` instead of array dependencies
-- Avoid functions in useEffect dependencies
-
-### **2. Error Handling**
-- Preserve previous data on errors
-- Clear errors when new data loads successfully
-- Graceful degradation for missing data
-
-### **3. Loading States**
-- Show specific loading messages
-- Prevent multiple simultaneous requests
-- Use mounted flags to prevent memory leaks
-
----
-
-## 🔒 Security Best Practices
-
-### **1. Environment Variables**
-- Never expose `STEAM_API_KEY` to client-side code
-- Use Netlify Functions as proxy to hide sensitive data
-- Restrict CORS origins in production
-
-### **2. API Rate Limiting**
-- Avoid excessive API calls through stable hooks
-- Implement reasonable refresh intervals
-- Cache responses when possible
-
-### **3. Error Information**
-- Don't expose sensitive error details to users
-- Log detailed errors server-side only
-- Provide helpful user-facing error messages
-
----
-
-## 🚀 Deployment Checklist
-
-### **Pre-Deployment**
-1. ✅ Test Steam integration on `http://localhost:8888`
-2. ✅ Verify environment variables are set
-3. ✅ Run direct API tests
-4. ✅ Check for console errors or warnings
-5. ✅ Verify no infinite re-renders
-
-### **Post-Deployment**
-1. ✅ Test Steam component on production site
-2. ✅ Verify CORS configuration works
-3. ✅ Check Netlify function logs for errors
-4. ✅ Monitor for any performance issues
-
----
-
-## 📝 Key Implementation Details
-
-### **Current Configuration**
-- **Layout**: HYBRID mode with Enhanced Bento Grid
-- **Steam Component**: `BentoAboutEnhanced` includes `SteamBentoCard`
-- **Data Endpoints**: Profile + Recent Games
-- **Update Frequency**: On-demand (no auto-refresh)
-- **Game Cycling**: 4-second intervals for recent games
-
-### **Dependencies**
-```json
-{
-  "@emailjs/browser": "^4.4.1",
-  "framer-motion": "^11.18.2"
-}
-```
-
-### **Environment Variables Required**
-```env
-STEAM_API_KEY=<Steam Web API Key>
-STEAM_ID=<Your Steam ID>
-```
-
----
-
-## 🔮 Future Improvements
-
-### **Potential Enhancements**
-1. **Caching**: Implement localStorage caching for Steam data
-2. **Offline Mode**: Show cached data when API is unavailable
-3. **More Endpoints**: Add achievements, game stats, friends
-4. **Real-time**: WebSocket connection for live status updates
-5. **Performance**: Implement request deduplication
-
-### **Monitoring**
-1. **Error Tracking**: Add error reporting for production issues
-2. **Performance Metrics**: Monitor API response times
-3. **Usage Analytics**: Track Steam component engagement
-
----
-
-## 💡 Remember for Future Development
-
-1. **Always test locally first** using `netlify dev`
-2. **Use the direct test page** for quick API validation
-3. **Memoize props** when passing to custom hooks
-4. **Avoid useCallback** for functions with changing dependencies
-5. **Test environment variables** before debugging React issues
-6. **Check CORS settings** if API calls fail mysteriously
-7. **Monitor console** for infinite re-render patterns
-
----
-
----
-
-## 🏗️ PROJECT ARCHITECTURE OVERVIEW
-
-### **Tech Stack**
-
-**Frontend Framework:**
-- React 18.3.1 with modern hooks and concurrent features
-- Vite 5.4.10 for fast development and optimized builds
-- React Router not used (single-page portfolio)
-
-**UI Libraries & Styling:**
-- Tailwind CSS 3.4.17 (utility-first CSS framework)
-- shadcn/ui components (Radix UI primitives)
-- Bootstrap 5.3.3 (legacy, primarily for grid system)
-- Material UI 6.1.7 (@mui/material) - minimal usage
-- Framer Motion 11.18.2 (animations and transitions)
-- Lucide React (icon system for shadcn components)
-- Font Awesome 6.6.0 (legacy icons)
-
-**State Management & Data:**
-- React Context API (ThemeContext for dark mode)
-- Custom hooks pattern (useSteamData)
-- EmailJS 4.4.1 (contact form)
-- Upstash Redis + Rate Limiting (contact form protection)
-
-**Build & Development:**
-- ESLint 9.13.0 with React plugins
-- PostCSS + Autoprefixer
-- Dotenv for environment variables
-- Netlify Functions for serverless backend
-
-**Deployment:**
-- Netlify (hosting + serverless functions)
-- Custom domain: azaankhalfe.netlify.app
-
----
-
-## 📁 PROJECT STRUCTURE
+## File Structure
 
 ```
 my-portfolio/
-├── public/
-│   ├── steam-direct-test.html          # Steam API testing page
-│   ├── steam-test.html                 # Additional Steam tests
-│   ├── debug-steam.html                # Steam debugging tools
-│   ├── test-react-steam.html           # React Steam integration test
-│   └── azaan_resume_.pdf               # Resume PDF (CURRENT)
-│
 ├── src/
-│   ├── components/                     # React components
-│   │   ├── ui/                         # shadcn/ui components
-│   │   │   ├── alert.jsx
-│   │   │   ├── avatar.jsx              # Steam profile avatar
-│   │   │   ├── badge.jsx
-│   │   │   ├── button.jsx
-│   │   │   ├── card.jsx
-│   │   │   ├── dialog.jsx
-│   │   │   ├── input.jsx
-│   │   │   ├── label.jsx
-│   │   │   ├── progress.jsx            # Reading progress bar
-│   │   │   ├── separator.jsx           # Section dividers
-│   │   │   ├── textarea.jsx
-│   │   │   └── tooltip.jsx             # Social icon tooltips
-│   │   │
-│   │   ├── About.jsx                   # Traditional about section
-│   │   ├── AdaptiveLayout.jsx          # Layout switcher component
-│   │   ├── BentoAbout.jsx              # Basic bento grid
-│   │   ├── BentoAboutEnhanced.jsx      # Enhanced bento grid (ACTIVE)
-│   │   ├── BentoAboutShadcn.jsx        # shadcn-styled bento
-│   │   ├── ContactForm.jsx             # Legacy contact form
-│   │   ├── ContactFormShadcn.jsx       # Active shadcn contact form
-│   │   ├── CursorFollower.jsx          # Custom cursor effect
-│   │   ├── Header.jsx                  # Main header component
-│   │   ├── HeaderShadcn.jsx            # shadcn header variant
-│   │   ├── Navbar.jsx                  # Navigation bar
-│   │   ├── NavbarShadcn.jsx            # shadcn navbar variant
-│   │   ├── ProjectCard.jsx             # Individual project card
-│   │   ├── Projects.jsx                # Projects section (legacy)
-│   │   ├── ProjectsShadcn.jsx          # Active projects display
-│   │   ├── Resume.jsx                  # Resume component
-│   │   ├── ScrollProgressBar.jsx       # Scroll indicator
-│   │   ├── SteamBentoCard.jsx          # Steam profile card
-│   │   ├── SteamSection.jsx            # Standalone Steam section
-│   │   └── SteamStatsDashboard.jsx     # Detailed Steam stats
+│   ├── App.jsx                         # Main app — activePage state, page switching
+│   ├── main.jsx                        # React entry point
+│   ├── index.css                       # Tailwind + CSS custom properties (light/dark)
 │   │
-│   ├── config/
-│   │   └── layoutConfig.js             # Layout configuration system
+│   ├── components/
+│   │   ├── Navigation.jsx              # Gravity-shift nav (bottom↔top), spring physics
+│   │   ├── DarkModeToggle.jsx          # Theme cycle: system → light → dark
+│   │   ├── PageTransition.jsx          # Page enter/exit animations
+│   │   └── StatusCorner.jsx            # Bottom corners: reading status + weather + time
 │   │
-│   ├── context/
-│   │   └── ThemeContext.jsx            # Dark mode context provider
+│   ├── pages/
+│   │   ├── HomePage.jsx                # Hero: letter-by-letter name animation, social links
+│   │   ├── ProjectsPage.jsx            # Expandable accordion project cards (3 projects)
+│   │   ├── GamingPage.jsx              # Steam API: recently played games, "Now Playing" state
+│   │   └── ContactPage.jsx             # EmailJS form with rate limiting
 │   │
 │   ├── hooks/
-│   │   └── useSteamData.js             # Steam API data hook
+│   │   ├── useSteamData.js             # Steam API data fetching + localStorage cache (5min TTL)
+│   │   ├── useDarkMode.js              # Theme state: system/light/dark, localStorage persistence
+│   │   └── useWeather.js               # Weather from /.netlify/functions/weather, 15min cache
 │   │
-│   ├── lib/
-│   │   └── utils.js                    # Utility functions (Tailwind merge)
+│   ├── data/
+│   │   └── status.json                 # Reading status, location metadata for StatusCorner
 │   │
-│   ├── App.css                         # Legacy app styles
-│   ├── App.jsx                         # Main application component
-│   ├── framer-animations.css           # Framer Motion styles
-│   ├── index.css                       # Global styles (Tailwind + custom)
-│   └── main.jsx                        # React entry point
+│   └── lib/
+│       └── utils.js                    # cn() — clsx + tailwind-merge
 │
-├── netlify/functions/                  # Serverless functions
-│   ├── steam-proxy.cjs                 # Steam API proxy (ACTIVE)
-│   ├── steam-test.cjs                  # Environment testing
-│   ├── rate-check.js                   # Rate limiting function
-│   ├── debug.cjs                       # Debug utilities
+├── netlify/functions/
+│   ├── steam-proxy.cjs                 # Steam Web API proxy (profile, recent, games, level)
+│   ├── weather.js                      # Open-Meteo weather proxy (Bellevue, WA), 15min CDN cache
+│   ├── rate-check.js                   # Upstash Redis rate limiter for contact form
+│   ├── steam-test.cjs                  # Environment variable testing
+│   ├── debug.cjs                       # Debug utility
 │   ├── hello.cjs                       # Test function
 │   └── test-endpoint.cjs               # Endpoint testing
 │
-├── Configuration Files
-│   ├── .env                            # Environment variables (not in repo)
-│   ├── eslint.config.js                # ESLint configuration
-│   ├── index.html                      # HTML entry point
-│   ├── package.json                    # Dependencies and scripts
-│   ├── postcss.config.js               # PostCSS configuration
-│   ├── tailwind.config.js              # Tailwind configuration
-│   └── vite.config.js                  # Vite build configuration
+├── public/
+│   ├── Azaan_Khalfe_Resume.pdf         # Resume (linked from HomePage)
+│   ├── azaan_resume_.pdf               # Legacy resume
+│   ├── steam-direct-test.html          # Steam API testing page
+│   └── debug-steam.html               # Steam debugging tools
 │
-├── Documentation
-│   ├── CLAUDE.md                       # This file
-│   ├── README.md                       # Project readme
-│   └── STEAM_SETUP.md                  # Steam setup guide
+├── tests/
+│   └── steam-api/                      # Steam API integration tests
 │
-└── Test/Debug Scripts
-    ├── debug-steam.js
-    ├── dev-proxy.js
+├── Configuration
+│   ├── .env                            # Secrets: STEAM_API_KEY, STEAM_ID, VITE_EMAILJS_*, UPSTASH_*
+│   ├── netlify.toml                    # Netlify deployment config
+│   ├── index.html                      # Google Fonts (Space Grotesk + Cormorant Garamond) + preloads
+│   ├── tailwind.config.js              # Custom: ink/bone/terracotta/slate colors, font families
+│   ├── vite.config.js                  # @ alias, Netlify functions proxy, build optimizations
+│   ├── components.json                 # shadcn config (new-york style, JSX, Lucide icons)
+│   ├── postcss.config.js               # PostCSS + Autoprefixer
+│   ├── jsconfig.json                   # @ path alias for IDE
+│   └── eslint.config.js                # ESLint with React plugins
+│
+└── Dev Scripts
     ├── dev-with-tests.js
-    ├── quick-steam-test.js
-    ├── test-server.js
-    └── test-steam-function.js
+    ├── dev-proxy.js
+    └── start-dev.bat
 ```
 
 ---
 
-## 🎨 DESIGN SYSTEM & STYLING APPROACH
+## Component Architecture
 
-### **Theme Architecture**
+### App.jsx — Root
+- `activePage` state drives which page renders (`pages` object maps string → component)
+- `AnimatePresence mode="wait"` for page transitions
+- `MotionConfig reducedMotion="user"` wraps everything
+- Grain texture overlay + subtle accent gradient (top-right corner wash)
+- `mainRef` resets scroll position on page exit
 
-The application uses a sophisticated multi-layered theming system:
+### Navigation.jsx — Gravity Nav
+- **Home:** nav sits at bottom of viewport
+- **Other pages:** nav springs to top (y=24px)
+- Uses `useSpring` for physics-based position, `useTransform` for scale/glow during travel
+- `ResizeObserver` tracks nav height for accurate positioning
+- Active page indicator: terracotta line slides under active button
+- `useReducedMotion` — jumps instead of animating when reduced motion preferred
 
-**1. CSS Custom Properties (CSS Variables)**
-- Base layer: Tailwind/shadcn design tokens (HSL format)
-- Bootstrap layer: Legacy Bootstrap theme variables
-- Custom layer: Portfolio-specific color schemes
+### DarkModeToggle.jsx
+- Cycles: system → light → dark
+- Animated icon swap (Monitor → Sun → Moon) with rotation
+- Fixed top-right position (z-50)
 
-**2. Dark Mode Implementation**
-- Context-based: `ThemeContext.jsx` provides global dark mode state
-- Toggle mechanism: Navbar theme switcher with smooth transitions
-- Persistence: `localStorage` saves user preference
-- Fallback: Respects system `prefers-color-scheme` preference
+### PageTransition.jsx
+- Fade-in + slide-up on enter, fade-out on exit
+- Custom easing curves: `[0.16, 1, 0.3, 1]` (enter), `[0.7, 0, 0.84, 0]` (exit)
 
-**3. Color System**
-```css
-/* Light Mode */
---background: 0 0% 100%              /* Pure white */
---foreground: 222.2 84% 4.9%         /* Near black */
---primary: 221.2 83.2% 53.3%         /* Blue (#3b82f6) */
---card: 0 0% 100%                    /* White cards */
+### StatusCorner.jsx (Home page only)
+- **Bottom-left:** Currently reading (title, author, progress bar from `status.json`)
+- **Bottom-right:** Status message + weather (city, temp, time)
+- Weather icon mapped from condition string (Clear→Sun, Rain→CloudRain, etc.)
+- `useLocalTime` hook updates clock every 30s
+- Hidden on mobile (`hidden sm:flex`)
+- Entrance animation delayed after hero animation completes
 
-/* Dark Mode */
---background: 222.2 84% 4.9%         /* Dark navy */
---foreground: 210 40% 98%            /* Off-white */
---primary: 217.2 91.2% 59.8%         /* Lighter blue */
---card: 222.2 84% 4.9%               /* Dark cards */
-```
+### HomePage.jsx
+- Letter-by-letter name animation (AZAAN KHALFE) with staggered delays
+- Social links: GitHub, LinkedIn, Mail (→ navigates to Contact), Resume PDF
+- First-visit animation tracked by module-level `hasPlayedIntro` flag
+- StatusCorner rendered here (not in App) so it only shows on Home
 
-**4. Animation System**
-- Framer Motion for component animations
-- CSS transitions for theme switching (0.3s ease)
-- Custom keyframe animations for special effects
-- Spring physics for natural motion
+### ProjectsPage.jsx
+- 3 projects: LLM Multi-Model Chat System, NFL Fantasy Picker, Portfolio Website
+- Expandable accordion pattern (click to expand/collapse)
+- Expanded state shows: highlights list, tech tags, metrics, GitHub link
+- Staggered enter animations per card
 
-### **Responsive Design Strategy**
+### GamingPage.jsx
+- Uses `useSteamData(['profile', 'recent'])` with memoized args
+- Three states:
+  1. **Loading:** pulse skeleton
+  2. **Currently playing:** full-screen "Now Playing" with pulsing dot + game name
+  3. **Normal:** list of recently played games with playtime
+- Error fallback: "Away from Keyboard"
 
-**Breakpoints:**
-- Mobile: < 768px (single column layout)
-- Tablet: 768px - 992px (2 column bento grid)
-- Desktop: > 992px (3 column bento grid)
-
-**Grid System:**
-- CSS Grid for bento layout (responsive template areas)
-- Bootstrap grid for legacy sections
-- Tailwind utilities for modern components
+### ContactPage.jsx
+- EmailJS integration with rate limiting (Upstash Redis via `rate-check` function)
+- Form fields: name, email, message (underline-style inputs)
+- Button states: idle → sending (spinner) → success (check) → error (retry)
+- 4-second auto-reset after success/error
 
 ---
 
-## ⚙️ LAYOUT CONFIGURATION SYSTEM
+## CSS Custom Properties (Theming)
 
-### **Adaptive Layout Modes**
+Defined in `src/index.css` under `:root` and `.dark`:
 
-The portfolio uses a flexible layout system (src/config/layoutConfig.js):
+| Variable | Light | Dark |
+|----------|-------|------|
+| `--color-bg` | `#f5f0eb` (bone) | `#0f0f0f` |
+| `--color-surface` | `#ffffff` | `#1a1a1a` |
+| `--color-text` | `#1a1a1a` (ink) | `#f5f0eb` |
+| `--color-text-secondary` | `#64748b` | `#94a3b8` |
+| `--color-accent` | `#c45d3e` (terracotta) | `#e07a5f` |
+| `--color-border` | `#e5e0da` | `#2a2a2a` |
+| `--shadow-*` | Light shadows | Darker shadows |
 
-**Available Layouts:**
-1. **TRADITIONAL**: Classic portfolio with paragraph sections
-2. **BENTO**: Full bento grid design for all sections
-3. **HYBRID**: Bento for About, traditional cards for Projects (ACTIVE)
+Utility classes: `.hover-accent`, `.hover-text`, `.hover-accent-bg`, `.grain-overlay`
 
-**Switching Layouts:**
+---
+
+## Hooks
+
+### useSteamData(endpoints, options)
+- Fetches from `/.netlify/functions/steam-proxy?endpoint=<name>`
+- localStorage cache with 5-minute TTL
+- Returns: `{ steamData, loading, error, formatPlaytime, getStats, isOnline, ... }`
+- **Must memoize** endpoint arrays and options objects to prevent infinite re-renders:
+  ```javascript
+  const endpoints = useMemo(() => ['profile', 'recent'], [])
+  const options = useMemo(() => ({ autoRefresh: false }), [])
+  ```
+
+### useDarkMode()
+- Returns: `{ theme, resolvedTheme, setTheme }`
+- `theme`: stored preference ('system' | 'light' | 'dark')
+- `resolvedTheme`: actual applied theme ('light' | 'dark')
+- Listens for system `prefers-color-scheme` changes when in 'system' mode
+- Adds/removes `.dark` class on `<html>`
+
+### useWeather()
+- Fetches from `/.netlify/functions/weather`
+- localStorage cache with 15-minute TTL
+- Returns: `{ temp, condition, icon, text, loading }`
+- Fails silently (keeps null values)
+
+---
+
+## Netlify Functions
+
+| Function | Method | Purpose |
+|----------|--------|---------|
+| `steam-proxy.cjs` | GET | Proxies Steam Web API (hides API key). Endpoints: profile, recent, games, level |
+| `weather.js` | GET | Proxies Open-Meteo API for Bellevue, WA weather. Returns `{ temp, condition, icon, text }`. 15min CDN cache |
+| `rate-check.js` | POST | Upstash Redis rate limiter. Returns 429 when limit exceeded |
+| `steam-test.cjs` | GET | Returns env var presence check (debug) |
+
+---
+
+## Environment Variables
+
+```env
+# Steam API (server-side only — used by steam-proxy.cjs)
+STEAM_API_KEY=<Steam Web API Key>
+STEAM_ID=<Your Steam ID>
+
+# EmailJS (client-side — VITE_ prefix exposes to browser)
+VITE_EMAILJS_SERVICE_ID=<service id>
+VITE_EMAILJS_TEMPLATE_ID=<template id>
+VITE_EMAILJS_PUBLIC_KEY=<public key>
+
+# Upstash Redis (server-side — used by rate-check.js)
+UPSTASH_REDIS_REST_URL=<url>
+UPSTASH_REDIS_REST_TOKEN=<token>
+```
+
+---
+
+## Common Issues & Solutions
+
+### Functions 404 / "Functions Not Found"
+**Cause:** Running `npm run dev` instead of `netlify dev`
+**Fix:** Always use `netlify dev` — it serves functions on port 8888
+
+### Steam Component Infinite Re-renders
+**Cause:** Non-memoized arrays/objects passed to `useSteamData`
+**Fix:** Wrap in `useMemo`:
 ```javascript
-// In layoutConfig.js
-layoutConfig.currentLayout = LAYOUT_TYPES.HYBRID;
-
-// Programmatically
-import { switchLayout } from '../config/layoutConfig';
-switchLayout('bento'); // Changes to bento layout
+const endpoints = useMemo(() => ['profile', 'recent'], [])
 ```
 
-**Current Configuration (HYBRID):**
-- About Section: Enhanced Bento Grid (`BentoAboutEnhanced.jsx`)
-- Projects Section: Traditional Cards (`ProjectsShadcn.jsx`)
-- Animations: Enabled (stagger delay: 0.1s, duration: 0.6s)
+### Environment Variables Not Found
+**Fix:** Verify `.env` file exists in project root, then restart `netlify dev`
+**Test:** `curl http://localhost:8888/.netlify/functions/steam-test`
+
+### Multi-Version Dev — Netlify Site Linking
+**Problem:** `netlify dev` in version folders (v1/, v8/) picks up wrong site config
+**Fix:** Each version folder needs `.netlify/state.json` containing `{}`:
+```bash
+mkdir -p v8/.netlify && echo '{}' > v8/.netlify/state.json
+```
 
 ---
 
-## 🧩 COMPONENT ARCHITECTURE
+## Build & Deploy
 
-### **Core Components**
+```bash
+# Production build (runs Steam tests first)
+npm run build
 
-**App.jsx** - Main application container
-- Manages layout state and re-rendering
-- Implements header animation sequence
-- Lazy loading and suspense boundaries
-- Framer Motion LayoutGroup for smooth transitions
+# Skip tests (faster)
+npm run build:skip-tests
 
-**AdaptiveLayout.jsx** - Layout orchestrator
-- Renders components based on `layoutConfig`
-- Handles layout switching with animations
-- Provides `LayoutSwitcher` utility for testing
+# Direct vite build
+npx vite build
+```
 
-**BentoAboutEnhanced.jsx** - Primary about section
-- 6 bento cards: Bio, Skills, Gaming, Reading, Goals, Connect
-- Advanced Framer Motion animations per card
-- Integrated contact form trigger
-- Responsive grid with custom breakpoints
-- Progress tracking (reading progress: 15%)
+Build output: `dist/` (~312 KB JS gzipped to ~100 KB)
 
-**Key Features:**
-- Hover animations with 3D transforms
-- Floating icon animations
-- Card-specific animation variants
-- Gradient overlays and shimmer effects
+### Build Scripts
+- `build` runs `test:steam` before `vite build` (pre-build safety check)
+- `test:steam` runs `tests/steam-api/steam-api.test.js` against production URL
+- `test:steam:dev` runs same tests against localhost
 
-**ProjectsShadcn.jsx** - Projects showcase
-- 3 featured projects with rich metadata
-- Dynamic icons from Lucide React
-- Animated tags and hover effects
-- GitHub links where available
-- Academic project badges
+---
 
-**SteamBentoCard.jsx** - Steam gaming profile
-- Real-time Steam data integration
-- Game cycling carousel (4-second intervals)
-- Avatar with online status indicator
-- Fallback for missing data
-- Error state with static fallback content
+## Data Files
 
-**ContactFormShadcn.jsx** - Contact modal
-- shadcn Dialog component
-- EmailJS integration
-- Rate limiting via Netlify function
-- Form validation and error handling
-- Success/error animations
-
-**Navbar.jsx** - Navigation bar
-- Sticky positioning with blur backdrop
-- Smooth scroll to sections
-- Theme toggle with icon rotation
-- Staggered item animations
-- Mobile-responsive collapse menu
-
-**ThemeContext.jsx** - Theme provider
-- Dark mode state management
-- localStorage persistence
-- System preference detection
-- Transition coordination
-- Dynamic style injection
-
-### **UI Components (shadcn/ui)**
-
-All in `src/components/ui/`:
-- **alert.jsx**: Alert messages with variants
-- **avatar.jsx**: User avatars with image and fallback (used in SteamBentoCard)
-- **badge.jsx**: Tag/label components (used for skill tags and project tags)
-- **button.jsx**: Button with variants (default, outline, ghost, etc.)
-- **card.jsx**: Card container with header/content/footer
-- **dialog.jsx**: Modal dialog (Radix UI Dialog)
-- **input.jsx**: Form input with focus states
-- **label.jsx**: Form labels
-- **progress.jsx**: Progress bar with customizable indicator (used for reading progress)
-- **separator.jsx**: Visual divider between sections
-- **textarea.jsx**: Multi-line text input
-- **tooltip.jsx**: Hover tooltips with TooltipProvider (used in Connect section)
-
-Built on **Radix UI primitives** for accessibility.
-
-**Radix UI Dependencies:**
+### src/data/status.json
+Manually updated. Controls StatusCorner display on HomePage:
 ```json
 {
-  "@radix-ui/react-avatar": "^1.x",
-  "@radix-ui/react-dialog": "^1.x",
-  "@radix-ui/react-label": "^2.x",
-  "@radix-ui/react-progress": "^1.x",
-  "@radix-ui/react-separator": "^1.x",
-  "@radix-ui/react-slot": "^1.x",
-  "@radix-ui/react-tooltip": "^1.x"
+  "reading": { "title": "...", "author": "...", "progress": 45 },
+  "status": "Building LLM tools",
+  "location": { "city": "Bellevue, WA", "timezone": "America/Los_Angeles" }
 }
-
----
-
-## 🔌 CUSTOM HOOKS
-
-### **useSteamData Hook** (src/hooks/useSteamData.js)
-
-**Purpose**: Fetch and manage Steam Web API data
-
-**API:**
-```javascript
-const {
-  steamData,        // { profile, recentGames, gameLibrary, level }
-  loading,          // Boolean loading state
-  error,            // Error message or null
-  hasProfile,       // Boolean: profile data exists
-  hasRecentGames,   // Boolean: recent games exist
-  hasGameLibrary,   // Boolean: game library exists
-  getStats,         // Function: calculate gaming statistics
-  formatPlaytime,   // Function: format minutes to readable string
-  isOnline,         // Function: check if user is online
-  getCurrentGame,   // Function: get most recent game
-  refetch          // Function: manually trigger re-fetch
-} = useSteamData(['profile', 'recent'], options);
-```
-
-**Endpoints:**
-- `'profile'`: Player profile summary
-- `'recent'`: Recently played games
-- `'games'`: Full game library
-- `'level'`: Steam level
-
-**Options:**
-```javascript
-{
-  enableDebug: false,    // Log debug info to console
-  autoRefresh: false     // Auto-refresh disabled (prevents issues)
-}
-```
-
-**Key Features:**
-- Stable dependencies (avoids infinite loops)
-- Mounted flag prevents memory leaks
-- Error state preservation
-- Endpoint string join for stability
-- Memoized helper functions
-
-**Best Practices:**
-```javascript
-// ✅ Correct: Memoize props
-const endpoints = useMemo(() => ['profile', 'recent'], []);
-const options = useMemo(() => ({ autoRefresh: false }), []);
-const steamData = useSteamData(endpoints, options);
-
-// ❌ Wrong: New objects every render
-const steamData = useSteamData(['profile', 'recent'], { autoRefresh: false });
 ```
 
 ---
 
-## 🎮 Steam Integration Architecture & Troubleshooting Guide
+## Key Patterns
 
-This section contains critical knowledge for maintaining and troubleshooting the Steam API integration.
+1. **Always use `netlify dev`** for local development
+2. **Memoize hook arguments** — arrays and objects passed to custom hooks must be wrapped in `useMemo`
+3. **`motion/react`** — import from `motion/react`, not `framer-motion`
+4. **CSS custom properties** — use `var(--color-*)` for theming, not Tailwind color classes directly
+5. **Module-level flags** — `hasPlayedIntro` in HomePage prevents re-animating on page revisit
+6. **Reduced motion** — `MotionConfig reducedMotion="user"` handles globally; Navigation also uses `useReducedMotion` for spring jumps
+7. **No unused dependencies** — project is lean (no Bootstrap, no Radix, no shadcn components, no Font Awesome)
+
+---
+
+## Migration History
+
+**February 2026:** Replaced entire frontend with v8 "Architectural Minimalism" design.
+- Removed: Bootstrap, Font Awesome, shadcn/ui, Radix UI, Animate UI, framer-motion, ThemeContext, layoutConfig, bento grid, scroll-based layout
+- Added: Multi-page state architecture, gravity-shift navigation, weather integration, StatusCorner, per-letter hero animation, Motion library
+- Preserved: All Netlify Functions, .env, tests, deployment config, dev scripts
