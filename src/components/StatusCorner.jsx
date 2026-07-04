@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'motion/react'
 import {
   BookOpen,
@@ -15,19 +15,19 @@ import status from '../data/status.json'
 import useWeather from '../hooks/useWeather'
 
 function useLocalTime(timezone) {
-  const format = () =>
+  const format = useCallback(() =>
     new Date().toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
       timeZone: timezone,
-    })
+    }), [timezone])
 
   const [time, setTime] = useState(format)
 
   useEffect(() => {
     const id = setInterval(() => setTime(format()), 30_000)
     return () => clearInterval(id)
-  }, [timezone])
+  }, [format])
 
   return time
 }

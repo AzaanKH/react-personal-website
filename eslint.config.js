@@ -7,6 +7,7 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 export default [
   { 
     ignores: [
+      '.netlify/**',
       'dist', 
       'node_modules', 
       'netlify/functions/**/*.cjs',

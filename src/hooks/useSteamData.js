@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 
 const CACHE_KEY_PREFIX = 'steam_cache_';
 const CACHE_TTL = 5 * 60 * 1000;
@@ -56,6 +56,7 @@ export const useSteamData = (endpoints = ['profile', 'recent'], _options = {}) =
   const [usingCache, setUsingCache] = useState(false);
 
   const endpointsKey = endpoints.join(',');
+  const endpointList = useMemo(() => endpointsKey.split(',').filter(Boolean), [endpointsKey]);
 
   const refetchData = useCallback(() => {}, []);
 
@@ -64,18 +65,19 @@ export const useSteamData = (endpoints = ['profile', 'recent'], _options = {}) =
 
     const doFetch = async () => {
       if (!mounted) return;
+      let servedCachedData = false;
 
       try {
         setLoading(true);
         setError(null);
         setUsingCache(false);
 
-        const cachedResponses = endpoints.map(endpoint => {
+        const cachedResponses = endpointList.map(endpoint => {
           const cached = getCachedData(endpoint);
           return cached ? { endpoint, data: cached, success: true, fromCache: true } : null;
         }).filter(Boolean);
 
-        if (cachedResponses.length === endpoints.length) {
+        if (cachedResponses.length === endpointList.length) {
           const newSteamData = {};
           let hasAnyData = false;
 
@@ -116,13 +118,14 @@ export const useSteamData = (endpoints = ['profile', 'recent'], _options = {}) =
           if (mounted && hasAnyData) {
             setSteamData(newSteamData);
             setUsingCache(true);
+            servedCachedData = true;
             setLoading(false);
             setError(null);
           }
         }
 
         const responses = await Promise.all(
-          endpoints.map(async (endpoint) => {
+          endpointList.map(async (endpoint) => {
             try {
               const url = `/.netlify/functions/steam-proxy?endpoint=${endpoint}`;
               const controller = new AbortController();
@@ -208,14 +211,14 @@ export const useSteamData = (endpoints = ['profile', 'recent'], _options = {}) =
           setUsingCache(false);
           setError(null);
         } else {
-          if (!usingCache) {
+          if (!servedCachedData) {
             setError('No Steam data received from any endpoint');
           }
         }
 
       } catch (err) {
         if (mounted) {
-          if (!usingCache) {
+          if (!servedCachedData) {
             setError(`Steam data fetch failed: ${err.message}`);
           }
         }
@@ -231,7 +234,7 @@ export const useSteamData = (endpoints = ['profile', 'recent'], _options = {}) =
     return () => {
       mounted = false;
     };
-  }, [endpointsKey]);
+  }, [endpointList]);
 
   const getStats = () => {
     if (!steamData.gameLibrary) return null;

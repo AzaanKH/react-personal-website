@@ -21,12 +21,15 @@ function getCached() {
 function setCache(data) {
   try {
     localStorage.setItem(CACHE_KEY, JSON.stringify({ data, timestamp: Date.now() }))
-  } catch {}
+  } catch {
+    // localStorage may be unavailable or full; weather can still render without cache.
+  }
 }
 
 export default function useWeather() {
-  const [weather, setWeather] = useState(() => getCached())
-  const [loading, setLoading] = useState(!getCached())
+  const [initialWeather] = useState(() => getCached())
+  const [weather, setWeather] = useState(initialWeather)
+  const [loading, setLoading] = useState(!initialWeather)
 
   useEffect(() => {
     const cached = getCached()
