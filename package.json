@@ -17,8 +17,6 @@
     "check": "npm run lint && npm test && npm run build"
   },
   "dependencies": {
-    "@upstash/ratelimit": "^2.2.0",
-    "@upstash/redis": "^1.39.0",
     "lucide-react": "^1.52.0",
     "motion": "^12.43.0",
     "react": "^19.3.0",

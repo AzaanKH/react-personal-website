@@ -22,7 +22,7 @@ A minimal, animated portfolio built with React featuring client-side routing, li
 | Styling | Tailwind CSS 3 with CSS custom properties |
 | Animation | Motion 12 (`motion/react`) |
 | Icons | Lucide React (+ inline GitHub/LinkedIn SVGs) |
-| Contact | Netlify Function → Resend, Netlify rate limit + Upstash Redis |
+| Contact | Netlify Function → Resend, Netlify platform rate limit |
 | Steam API | Netlify Function proxy (`/api/steam`) |
 | Weather | Netlify Function proxy (Open-Meteo) |
 | Tests | Vitest + Testing Library (jsdom) |
@@ -57,7 +57,6 @@ Copy `.env.example` to `.env` for local development, and set the same values in 
 | `RESEND_API_KEY` | `contact` | [Resend](https://resend.com) API key |
 | `CONTACT_TO_EMAIL` | `contact` | Where messages are delivered |
 | `CONTACT_FROM_EMAIL` | `contact` | Sender, e.g. `Portfolio <contact@yourdomain.com>` (a domain verified in Resend; `onboarding@resend.dev` works for testing but only delivers to your Resend account email) |
-| `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` | `contact` | Optional. Adds a 3-per-10-minutes limit per IP on top of Netlify's platform limit. |
 
 If the Resend variables are missing, the contact endpoint returns 503 and the form tells visitors to email directly.
 
@@ -66,7 +65,7 @@ If the Resend variables are missing, the contact endpoint returns 503 and the fo
 | Path | Function | Notes |
 |------|----------|-------|
 | `GET /api/steam?endpoint=profile\|recent\|games\|level` | `netlify/functions/steam-proxy.js` | Ignores any caller-supplied Steam ID, clamps `count`, 8s upstream timeout. Platform rate limit: 60/min per IP. |
-| `POST /api/contact` | `netlify/functions/contact.js` | JSON `{ name, email, message }`. Validates (shared rules in `src/lib/contactValidation.js`), rate-limits, then sends. Fails closed if the limiter errors. Platform rate limit: 5 per 3 min per IP. |
+| `POST /api/contact` | `netlify/functions/contact.js` | JSON `{ name, email, message }`. Validates (shared rules in `src/lib/contactValidation.js`), then sends via Resend. Netlify platform rate limit: 5 per 3 min per IP, enforced before the function runs. |
 | `GET /.netlify/functions/weather` | `netlify/functions/weather.js` | Open-Meteo, 15 min cache. |
 
 Request handling lives in `netlify/lib/` so it can be unit-tested without the Netlify runtime.

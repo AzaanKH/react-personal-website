@@ -23,30 +23,6 @@ function isCrossOrigin(req) {
 
 const singleLine = (value) => value.replace(/[\r\n]+/g, ' ').trim()
 
-// Returns `(key) => Promise<{ success, reset }>` backed by Upstash, or null when
-// Upstash isn't configured (the platform rate limit on the function still applies).
-export async function createUpstashLimiter({ url, token }) {
-  if (!url || !token) return null
-
-  let Ratelimit, Redis
-  try {
-    ;[{ Ratelimit }, { Redis }] = await Promise.all([
-      import('@upstash/ratelimit'),
-      import('@upstash/redis'),
-    ])
-  } catch (error) {
-    // Configured but unusable: surface it as a limiter failure so the handler fails closed.
-    return async () => { throw error }
-  }
-
-  const ratelimit = new Ratelimit({
-    redis: new Redis({ url, token }),
-    limiter: Ratelimit.slidingWindow(3, '10 m'),
-    prefix: 'contact_rate_limit',
-  })
-  return (key) => ratelimit.limit(key)
-}
-
 export async function sendWithResend({ apiKey, from, to, name, email, message, fetchImpl = fetch }) {
   const response = await fetchImpl(RESEND_ENDPOINT, {
     method: 'POST',
@@ -69,14 +45,13 @@ export async function sendWithResend({ apiKey, from, to, name, email, message, f
   }
 }
 
-// Validation, rate limiting, and delivery happen in one request, so none of them
-// can be skipped by posting somewhere else.
+// Validation and delivery happen in one request, so neither can be skipped by
+// posting somewhere else. Rate limiting is enforced by Netlify before this runs
+// (see `config.rateLimit` in netlify/functions/contact.js).
 export async function handleContactRequest(req, {
-  ip,
   resendApiKey,
   toEmail,
   fromEmail,
-  limiter,
   send = sendWithResend,
 }) {
   if (req.method !== 'POST') {
@@ -120,26 +95,6 @@ export async function handleContactRequest(req, {
   if (!resendApiKey || !toEmail || !fromEmail) {
     console.error('contact: RESEND_API_KEY, CONTACT_TO_EMAIL, or CONTACT_FROM_EMAIL is not configured')
     return json({ error: 'The contact form is temporarily unavailable. Please email me directly.' }, 503)
-  }
-
-  if (limiter) {
-    let result
-    try {
-      result = await limiter(`ip:${ip ?? 'unknown'}`)
-    } catch (error) {
-      // Fail closed: an unavailable limiter must not become an unlimited one.
-      console.error('contact: rate limiter unavailable', error?.message)
-      return json({ error: 'The contact form is temporarily unavailable. Please email me directly.' }, 503)
-    }
-
-    if (!result.success) {
-      const retryAfter = Math.max(1, Math.ceil((result.reset - Date.now()) / 1000))
-      return json(
-        { error: 'Too many messages. Please try again in a few minutes.', retryAfter },
-        429,
-        { 'Retry-After': String(retryAfter) },
-      )
-    }
   }
 
   try {

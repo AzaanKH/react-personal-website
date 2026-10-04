@@ -79,6 +79,17 @@ describe('ContactPage', () => {
     expect(screen.getByLabelText('Message')).toHaveValue('I would love to chat about a role.')
   })
 
+  it("explains Netlify's platform rate limit, which has no JSON body", async () => {
+    fetchMock.mockResolvedValueOnce(new Response('Too Many Requests', { status: 429 }))
+    const user = userEvent.setup()
+    render(<ContactPage />)
+
+    await fillForm(user)
+    await user.click(submit())
+
+    expect(await screen.findByText(/wait a few minutes/i)).toBeInTheDocument()
+  })
+
   it('shows server-side field errors', async () => {
     fetchMock.mockResolvedValueOnce(
       Response.json(

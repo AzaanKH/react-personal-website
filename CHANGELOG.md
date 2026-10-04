@@ -8,7 +8,7 @@ All notable changes and improvements to this project are documented in this file
 
 ### Security
 - Steam proxy (`/api/steam`) now always uses the configured `STEAM_ID`, ignores `steamid`, clamps `count`, encodes parameters, times out upstream calls, and has a Netlify platform rate limit.
-- Contact form now posts to a `/api/contact` function that validates, rate-limits (platform + Upstash, fail-closed), and sends via Resend in one request. Netlify Forms and `rate-check` were removed, so the limit can't be bypassed.
+- Contact form now posts to a `/api/contact` function that validates and sends via Resend, behind Netlify's platform per-IP rate limit. Netlify Forms, `rate-check`, and Upstash were removed (the Upstash database no longer existed, and the old check let everything through when it failed), so the limit can't be bypassed.
 - CI no longer writes Steam secrets to `.env.test` or lists that file for artifact upload (upload-artifact v4 skips dotfiles, so no leak was established), and it now needs no secrets at all.
 - Production source maps are no longer published.
 

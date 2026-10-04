@@ -3,11 +3,9 @@ import { handleContactRequest, sendWithResend } from '../../netlify/lib/contact.
 
 const validBody = { name: 'Ada', email: 'ada@example.com', message: 'Hello from the tests!' }
 const config = (overrides = {}) => ({
-  ip: '203.0.113.7',
   resendApiKey: 're_test',
   toEmail: 'owner@example.com',
   fromEmail: 'Portfolio <contact@example.com>',
-  limiter: vi.fn(async () => ({ success: true, reset: Date.now() + 60_000 })),
   send: vi.fn(async () => {}),
   ...overrides,
 })
@@ -21,13 +19,12 @@ function post(body, headers = {}) {
 }
 
 describe('handleContactRequest', () => {
-  it('validates, rate-limits by IP, and sends a valid message', async () => {
+  it('validates and sends a valid message', async () => {
     const options = config()
     const res = await handleContactRequest(post(validBody), options)
 
     expect(res.status).toBe(200)
     expect(await res.json()).toEqual({ ok: true })
-    expect(options.limiter).toHaveBeenCalledWith('ip:203.0.113.7')
     expect(options.send).toHaveBeenCalledWith(expect.objectContaining({
       to: 'owner@example.com',
       name: 'Ada',
@@ -36,30 +33,12 @@ describe('handleContactRequest', () => {
     }))
   })
 
-  it('rejects invalid input before rate limiting or sending', async () => {
+  it('rejects invalid input without sending', async () => {
     const options = config()
     const res = await handleContactRequest(post({ ...validBody, email: 'nope' }), options)
 
     expect(res.status).toBe(400)
     expect((await res.json()).errors).toEqual({ email: 'Enter a valid email address.' })
-    expect(options.limiter).not.toHaveBeenCalled()
-    expect(options.send).not.toHaveBeenCalled()
-  })
-
-  it('returns 429 with Retry-After when the limit is exceeded', async () => {
-    const options = config({ limiter: vi.fn(async () => ({ success: false, reset: Date.now() + 120_000 })) })
-    const res = await handleContactRequest(post(validBody), options)
-
-    expect(res.status).toBe(429)
-    expect(Number(res.headers.get('Retry-After'))).toBeGreaterThan(100)
-    expect(options.send).not.toHaveBeenCalled()
-  })
-
-  it('fails closed when the limiter errors', async () => {
-    const options = config({ limiter: vi.fn(async () => { throw new Error('redis down') }) })
-    const res = await handleContactRequest(post(validBody), options)
-
-    expect(res.status).toBe(503)
     expect(options.send).not.toHaveBeenCalled()
   })
 

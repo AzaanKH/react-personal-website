@@ -129,7 +129,13 @@ export default function ContactPage() {
           setTouched({ name: true, email: true, message: true })
           focusFirstError(result.errors)
         }
-        setErrorMessage(result.error || 'Failed to send message. Please try again.')
+        // Netlify's platform rate limit answers 429 before the function runs, without a JSON body.
+        setErrorMessage(
+          result.error ||
+            (response.status === 429
+              ? 'Too many messages. Please wait a few minutes and try again.'
+              : 'Failed to send message. Please try again.'),
+        )
         setStatus('error')
         return
       }

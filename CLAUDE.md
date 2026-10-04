@@ -22,7 +22,7 @@ npm run test:live  # network smoke test of /api/steam (TEST_BASE_URL to override
 | Styling | Tailwind CSS 3.4 + CSS custom properties (`--color-*`). Tailwind 4 migration not done yet. |
 | Animation | Motion 12 (`motion/react`) |
 | Icons | lucide-react 1.x. Brand icons were removed upstream, so GitHub/LinkedIn are in `components/BrandIcons.jsx`. |
-| Contact | `POST /api/contact` function → Resend email; Netlify platform rate limit + optional Upstash |
+| Contact | `POST /api/contact` function → Resend email; Netlify platform rate limit |
 | Steam | `GET /api/steam` function (always the configured `STEAM_ID`) |
 | Weather | `/.netlify/functions/weather` → Open-Meteo |
 | Tests | Vitest 5 + Testing Library + jsdom (`tests/unit`) |
@@ -48,10 +48,12 @@ Modern (v2) functions: `export default async (req, context) => Response` plus `e
 | Path | Files | Behaviour |
 |------|-------|-----------|
 | `GET /api/steam?endpoint=` | `functions/steam-proxy.js`, `lib/steam.js` | Endpoints: profile, recent, games, level. Ignores `steamid`, clamps `count` to 1–20, builds URLs with `URLSearchParams`, 8s upstream timeout (504), never echoes upstream bodies. Cache: profile 60s, recent 10m, games 1h, level 1d. Platform limit 60/min/IP. |
-| `POST /api/contact` | `functions/contact.js`, `lib/contact.js` | JSON only, same-origin only, ≤20 KB. Honeypot field `website` → fake 200. Validates with `src/lib/contactValidation.js`, which the form shares. Upstash limiter (3 per 10 min) **fails closed** (503). Sends via Resend REST. Platform limit 5 per 3 min per IP. |
+| `POST /api/contact` | `functions/contact.js`, `lib/contact.js` | JSON only, same-origin only, ≤20 KB. Honeypot field `website` → fake 200. Validates with `src/lib/contactValidation.js` (shared with the form), then sends via Resend REST. Rate limiting is Netlify's platform limit only (5 per 3 min per IP, 429 before the function runs, no JSON body; ContactPage handles that). Upstash was removed: its database stopped resolving, and the old fail-open limiter had been hiding that. |
 | `/.netlify/functions/weather` | `functions/weather.js` | Bellevue, WA; 15 min cache. |
 
 Netlify Forms is **no longer used**: there is no hidden form in `index.html`. Delivery happens only inside the function, so the rate limit can't be bypassed.
+
+Local testing: `CONTACT_FROM_EMAIL=Portfolio <onboarding@resend.dev>` only delivers to the Resend account's email (azaankhalfe@gmail.com), which is also `CONTACT_TO_EMAIL`. Every local submit sends a real email.
 
 ---
 
@@ -93,7 +95,7 @@ CSS variables in `src/index.css` (`:root` / `.dark`): `--color-bg`, `--color-sur
 2. Import from `motion/react`, not `framer-motion`.
 3. `hasPlayedIntro` (module-level, HomePage) prevents replaying the intro animation.
 4. `MotionConfig reducedMotion="user"` handles reduced motion globally; Navigation also jumps its spring.
-5. Keep the dependency list lean. `clsx`, `tailwind-merge`, `tailwindcss-animate`, `node-fetch`, `dotenv`, and shadcn config were removed as unused.
+5. Keep the dependency list lean. `clsx`, `tailwind-merge`, `tailwindcss-animate`, `node-fetch`, `dotenv`, `@upstash/*`, and shadcn config were removed.
 
 ## Known follow-ups
 
