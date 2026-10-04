@@ -2,333 +2,100 @@
 
 ## Quick Start
 
-**IMPORTANT:** Always use `netlify dev` to run the development server (NOT `npm run dev`).
+**Always use `netlify dev`** (not `npm run dev`). It loads `.env`, runs the Netlify Functions, and proxies Vite at http://localhost:8888.
 
 ```bash
 netlify dev
-# Loads .env, starts Netlify Functions on port 8888, proxies Vite dev server
-# Access at: http://localhost:8888
+npm run check      # lint + unit tests + build — run before committing
+npm run test:live  # network smoke test of /api/steam (TEST_BASE_URL to override)
 ```
-
-If you use `npm run dev` instead, Netlify Functions (Steam API, weather, rate limiting) won't be available.
 
 ---
 
 ## Architecture Overview
 
-**"Architectural Minimalism" (v8)** — state-based multi-page app. Pages swap via `activePage` state in `App.jsx`. No router library.
-
-**Pages:** Home, Projects, Gaming, Contact
-**Navigation:** Gravity-shift nav bar (bottom on Home, top on other pages) with spring physics
-**Design language:** Terracotta accent, bone/ink palette, Space Grotesk + Cormorant Garamond fonts, grain texture overlay
-
-### Tech Stack
+**"Architectural Minimalism" (v8)**: a single-page app with a hand-rolled router. `App.jsx` holds `activePage`; `pushState`/`popstate` keep the URL in sync. No router library.
 
 | Layer | Technology |
 |-------|-----------|
-| Framework | React 18.3.1 + Vite 5.4.10 |
-| Styling | Tailwind CSS 3.4.17 (pure — no Bootstrap, no shadcn/Radix) |
-| Animation | Motion 12.29.2 (`motion/react` — the renamed Framer Motion) |
-| Icons | Lucide React |
-| Contact | EmailJS + Upstash Redis rate limiting |
-| Steam API | Netlify Functions proxy (`steam-proxy.cjs`) |
-| Weather | Netlify Function proxy (`weather.js`) → Open-Meteo API (free, no key) |
-| Dark mode | `useDarkMode` hook (system/light/dark cycle, localStorage) |
-| Deployment | Netlify (azaankhalfe.netlify.app) |
-
-### Key Design Decisions
-
-- **No router** — `activePage` state + `AnimatePresence` for page transitions
-- **No component library** — pure Tailwind with CSS custom properties (`--color-*`)
-- **No Context API** — dark mode via `useDarkMode` hook (simpler than ThemeContext)
-- **`motion/react`** — the `motion` package (not legacy `framer-motion`)
-- **`MotionConfig reducedMotion="user"`** — respects `prefers-reduced-motion` globally
+| Framework | React 19.3 + Vite 8 |
+| Styling | Tailwind CSS 3.4 + CSS custom properties (`--color-*`). Tailwind 4 migration not done yet. |
+| Animation | Motion 12 (`motion/react`) |
+| Icons | lucide-react 1.x. Brand icons were removed upstream, so GitHub/LinkedIn are in `components/BrandIcons.jsx`. |
+| Contact | `POST /api/contact` function → Resend email; Netlify platform rate limit + optional Upstash |
+| Steam | `GET /api/steam` function (always the configured `STEAM_ID`) |
+| Weather | `/.netlify/functions/weather` → Open-Meteo |
+| Tests | Vitest 5 + Testing Library + jsdom (`tests/unit`) |
+| Node | 24 (netlify.toml, CI, `.nvmrc`); Vite 8 needs ≥ 22.12 |
 
 ---
 
-## File Structure
+## Routing (`src/lib/routes.js`)
 
-```
-my-portfolio/
-├── src/
-│   ├── App.jsx                         # Main app — activePage state, page switching
-│   ├── main.jsx                        # React entry point
-│   ├── index.css                       # Tailwind + CSS custom properties (light/dark)
-│   │
-│   ├── components/
-│   │   ├── Navigation.jsx              # Gravity-shift nav (bottom↔top), spring physics
-│   │   ├── DarkModeToggle.jsx          # Theme cycle: system → light → dark
-│   │   ├── PageTransition.jsx          # Page enter/exit animations
-│   │   └── StatusCorner.jsx            # Bottom corners: reading status + weather + time
-│   │
-│   ├── pages/
-│   │   ├── HomePage.jsx                # Hero: letter-by-letter name animation, social links
-│   │   ├── ProjectsPage.jsx            # Expandable accordion project cards (3 projects)
-│   │   ├── GamingPage.jsx              # Steam API: recently played games, "Now Playing" state
-│   │   └── ContactPage.jsx             # EmailJS form with rate limiting
-│   │
-│   ├── hooks/
-│   │   ├── useSteamData.js             # Steam API data fetching + localStorage cache (5min TTL)
-│   │   ├── useDarkMode.js              # Theme state: system/light/dark, localStorage persistence
-│   │   └── useWeather.js               # Weather from /.netlify/functions/weather, 15min cache
-│   │
-│   ├── data/
-│   │   └── status.json                 # Reading status, location metadata for StatusCorner
-│   │
-│   └── lib/
-│       └── utils.js                    # cn() — clsx + tailwind-merge
-│
-├── netlify/functions/
-│   ├── steam-proxy.cjs                 # Steam Web API proxy (profile, recent, games, level)
-│   ├── weather.js                      # Open-Meteo weather proxy (Bellevue, WA), 15min CDN cache
-│   ├── rate-check.js                   # Upstash Redis rate limiter for contact form
-│   ├── steam-test.cjs                  # Environment variable testing
-│   ├── debug.cjs                       # Debug utility
-│   ├── hello.cjs                       # Test function
-│   └── test-endpoint.cjs               # Endpoint testing
-│
-├── public/
-│   ├── Azaan_Khalfe_Resume.pdf         # Resume (linked from HomePage)
-│   ├── azaan_resume_.pdf               # Legacy resume
-│   ├── steam-direct-test.html          # Steam API testing page
-│   └── debug-steam.html               # Steam debugging tools
-│
-├── tests/
-│   └── steam-api/                      # Steam API integration tests
-│
-├── Configuration
-│   ├── .env                            # Secrets: STEAM_API_KEY, STEAM_ID, VITE_EMAILJS_*, UPSTASH_*
-│   ├── netlify.toml                    # Netlify deployment config
-│   ├── index.html                      # Google Fonts (Space Grotesk + Cormorant Garamond) + preloads
-│   ├── tailwind.config.js              # Custom: ink/bone/terracotta/slate colors, font families
-│   ├── vite.config.js                  # @ alias, Netlify functions proxy, build optimizations
-│   ├── components.json                 # shadcn config (new-york style, JSX, Lucide icons)
-│   ├── postcss.config.js               # PostCSS + Autoprefixer
-│   ├── jsconfig.json                   # @ path alias for IDE
-│   └── eslint.config.js                # ESLint with React plugins
-│
-└── Dev Scripts
-    ├── dev-with-tests.js
-    ├── dev-proxy.js
-    └── start-dev.bat
-```
-
----
-
-## Component Architecture
-
-### App.jsx — Root
-- `activePage` state drives which page renders (`pages` object maps string → component)
-- `AnimatePresence mode="wait"` for page transitions
-- `MotionConfig reducedMotion="user"` wraps everything
-- Grain texture overlay + subtle accent gradient (top-right corner wash)
-- `mainRef` resets scroll position on page exit
-
-### Navigation.jsx — Gravity Nav
-- **Home:** nav sits at bottom of viewport
-- **Other pages:** nav springs to top (y=24px)
-- Uses `useSpring` for physics-based position, `useTransform` for scale/glow during travel
-- `ResizeObserver` tracks nav height for accurate positioning
-- Active page indicator: terracotta line slides under active button
-- `useReducedMotion` — jumps instead of animating when reduced motion preferred
-
-### DarkModeToggle.jsx
-- Cycles: system → light → dark
-- Animated icon swap (Monitor → Sun → Moon) with rotation
-- Fixed top-right position (z-50)
-
-### PageTransition.jsx
-- Fade-in + slide-up on enter, fade-out on exit
-- Custom easing curves: `[0.16, 1, 0.3, 1]` (enter), `[0.7, 0, 0.84, 0]` (exit)
-
-### StatusCorner.jsx (Home page only)
-- **Bottom-left:** Currently reading (title, author, progress bar from `status.json`)
-- **Bottom-right:** Status message + weather (city, temp, time)
-- Weather icon mapped from condition string (Clear→Sun, Rain→CloudRain, etc.)
-- `useLocalTime` hook updates clock every 30s
-- Hidden on mobile (`hidden sm:flex`)
-- Entrance animation delayed after hero animation completes
-
-### HomePage.jsx
-- Letter-by-letter name animation (AZAAN KHALFE) with staggered delays
-- Social links: GitHub, LinkedIn, Mail (→ navigates to Contact), Resume PDF
-- First-visit animation tracked by module-level `hasPlayedIntro` flag
-- StatusCorner rendered here (not in App) so it only shows on Home
-
-### ProjectsPage.jsx
-- 3 projects: LLM Multi-Model Chat System, NFL Fantasy Picker, Portfolio Website
-- Expandable accordion pattern (click to expand/collapse)
-- Expanded state shows: highlights list, tech tags, metrics, GitHub link
-- Staggered enter animations per card
-
-### GamingPage.jsx
-- Uses `useSteamData(['profile', 'recent'])` with memoized args
-- Three states:
-  1. **Loading:** pulse skeleton
-  2. **Currently playing:** full-screen "Now Playing" with pulsing dot + game name
-  3. **Normal:** list of recently played games with playtime
-- Error fallback: "Away from Keyboard"
-
-### ContactPage.jsx
-- EmailJS integration with rate limiting (Upstash Redis via `rate-check` function)
-- Form fields: name, email, message (underline-style inputs)
-- Button states: idle → sending (spinner) → success (check) → error (retry)
-- 4-second auto-reset after success/error
-
----
-
-## CSS Custom Properties (Theming)
-
-Defined in `src/index.css` under `:root` and `.dark`:
-
-| Variable | Light | Dark |
-|----------|-------|------|
-| `--color-bg` | `#f5f0eb` (bone) | `#0f0f0f` |
-| `--color-surface` | `#ffffff` | `#1a1a1a` |
-| `--color-text` | `#1a1a1a` (ink) | `#f5f0eb` |
-| `--color-text-secondary` | `#64748b` | `#94a3b8` |
-| `--color-accent` | `#c45d3e` (terracotta) | `#e07a5f` |
-| `--color-border` | `#e5e0da` | `#2a2a2a` |
-| `--shadow-*` | Light shadows | Darker shadows |
-
-Utility classes: `.hover-accent`, `.hover-text`, `.hover-accent-bg`, `.grain-overlay`
-
----
-
-## Hooks
-
-### useSteamData(endpoints, options)
-- Fetches from `/.netlify/functions/steam-proxy?endpoint=<name>`
-- localStorage cache with 5-minute TTL
-- Returns: `{ steamData, loading, error, formatPlaytime, getStats, isOnline, ... }`
-- **Must memoize** endpoint arrays and options objects to prevent infinite re-renders:
-  ```javascript
-  const endpoints = useMemo(() => ['profile', 'recent'], [])
-  const options = useMemo(() => ({ autoRefresh: false }), [])
-  ```
-
-### useDarkMode()
-- Returns: `{ theme, resolvedTheme, setTheme }`
-- `theme`: stored preference ('system' | 'light' | 'dark')
-- `resolvedTheme`: actual applied theme ('light' | 'dark')
-- Listens for system `prefers-color-scheme` changes when in 'system' mode
-- Adds/removes `.dark` class on `<html>`
-
-### useWeather()
-- Fetches from `/.netlify/functions/weather`
-- localStorage cache with 15-minute TTL
-- Returns: `{ temp, condition, icon, text, loading }`
-- Fails silently (keeps null values)
+- `routes` is the single source of truth: path, nav label, `<title>`, meta description.
+- `applyPageMetadata(page)` updates title, description, canonical, og:*, twitter:* on every page change. `index.html` ships the home page's values for non-JS crawlers.
+- Nav and in-page links use `components/RouteLink.jsx`: a real `<a href>` that does client-side navigation on a plain left click and leaves modifier clicks to the browser.
+- After in-app navigation (not the first load), `PageTransition` focuses the new page's `h1`. **Every page must render exactly one `h1`.** GamingPage uses a stable `sr-only` h1 because its visible heading changes with loading/playing state.
+- `netlify.toml` lists SPA routes explicitly. **Do not reintroduce a `/*` → `/index.html` rewrite**: under `netlify dev` it rewrites Vite's `/src/*` and `/@vite/*` modules to HTML and the page goes blank. Adding a page means updating `routes.js` and `netlify.toml`.
+- Unknown paths: `public/404.html` in production (Vite's own fallback in dev).
 
 ---
 
 ## Netlify Functions
 
-| Function | Method | Purpose |
-|----------|--------|---------|
-| `steam-proxy.cjs` | GET | Proxies Steam Web API (hides API key). Endpoints: profile, recent, games, level |
-| `weather.js` | GET | Proxies Open-Meteo API for Bellevue, WA weather. Returns `{ temp, condition, icon, text }`. 15min CDN cache |
-| `rate-check.js` | POST | Upstash Redis rate limiter. Returns 429 when limit exceeded |
-| `steam-test.cjs` | GET | Returns env var presence check (debug) |
+Modern (v2) functions: `export default async (req, context) => Response` plus `export const config = { path, rateLimit }`. Read env with `Netlify.env.get()`. Handler logic lives in `netlify/lib/*.js` and takes explicit params, so it can be unit-tested without the runtime.
+
+| Path | Files | Behaviour |
+|------|-------|-----------|
+| `GET /api/steam?endpoint=` | `functions/steam-proxy.js`, `lib/steam.js` | Endpoints: profile, recent, games, level. Ignores `steamid`, clamps `count` to 1–20, builds URLs with `URLSearchParams`, 8s upstream timeout (504), never echoes upstream bodies. Cache: profile 60s, recent 10m, games 1h, level 1d. Platform limit 60/min/IP. |
+| `POST /api/contact` | `functions/contact.js`, `lib/contact.js` | JSON only, same-origin only, ≤20 KB. Honeypot field `website` → fake 200. Validates with `src/lib/contactValidation.js`, which the form shares. Upstash limiter (3 per 10 min) **fails closed** (503). Sends via Resend REST. Platform limit 5 per 3 min per IP. |
+| `/.netlify/functions/weather` | `functions/weather.js` | Bellevue, WA; 15 min cache. |
+
+Netlify Forms is **no longer used**: there is no hidden form in `index.html`. Delivery happens only inside the function, so the rate limit can't be bypassed.
 
 ---
 
-## Environment Variables
+## Hooks
 
-```env
-# Steam API (server-side only — used by steam-proxy.cjs)
-STEAM_API_KEY=<Steam Web API Key>
-STEAM_ID=<Your Steam ID>
+- **`useSteamData(endpoints)`**: `endpoints` must be a stable reference (module constant or `useMemo`). Returns `{ steamData, loading, refreshing, error, errors, partialFailure, lastUpdated, usingCache, refetch, formatPlaytime, ... }`. Per-endpoint localStorage cache TTLs mirror the proxy. If everything is fresh in cache, the first render skips the network. `refetch()` uses `cache: 'reload'`. Requests abort on unmount and time out after 10s. Failed endpoints keep previously shown data and are reported in `errors`.
+- **`useDarkMode()`**: `{ theme, resolvedTheme, setTheme }`. System preference comes from `useSyncExternalStore(matchMedia)`. The stored key `v8-theme` is also read by the inline script in `index.html` to avoid a flash; keep them in sync.
+- **`useWeather()`**: cached 15 min; aborts on unmount; fails silently.
 
-# EmailJS (client-side — VITE_ prefix exposes to browser)
-VITE_EMAILJS_SERVICE_ID=<service id>
-VITE_EMAILJS_TEMPLATE_ID=<template id>
-VITE_EMAILJS_PUBLIC_KEY=<public key>
-
-# Upstash Redis (server-side — used by rate-check.js)
-UPSTASH_REDIS_REST_URL=<url>
-UPSTASH_REDIS_REST_TOKEN=<token>
-```
+ESLint uses `eslint-plugin-react-hooks` 7, which includes the React Compiler rules. Calling `setState` synchronously in an effect body is an error, so derive values or set state in callbacks instead.
 
 ---
 
-## Common Issues & Solutions
+## Contact page
 
-### Functions 404 / "Functions Not Found"
-**Cause:** Running `npm run dev` instead of `netlify dev`
-**Fix:** Always use `netlify dev` — it serves functions on port 8888
-
-### Steam Component Infinite Re-renders
-**Cause:** Non-memoized arrays/objects passed to `useSteamData`
-**Fix:** Wrap in `useMemo`:
-```javascript
-const endpoints = useMemo(() => ['profile', 'recent'], [])
-```
-
-### Environment Variables Not Found
-**Fix:** Verify `.env` file exists in project root, then restart `netlify dev`
-**Test:** `curl http://localhost:8888/.netlify/functions/steam-test`
-
-### Multi-Version Dev — Netlify Site Linking
-**Problem:** `netlify dev` in version folders (v1/, v8/) picks up wrong site config
-**Fix:** Each version folder needs `.netlify/state.json` containing `{}`:
-```bash
-mkdir -p v8/.netlify && echo '{}' > v8/.netlify/state.json
-```
+- Fields `name`, `email`, `message` (+ hidden honeypot `website`).
+- Drafts are saved to `sessionStorage['contact-draft']` and cleared on success.
+- Server field errors (`{ errors }` in a 400) are merged into the client errors.
 
 ---
 
-## Build & Deploy
+## Theming
 
-```bash
-# Production build (runs Steam tests first)
-npm run build
-
-# Skip tests (faster)
-npm run build:skip-tests
-
-# Direct vite build
-npx vite build
-```
-
-Build output: `dist/` (~312 KB JS gzipped to ~100 KB)
-
-### Build Scripts
-- `build` runs `test:steam` before `vite build` (pre-build safety check)
-- `test:steam` runs `tests/steam-api/steam-api.test.js` against production URL
-- `test:steam:dev` runs same tests against localhost
+CSS variables in `src/index.css` (`:root` / `.dark`): `--color-bg`, `--color-surface`, `--color-surface-elevated`, `--color-text`, `--color-text-secondary`, `--color-accent` (#c45d3e / #e07a5f), `--color-border`, `--shadow-*`. Use `var(--color-*)` rather than Tailwind colour classes. Helpers: `.hover-accent`, `.hover-text`, `.hover-accent-bg`, `.grain-overlay`, `.skip-link`.
 
 ---
 
-## Data Files
+## Testing
 
-### src/data/status.json
-Manually updated. Controls StatusCorner display on HomePage:
-```json
-{
-  "reading": { "title": "...", "author": "...", "progress": 45 },
-  "status": "Building LLM tools",
-  "location": { "city": "Bellevue, WA", "timezone": "America/Los_Angeles" }
-}
-```
+- `tests/setup.js` sets `MotionGlobalConfig.skipAnimations`, stubs `matchMedia`/`ResizeObserver`, and clears storage and the URL before each test.
+- Stub network calls with `vi.stubGlobal('fetch', ...)`; it is reset automatically.
+- `tests/live/` is never run by `npm test` or CI. Use `npm run test:live`.
 
 ---
 
 ## Key Patterns
 
-1. **Always use `netlify dev`** for local development
-2. **Memoize hook arguments** — arrays and objects passed to custom hooks must be wrapped in `useMemo`
-3. **`motion/react`** — import from `motion/react`, not `framer-motion`
-4. **CSS custom properties** — use `var(--color-*)` for theming, not Tailwind color classes directly
-5. **Module-level flags** — `hasPlayedIntro` in HomePage prevents re-animating on page revisit
-6. **Reduced motion** — `MotionConfig reducedMotion="user"` handles globally; Navigation also uses `useReducedMotion` for spring jumps
-7. **No unused dependencies** — project is lean (no Bootstrap, no Radix, no shadcn components, no Font Awesome)
+1. `netlify dev` for local development.
+2. Import from `motion/react`, not `framer-motion`.
+3. `hasPlayedIntro` (module-level, HomePage) prevents replaying the intro animation.
+4. `MotionConfig reducedMotion="user"` handles reduced motion globally; Navigation also jumps its spring.
+5. Keep the dependency list lean. `clsx`, `tailwind-merge`, `tailwindcss-animate`, `node-fetch`, `dotenv`, and shadcn config were removed as unused.
 
----
+## Known follow-ups
 
-## Migration History
-
-**February 2026:** Replaced entire frontend with v8 "Architectural Minimalism" design.
-- Removed: Bootstrap, Font Awesome, shadcn/ui, Radix UI, Animate UI, framer-motion, ThemeContext, layoutConfig, bento grid, scroll-based layout
-- Added: Multi-page state architecture, gravity-shift navigation, weather integration, StatusCorner, per-letter hero animation, Motion library
-- Preserved: All Netlify Functions, .env, tests, deployment config, dev scripts
+- Tailwind 4 migration (the only remaining `npm audit` findings are dev-only and come from Tailwind 3's `chokidar`/`micromatch` → `braces`).
+- motion 14 and further lucide upgrades: check changelogs first.

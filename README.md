@@ -1,119 +1,104 @@
 # Azaan Khalfe - Portfolio Website
 
-A minimal, animated portfolio built with React featuring multi-page state architecture, live Steam gaming integration, weather display, and dark mode. Designed around an "Architectural Minimalism" aesthetic — terracotta accent, bone/ink palette, Space Grotesk typography.
+A minimal, animated portfolio built with React featuring client-side routing, live Steam gaming integration, weather display, and dark mode. Designed around an "Architectural Minimalism" aesthetic — terracotta accent, bone/ink palette, Space Grotesk typography.
 
 **Live:** [azaankhalfe.netlify.app](https://azaankhalfe.netlify.app)
 
 ## Features
 
-- **Multi-page state architecture** — pages swap via `activePage` state with `AnimatePresence` transitions
+- **Client-side routing** — real URLs (`/projects`, `/gaming`, `/contact`) with history support, per-page titles/canonical URLs, and focus moved to the new page heading
 - **Gravity-shift navigation** — nav bar sits at bottom on Home, springs to top on other pages
-- **Steam integration** — recently played games with hi-res images and proportional playtime bars
-- **Dark/Light/System theme** — three-way cycle with smooth transitions and localStorage persistence
-- **Weather display** — live weather via Open-Meteo API on the home page
-- **Contact form** — EmailJS with Upstash Redis rate limiting
-- **Per-letter hero animation** — staggered letter-by-letter name reveal on first visit
-- **Reduced motion support** — respects `prefers-reduced-motion` globally
+- **Steam integration** — recently played games, "now playing" state, manual refresh, partial-failure reporting
+- **Dark/Light/System theme** — three-way cycle, persisted, applied before first paint (no flash)
+- **Weather display** — live weather via Open-Meteo on the home page
+- **Contact form** — server-validated, rate-limited, delivered by email through Resend; drafts survive page switches
+- **Accessibility** — skip link, real links for navigation, `prefers-reduced-motion` respected globally
 
 ## Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
-| Framework | React 18 + Vite 5 |
+| Framework | React 19 + Vite 8 |
 | Styling | Tailwind CSS 3 with CSS custom properties |
 | Animation | Motion 12 (`motion/react`) |
-| Icons | Lucide React |
-| Contact | EmailJS + Upstash Redis rate limiting |
-| Steam API | Netlify Functions proxy |
+| Icons | Lucide React (+ inline GitHub/LinkedIn SVGs) |
+| Contact | Netlify Function → Resend, Netlify rate limit + Upstash Redis |
+| Steam API | Netlify Function proxy (`/api/steam`) |
 | Weather | Netlify Function proxy (Open-Meteo) |
-| Deployment | Netlify |
-
-## Pages
-
-- **Home** — hero with letter-by-letter name animation, social links, reading status, weather
-- **Projects** — expandable accordion cards (DevEnv MCP Server, NFL Fantasy Picker, Distributed Paxos Consensus)
-- **Gaming** — Steam recently played games with banner images and proportional playtime bars
-- **Contact** — EmailJS form with rate limiting and animated button states
+| Tests | Vitest + Testing Library (jsdom) |
+| Runtime | Node 24 (Netlify and CI) |
 
 ## Development
 
 ```bash
-# Install dependencies
 npm install
-
-# Start dev server (ALWAYS use netlify dev, not npm run dev)
-netlify dev
-# Access at http://localhost:8888
-
-# Build for production
-npm run build
+netlify dev          # http://localhost:8888 — Vite + Netlify Functions + .env
 ```
 
-**Important:** `netlify dev` is required to serve Netlify Functions (Steam API, weather, rate limiting). Running `npm run dev` alone will not include serverless functions.
+Use `netlify dev` rather than `npm run dev`: plain Vite doesn't serve the functions (Steam, weather, contact).
+
+```bash
+npm run lint         # ESLint (includes React Compiler hook rules)
+npm test             # deterministic unit/component tests, no network
+npm run build        # vite build only
+npm run check        # lint + test + build (what CI runs)
+npm run test:live    # live smoke test of the deployed /api/steam
+TEST_BASE_URL=http://localhost:8888 npm run test:live   # ...against netlify dev
+```
 
 ## Environment Variables
 
-Create a `.env` file in the project root:
+Copy `.env.example` to `.env` for local development, and set the same values in Netlify (Site configuration → Environment variables). All of them are server-side only.
 
-```env
-# Steam (server-side)
-STEAM_API_KEY=your_steam_api_key
-STEAM_ID=your_steam_id
+| Variable | Used by | Notes |
+|----------|---------|-------|
+| `STEAM_API_KEY` | `steam-proxy` | [Get a key](https://steamcommunity.com/dev/apikey) |
+| `STEAM_ID` | `steam-proxy` | Your 64-bit Steam ID. The proxy only ever serves this account. |
+| `RESEND_API_KEY` | `contact` | [Resend](https://resend.com) API key |
+| `CONTACT_TO_EMAIL` | `contact` | Where messages are delivered |
+| `CONTACT_FROM_EMAIL` | `contact` | Sender, e.g. `Portfolio <contact@yourdomain.com>` (a domain verified in Resend; `onboarding@resend.dev` works for testing but only delivers to your Resend account email) |
+| `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` | `contact` | Optional. Adds a 3-per-10-minutes limit per IP on top of Netlify's platform limit. |
 
-# EmailJS (client-side)
-VITE_EMAILJS_SERVICE_ID=your_service_id
-VITE_EMAILJS_TEMPLATE_ID=your_template_id
-VITE_EMAILJS_PUBLIC_KEY=your_public_key
+If the Resend variables are missing, the contact endpoint returns 503 and the form tells visitors to email directly.
 
-# Upstash Redis (server-side)
-UPSTASH_REDIS_REST_URL=your_upstash_url
-UPSTASH_REDIS_REST_TOKEN=your_upstash_token
-```
+## API endpoints (Netlify Functions)
+
+| Path | Function | Notes |
+|------|----------|-------|
+| `GET /api/steam?endpoint=profile\|recent\|games\|level` | `netlify/functions/steam-proxy.js` | Ignores any caller-supplied Steam ID, clamps `count`, 8s upstream timeout. Platform rate limit: 60/min per IP. |
+| `POST /api/contact` | `netlify/functions/contact.js` | JSON `{ name, email, message }`. Validates (shared rules in `src/lib/contactValidation.js`), rate-limits, then sends. Fails closed if the limiter errors. Platform rate limit: 5 per 3 min per IP. |
+| `GET /.netlify/functions/weather` | `netlify/functions/weather.js` | Open-Meteo, 15 min cache. |
+
+Request handling lives in `netlify/lib/` so it can be unit-tested without the Netlify runtime.
 
 ## Project Structure
 
 ```
 my-portfolio/
 ├── src/
-│   ├── App.jsx                    # Root — activePage state, page switching
-│   ├── main.jsx                   # React entry point
-│   ├── index.css                  # Tailwind + CSS custom properties (light/dark)
-│   ├── components/
-│   │   ├── Navigation.jsx         # Gravity-shift nav with spring physics
-│   │   ├── DarkModeToggle.jsx     # System/light/dark cycle
-│   │   ├── PageTransition.jsx     # Page enter/exit animations
-│   │   └── StatusCorner.jsx       # Reading status + weather + time (Home only)
-│   ├── pages/
-│   │   ├── HomePage.jsx           # Hero animation, social links
-│   │   ├── ProjectsPage.jsx       # Expandable project cards
-│   │   ├── GamingPage.jsx         # Steam recently played with game images
-│   │   └── ContactPage.jsx        # EmailJS form with rate limiting
-│   ├── hooks/
-│   │   ├── useSteamData.js        # Steam API fetching + localStorage cache
-│   │   ├── useDarkMode.js         # Theme state persistence
-│   │   └── useWeather.js          # Weather data fetching
-│   ├── data/
-│   │   └── status.json            # Reading status, location metadata
-│   └── lib/
-│       └── utils.js               # cn() utility
-├── netlify/functions/
-│   ├── steam-proxy.cjs            # Steam Web API proxy
-│   ├── weather.js                 # Open-Meteo weather proxy
-│   └── rate-check.js              # Upstash Redis rate limiter
-├── public/
-│   └── Azaan_Resume.pdf           # Resume
-└── Configuration
-    ├── netlify.toml, vite.config.js, tailwind.config.js, etc.
+│   ├── App.jsx                    # Root: routing state, metadata, skip link
+│   ├── components/                # Navigation, RouteLink, DarkModeToggle, PageTransition, StatusCorner, BrandIcons
+│   ├── pages/                     # Home, Projects, Gaming, Contact
+│   ├── hooks/                     # useSteamData, useDarkMode, useWeather
+│   ├── lib/
+│   │   ├── routes.js              # Route table, path parsing, per-page metadata
+│   │   └── contactValidation.js   # Shared by the form and the contact function
+│   └── data/status.json           # Reading status / location (edited by hand)
+├── netlify/
+│   ├── functions/                 # contact.js, steam-proxy.js, weather.js
+│   └── lib/                       # contact.js, steam.js (testable handlers)
+├── tests/
+│   ├── unit/                      # Vitest suites (npm test)
+│   └── live/                      # Network smoke test (npm run test:live)
+├── public/                        # Icons, OG image, résumé, 404.html, optimized project screenshots
+└── netlify.toml                   # Build, Node 24, explicit SPA routes, asset caching
 ```
+
+SPA routes are listed explicitly in `netlify.toml` instead of a `/*` catch-all. Under `netlify dev` a catch-all also rewrote Vite's in-memory modules to HTML, which blanked the page. Unknown paths get `public/404.html` with a real 404 status. When adding a page, update both `src/lib/routes.js` and `netlify.toml`.
 
 ## Deployment
 
-Deployed on Netlify. To deploy manually:
-
-```bash
-npm run build
-netlify deploy --prod
-```
+Netlify builds `main` with `npm run build`. GitHub Actions runs `npm run check` on every push and PR (`.github/workflows/ci.yml`), and a weekly/manual live check of the deployed Steam endpoint (`live-steam-check.yml`). Neither workflow needs secrets.
 
 ## Author
 
