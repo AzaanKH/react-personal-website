@@ -3,18 +3,35 @@
   publish = "dist"
   functions = "netlify/functions"
 
+[build.environment]
+  NODE_VERSION = "24"
+
 [dev]
   command = "npm run dev"
   targetPort = 3000
   port = 8888
   autoLaunch = false
 
-# Don't redirect files that actually exist in public folder
+# SPA routes. These are listed explicitly instead of a "/*" catch-all: under
+# `netlify dev` a catch-all also captured Vite's in-memory modules
+# (/src/main.jsx, /@vite/client) and returned HTML, leaving a blank page.
+# Unknown paths fall through to public/404.html with a real 404 status.
 [[redirects]]
-  from = "/*"
+  from = "/projects"
   to = "/index.html"
   status = 200
 
-# Optional: Add environment variable hints
-[build.environment]
-  NODE_VERSION = "18"
+[[redirects]]
+  from = "/gaming"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/contact"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

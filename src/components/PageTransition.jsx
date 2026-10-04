@@ -1,8 +1,23 @@
+import { useEffect, useRef } from 'react'
 import { motion } from 'motion/react'
 
-export default function PageTransition({ children }) {
+export default function PageTransition({ children, focusHeading = false }) {
+  const ref = useRef(null)
+
+  // After client-side navigation, move focus to the new page's heading so screen
+  // reader and keyboard users land on the new content instead of the old nav link.
+  useEffect(() => {
+    if (!focusHeading) return
+    const heading = ref.current?.querySelector('h1')
+    if (!heading) return
+
+    heading.setAttribute('tabindex', '-1')
+    heading.focus({ preventScroll: true })
+  }, [focusHeading])
+
   return (
     <motion.div
+      ref={ref}
       initial={{ opacity: 0, y: 16 }}
       animate={{
         opacity: 1,

@@ -1,60 +1,63 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import { Send, Check, Loader2, ArrowUpRight } from 'lucide-react'
+import { CONTACT_LIMITS, validateContact } from '../lib/contactValidation'
 
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const DRAFT_STORAGE_KEY = 'contact-draft'
+const EMPTY_FORM = { name: '', email: '', message: '' }
 const inputClassName =
   'w-full bg-transparent border-0 border-b px-0 py-2.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--color-accent)]'
 
 const fields = [
   {
-    name: 'from_name',
+    name: 'name',
     type: 'text',
     label: 'Name',
     placeholder: 'Your name',
     autoComplete: 'name',
+    maxLength: CONTACT_LIMITS.name,
   },
   {
-    name: 'from_email',
+    name: 'email',
     type: 'email',
     label: 'Email',
     placeholder: 'your@email.com',
     autoComplete: 'email',
+    maxLength: CONTACT_LIMITS.email,
   },
 ]
 
-const validateForm = (data) => {
-  const errors = {}
-
-  if (!data.from_name.trim()) {
-    errors.from_name = 'Enter your name.'
+// Drafts live in sessionStorage so switching pages (which unmounts this component)
+// doesn't throw away a half-written message, while nothing lingers after the tab closes.
+function readDraft() {
+  try {
+    const saved = JSON.parse(sessionStorage.getItem(DRAFT_STORAGE_KEY))
+    return saved && typeof saved === 'object' ? { ...EMPTY_FORM, ...saved } : EMPTY_FORM
+  } catch {
+    return EMPTY_FORM
   }
+}
 
-  if (!data.from_email.trim()) {
-    errors.from_email = 'Enter your email address.'
-  } else if (!EMAIL_PATTERN.test(data.from_email)) {
-    errors.from_email = 'Enter a valid email address.'
+function writeDraft(data) {
+  try {
+    if (Object.values(data).some((value) => value.trim())) {
+      sessionStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(data))
+    } else {
+      sessionStorage.removeItem(DRAFT_STORAGE_KEY)
+    }
+  } catch {
+    // Storage unavailable: the form still works, the draft just won't survive navigation.
   }
-
-  if (!data.message.trim()) {
-    errors.message = 'Enter a message.'
-  } else if (data.message.trim().length < 10) {
-    errors.message = 'Message must be at least 10 characters.'
-  }
-
-  return errors
 }
 
 export default function ContactPage() {
-  const [formData, setFormData] = useState({
-    from_name: '',
-    from_email: '',
-    message: '',
-  })
+  const [formData, setFormData] = useState(readDraft)
+  const [honeypot, setHoneypot] = useState('')
   const [touched, setTouched] = useState({})
+  const [serverErrors, setServerErrors] = useState({})
   const [status, setStatus] = useState('idle')
   const [errorMessage, setErrorMessage] = useState('')
-  const validationErrors = validateForm(formData)
+  const validationErrors = { ...serverErrors, ...validateContact(formData) }
   const messageError = touched.message && validationErrors.message
   const feedbackMessage =
     status === 'sending'
@@ -63,9 +66,26 @@ export default function ContactPage() {
         ? "Thanks, your message was sent. I'll get back to you soon."
         : errorMessage
 
+  useEffect(() => {
+    writeDraft(formData)
+  }, [formData])
+
+  // Return the button to its idle state a few seconds after success or failure.
+  useEffect(() => {
+    if (status !== 'success' && status !== 'error') return
+    const timer = setTimeout(() => setStatus('idle'), 4000)
+    return () => clearTimeout(timer)
+  }, [status])
+
   const handleChange = (e) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
+    setServerErrors((prev) => {
+      if (!prev[name]) return prev
+      const next = { ...prev }
+      delete next[name]
+      return next
+    })
     if (errorMessage) setErrorMessage('')
     if (status === 'error') setStatus('idle')
   }
@@ -74,21 +94,21 @@ export default function ContactPage() {
     setTouched((prev) => ({ ...prev, [e.target.name]: true }))
   }
 
+  const focusFirstError = (errors) => {
+    requestAnimationFrame(() => {
+      document.getElementById(Object.keys(errors)[0])?.focus()
+    })
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
-    const errors = validateForm(formData)
+    const errors = validateContact(formData)
 
     if (Object.keys(errors).length > 0) {
-      setTouched({
-        from_name: true,
-        from_email: true,
-        message: true,
-      })
+      setTouched({ name: true, email: true, message: true })
       setErrorMessage('Please fix the highlighted fields.')
       setStatus('idle')
-      requestAnimationFrame(() => {
-        document.getElementById(Object.keys(errors)[0])?.focus()
-      })
+      focusFirstError(errors)
       return
     }
 
@@ -96,48 +116,30 @@ export default function ContactPage() {
     setErrorMessage('')
 
     try {
-      // Rate limit check (fail-safe)
-      try {
-        const rateResponse = await fetch('/.netlify/functions/rate-check', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ check: true }),
-        })
-        if (rateResponse.status === 429) {
-          const result = await rateResponse.json()
-          setErrorMessage(
-            result.message || 'Too many submissions. Please wait.'
-          )
-          setStatus('error')
-          setTimeout(() => setStatus('idle'), 4000)
-          return
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...formData, website: honeypot }),
+      })
+      const result = await response.json().catch(() => ({}))
+
+      if (!response.ok) {
+        if (result.errors) {
+          setServerErrors(result.errors)
+          setTouched({ name: true, email: true, message: true })
+          focusFirstError(result.errors)
         }
-      } catch {
-        // Rate limit unavailable, continue
+        setErrorMessage(result.error || 'Failed to send message. Please try again.')
+        setStatus('error')
+        return
       }
 
-      const response = await fetch('/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({
-          'form-name': 'contact',
-          'bot-field': '',
-          name: formData.from_name,
-          email: formData.from_email,
-          message: formData.message,
-        }).toString(),
-      })
-
-      if (!response.ok) throw new Error('Form submission failed')
-
       setStatus('success')
-      setFormData({ from_name: '', from_email: '', message: '' })
+      setFormData(EMPTY_FORM)
       setTouched({})
-      setTimeout(() => setStatus('idle'), 4000)
     } catch {
-      setErrorMessage('Failed to send message. Please try again.')
+      setErrorMessage('Failed to send message. Check your connection and try again.')
       setStatus('error')
-      setTimeout(() => setStatus('idle'), 4000)
     }
   }
 
@@ -146,9 +148,9 @@ export default function ContactPage() {
       <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
         <div>
           <p className="eyebrow mb-5 accent-slash" style={{ color: 'var(--color-text-secondary)' }}>Let&apos;s work together</p>
-          <h2 className="display-heading" style={{ fontSize: 'clamp(4.5rem, 10vw, 8.5rem)', color: 'var(--color-text)' }}>
+          <h1 className="display-heading" style={{ fontSize: 'clamp(4.5rem, 10vw, 8.5rem)', color: 'var(--color-text)' }}>
             Say<br /><em style={{ color: 'var(--color-accent)' }}>hello.</em>
-          </h2>
+          </h1>
           <p className="mt-8 max-w-sm text-base leading-7" style={{ color: 'var(--color-text-secondary)' }}>
             Have an interesting problem, a role worth talking about, or a project that needs thoughtful engineering? My inbox is open.
           </p>
@@ -173,7 +175,14 @@ export default function ContactPage() {
         <form onSubmit={handleSubmit} className="space-y-6" noValidate>
           <p hidden>
             <label>
-              Don't fill this out: <input name="bot-field" />
+              Don't fill this out:{' '}
+              <input
+                name="website"
+                tabIndex={-1}
+                autoComplete="off"
+                value={honeypot}
+                onChange={(e) => setHoneypot(e.target.value)}
+              />
             </label>
           </p>
           {fields.map((field, i) => {
@@ -205,6 +214,7 @@ export default function ContactPage() {
                   required
                   placeholder={field.placeholder}
                   autoComplete={field.autoComplete}
+                  maxLength={field.maxLength}
                   aria-invalid={Boolean(error)}
                   aria-describedby={error ? errorId : undefined}
                   className={inputClassName}
@@ -256,6 +266,7 @@ export default function ContactPage() {
               onBlur={handleBlur}
               required
               rows={4}
+              maxLength={CONTACT_LIMITS.message}
               placeholder="Your message"
               aria-invalid={Boolean(messageError)}
               aria-describedby={messageError ? 'message-error' : undefined}

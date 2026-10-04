@@ -5,12 +5,12 @@ import {
   BarChart3,
   ChevronDown,
   ExternalLink,
-  Github,
   GitBranch,
   Layers,
   ShieldCheck,
   Terminal,
 } from 'lucide-react'
+import { GithubIcon } from '../components/BrandIcons'
 
 const projects = [
   {
@@ -60,7 +60,7 @@ const projects = [
     ],
     tech: ['Python', 'FastMCP', 'asyncio', 'Pydantic', 'psutil', 'Docker'],
     links: [
-      { label: 'Source', href: 'https://github.com/AzaanKH/devenv-mcp', icon: Github },
+      { label: 'Source', href: 'https://github.com/AzaanKH/devenv-mcp', icon: GithubIcon },
       { label: 'README', href: 'https://github.com/AzaanKH/devenv-mcp#devenv-mcp-server', icon: ExternalLink },
     ],
   },
@@ -72,7 +72,10 @@ const projects = [
     proof: 'A full local app: React search interface, Flask prediction API, TimescaleDB/Postgres feature store, and position-specific XGBoost models.',
     screenshot: {
       type: 'image',
-      src: 'https://raw.githubusercontent.com/AzaanKH/football/main/website_homepage.jpeg',
+      // Resized from the repo's 3024px website_homepage.jpeg (176 KB -> 11 KB).
+      src: '/projects/fantasy-football-home.webp',
+      width: 1200,
+      height: 383,
       alt: 'Fantasy football predictor homepage screenshot',
     },
     metrics: [
@@ -106,7 +109,7 @@ const projects = [
     ],
     tech: ['React', 'Python', 'Flask', 'PostgreSQL', 'TimescaleDB', 'XGBoost'],
     links: [
-      { label: 'Source', href: 'https://github.com/AzaanKH/football', icon: Github },
+      { label: 'Source', href: 'https://github.com/AzaanKH/football', icon: GithubIcon },
       { label: 'Screenshots', href: 'https://github.com/AzaanKH/football#screenshots', icon: ExternalLink },
       { label: 'Local demo', href: 'https://github.com/AzaanKH/football#quick-start', icon: ArrowUpRight },
     ],
@@ -202,7 +205,15 @@ function ProofVisual({ screenshot, name }) {
           borderRadius: 10,
         }}
       >
-        <img src={screenshot.src} alt={screenshot.alt} className="h-full w-full object-cover" />
+        <img
+          src={screenshot.src}
+          alt={screenshot.alt}
+          width={screenshot.width}
+          height={screenshot.height}
+          loading="lazy"
+          decoding="async"
+          className="h-full w-full object-cover"
+        />
         <div
           className="absolute inset-x-0 bottom-0 px-4 py-3"
           style={{
@@ -327,7 +338,7 @@ export default function ProjectsPage() {
           >
             Selected work
           </p>
-          <h2
+          <h1
             className="display-heading"
             style={{
               fontSize: 'clamp(3.5rem, 8vw, 7rem)',
@@ -335,7 +346,7 @@ export default function ProjectsPage() {
             }}
           >
             Projects
-          </h2>
+          </h1>
         </div>
         <p
           className="max-w-[360px] text-sm leading-6 md:text-right"
@@ -398,7 +409,7 @@ export default function ProjectsPage() {
 
                       <div className="flex items-start justify-between gap-4">
                         <div className="min-w-0">
-                          <h3
+                          <h2
                             className="font-display font-semibold tracking-[-0.035em]"
                             style={{
                               fontSize: 'clamp(1.8rem, 3.5vw, 3rem)',
@@ -406,7 +417,7 @@ export default function ProjectsPage() {
                             }}
                           >
                             {project.name}
-                          </h3>
+                          </h2>
                           <p
                             className="mt-3 max-w-[640px] leading-6"
                             style={{
@@ -484,9 +495,9 @@ export default function ProjectsPage() {
                         <section>
                           <div className="mb-3 flex items-center gap-2">
                             <Layers size={16} strokeWidth={1.5} style={{ color: 'var(--color-accent)' }} />
-                            <h4 className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                            <h3 className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
                               Case Study
-                            </h4>
+                            </h3>
                           </div>
                           <div className="space-y-3">
                             {project.caseStudy.map((section) => (
@@ -524,9 +535,9 @@ export default function ProjectsPage() {
                         >
                           <div className="mb-4 flex items-center gap-2">
                             <GitBranch size={16} strokeWidth={1.5} style={{ color: 'var(--color-accent)' }} />
-                            <h4 className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                            <h3 className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
                               Architecture
-                            </h4>
+                            </h3>
                           </div>
                           <ArchitectureDiagram rows={project.architecture} />
                         </section>
@@ -536,9 +547,9 @@ export default function ProjectsPage() {
                         <section>
                           <div className="mb-3 flex items-center gap-2">
                             <ShieldCheck size={16} strokeWidth={1.5} style={{ color: 'var(--color-accent)' }} />
-                            <h4 className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                            <h3 className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
                               Implementation Proof
-                            </h4>
+                            </h3>
                           </div>
                           <ul className="grid gap-2">
                             {project.highlights.map((point, pi) => (
@@ -574,9 +585,9 @@ export default function ProjectsPage() {
                         <section>
                           <div className="mb-3 flex items-center gap-2">
                             <Layers size={16} strokeWidth={1.5} style={{ color: 'var(--color-accent)' }} />
-                            <h4 className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                            <h3 className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
                               Stack
-                            </h4>
+                            </h3>
                           </div>
                           <div className="flex flex-wrap gap-2">
                             {project.tech.map((t, ti) => (

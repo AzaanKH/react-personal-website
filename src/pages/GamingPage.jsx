@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { motion } from 'motion/react'
-import { ExternalLink, Gamepad2 } from 'lucide-react'
+import { ExternalLink, Gamepad2, RefreshCw } from 'lucide-react'
 import { useSteamData } from '../hooks/useSteamData'
 
 function GameFallbackBanner({ game }) {
@@ -164,14 +164,57 @@ function GameCard({ game, index, playtimeRatio, formatPlaytime }) {
   )
 }
 
-export default function GamingPage() {
-  const endpoints = useMemo(() => ['profile', 'recent'], [])
-  const options = useMemo(() => ({ autoRefresh: false }), [])
-  const { steamData, loading, error, formatPlaytime } = useSteamData(
-    endpoints,
-    options
-  )
+const ENDPOINTS = ['profile', 'recent']
 
+function SteamStatusBar({ lastUpdated, refreshing, partialFailure, onRefresh }) {
+  return (
+    <div
+      className="mx-auto mt-10 flex w-full max-w-[900px] flex-wrap items-center justify-center gap-x-4 gap-y-2 px-6 pb-10 text-xs"
+      style={{ color: 'var(--color-text-secondary)' }}
+    >
+      <p role="status" aria-live="polite">
+        {refreshing
+          ? 'Refreshing Steam data…'
+          : lastUpdated
+            ? `Updated ${new Date(lastUpdated).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`
+            : null}
+        {partialFailure && !refreshing && ' · Some Steam data could not be loaded.'}
+      </p>
+      <button
+        type="button"
+        onClick={onRefresh}
+        disabled={refreshing}
+        className="inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 uppercase tracking-[0.12em] hover-text disabled:cursor-default disabled:opacity-60"
+        style={{ border: '1px solid var(--color-border)' }}
+      >
+        <RefreshCw size={12} strokeWidth={1.6} className={refreshing ? 'animate-spin' : ''} aria-hidden="true" />
+        Refresh
+      </button>
+    </div>
+  )
+}
+
+export default function GamingPage() {
+  const steam = useSteamData(ENDPOINTS)
+
+  return (
+    <>
+      {/* Stable heading across loading/playing/list states so focus after navigation has a target. */}
+      <h1 className="sr-only">Gaming activity</h1>
+      <GamingContent {...steam} />
+      {!steam.loading && (
+        <SteamStatusBar
+          lastUpdated={steam.lastUpdated}
+          refreshing={steam.refreshing}
+          partialFailure={steam.partialFailure}
+          onRefresh={steam.refetch}
+        />
+      )}
+    </>
+  )
+}
+
+function GamingContent({ steamData, loading, error, formatPlaytime }) {
   const player = steamData.profile
   const recentGames = steamData.recentGames || []
   const isCurrentlyPlaying = player?.gameextrainfo || player?.gameid
@@ -179,7 +222,7 @@ export default function GamingPage() {
   if (loading) {
     return (
       <div className="w-full max-w-[800px] mx-auto pt-4 md:pt-8 pb-8 px-6">
-        <div className="animate-pulse space-y-6">
+        <div className="animate-pulse space-y-6" aria-busy="true" aria-label="Loading Steam data">
           <div
             className="h-10 w-48 rounded-lg"
             style={{ backgroundColor: 'var(--color-border-subtle)' }}

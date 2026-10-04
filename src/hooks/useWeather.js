@@ -32,34 +32,27 @@ export default function useWeather() {
   const [loading, setLoading] = useState(!initialWeather)
 
   useEffect(() => {
-    const cached = getCached()
-    if (cached) {
-      setWeather(cached)
-      setLoading(false)
-      return
-    }
+    if (initialWeather) return
 
-    let mounted = true
+    const controller = new AbortController()
 
     async function fetchWeather() {
       try {
-        const res = await fetch('/.netlify/functions/weather')
+        const res = await fetch('/.netlify/functions/weather', { signal: controller.signal })
         if (!res.ok) throw new Error(res.statusText)
         const data = await res.json()
-        if (mounted) {
-          setWeather(data)
-          setCache(data)
-        }
+        setWeather(data)
+        setCache(data)
       } catch {
-        // keep existing cached data or null
+        // Aborted on unmount, or unavailable: keep null and render without weather.
       } finally {
-        if (mounted) setLoading(false)
+        if (!controller.signal.aborted) setLoading(false)
       }
     }
 
     fetchWeather()
-    return () => { mounted = false }
-  }, [])
+    return () => controller.abort()
+  }, [initialWeather])
 
   return weather ? { ...weather, loading } : { temp: null, condition: null, icon: null, text: null, loading }
 }

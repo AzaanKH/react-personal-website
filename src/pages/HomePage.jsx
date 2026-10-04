@@ -1,13 +1,17 @@
 import { useEffect } from 'react'
 import { motion, useMotionValue, useReducedMotion, useSpring } from 'motion/react'
-import { Github, Linkedin, Mail, FileText } from 'lucide-react'
+import { ArrowRight, Mail, FileText } from 'lucide-react'
+import { GithubIcon, LinkedinIcon } from '../components/BrandIcons'
+import RouteLink from '../components/RouteLink'
 import StatusCorner from '../components/StatusCorner'
+
+const MotionRouteLink = motion.create(RouteLink)
 
 let hasPlayedIntro = false
 
 const socialLinks = [
-  { icon: Github, href: 'https://github.com/AzaanKH', label: 'GitHub' },
-  { icon: Linkedin, href: 'https://www.linkedin.com/in/azaan-khalfe-43b90b221/', label: 'LinkedIn' },
+  { icon: GithubIcon, href: 'https://github.com/AzaanKH', label: 'GitHub' },
+  { icon: LinkedinIcon, href: 'https://www.linkedin.com/in/azaan-khalfe-43b90b221/', label: 'LinkedIn' },
 ]
 
 const reveal = (delay, playIntro, distance = 16) => ({
@@ -128,6 +132,27 @@ export default function HomePage({ onNavigate }) {
           I build reliable developer tools, intelligent systems, and polished web experiences.
         </motion.p>
 
+        <motion.div {...reveal(0.86, playIntro, 10)} className="mt-8">
+          <RouteLink
+            to="projects"
+            onNavigate={onNavigate}
+            className="group inline-flex items-center gap-2 rounded-full px-6 py-3 text-[0.75rem] font-medium uppercase tracking-[0.15em] hover-accent-bg"
+            style={{
+              backgroundColor: 'var(--color-accent)',
+              color: 'var(--color-bg)',
+              boxShadow: 'var(--shadow-sm)',
+            }}
+          >
+            View projects
+            <ArrowRight
+              size={15}
+              strokeWidth={1.75}
+              className="transition-transform group-hover:translate-x-0.5"
+              aria-hidden="true"
+            />
+          </RouteLink>
+        </motion.div>
+
         <motion.div
           {...reveal(0.94, playIntro, 10)}
           className="mt-7 flex items-center justify-center gap-5"
@@ -147,16 +172,16 @@ export default function HomePage({ onNavigate }) {
             </motion.a>
           ))}
 
-          <motion.button
-            type="button"
-            onClick={() => onNavigate('contact')}
-            aria-label="Send email"
+          <MotionRouteLink
+            to="contact"
+            onNavigate={onNavigate}
+            aria-label="Contact me"
             className="hover-accent"
             style={{ color: 'var(--color-text-secondary)' }}
             {...socialMotion}
           >
             <Mail size={19} strokeWidth={1.5} aria-hidden="true" />
-          </motion.button>
+          </MotionRouteLink>
 
           <span className="h-4 w-px" style={{ backgroundColor: 'var(--color-border)' }} aria-hidden="true" />
 

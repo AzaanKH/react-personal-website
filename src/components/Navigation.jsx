@@ -1,12 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, useSpring, useTransform, useReducedMotion } from 'motion/react'
-
-const navItems = [
-  { id: 'home', label: 'Home' },
-  { id: 'projects', label: 'Projects' },
-  { id: 'gaming', label: 'Gaming' },
-  { id: 'contact', label: 'Contact' },
-]
+import RouteLink from './RouteLink'
+import { pageIds, routes } from '../lib/routes'
 
 const TOP_OFFSET = 24
 const HOME_BOTTOM_OFFSET = 40
@@ -31,7 +26,7 @@ export default function Navigation({ activePage, onNavigate }) {
   const isHome = activePage === 'home'
   const prefersReducedMotion = useReducedMotion()
   const navRef = useRef(null)
-  const buttonRefs = useRef({})
+  const linkRefs = useRef({})
   const [navHeight, setNavHeight] = useState(56)
   const [indicator, setIndicator] = useState(null)
 
@@ -46,7 +41,7 @@ export default function Navigation({ activePage, onNavigate }) {
   }, [])
 
   const measureIndicator = useCallback(() => {
-    const btn = buttonRefs.current[activePage]
+    const btn = linkRefs.current[activePage]
     if (btn) {
       setIndicator({
         left: btn.offsetLeft,
@@ -110,7 +105,6 @@ export default function Navigation({ activePage, onNavigate }) {
   return (
     <motion.nav
       ref={navRef}
-      role="navigation"
       aria-label="Main navigation"
       className="fixed left-1/2 z-50 w-[calc(100vw-1rem)] max-w-[390px] sm:w-auto sm:max-w-none"
       style={{
@@ -159,20 +153,21 @@ export default function Navigation({ activePage, onNavigate }) {
             />
           )}
 
-          {navItems.map(({ id, label }) => (
-            <button
+          {pageIds.map((id) => (
+            <RouteLink
               key={id}
-              ref={(el) => { buttonRefs.current[id] = el }}
-              onClick={() => onNavigate(id)}
+              to={id}
+              onNavigate={onNavigate}
+              ref={(el) => { linkRefs.current[id] = el }}
               aria-current={activePage === id ? 'page' : undefined}
-              className={`relative z-10 min-w-0 rounded-full px-1 py-2 text-center text-[0.68rem] font-medium uppercase tracking-[0.05em] cursor-pointer sm:px-5 sm:py-2.5 sm:text-[0.8rem] sm:tracking-[0.12em] ${activePage !== id ? 'hover-text' : ''}`}
+              className={`relative z-10 min-w-0 rounded-full px-1 py-2 text-center text-[0.68rem] font-medium uppercase tracking-[0.05em] sm:px-5 sm:py-2.5 sm:text-[0.8rem] sm:tracking-[0.12em] ${activePage !== id ? 'hover-text' : ''}`}
               style={{
                 color: activePage === id ? 'var(--color-text)' : 'var(--color-text-secondary)',
                 transition: 'color 0.2s ease',
               }}
             >
-              {label}
-            </button>
+              {routes[id].label}
+            </RouteLink>
           ))}
         </div>
       </div>

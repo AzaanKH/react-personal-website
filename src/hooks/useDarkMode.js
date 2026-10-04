@@ -1,54 +1,47 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useSyncExternalStore } from 'react'
 
-const STORAGE_KEY = 'v8-theme'
+// Keep in sync with the inline theme script in index.html, which applies
+// the class before first paint to avoid a light flash for dark-mode visitors.
+export const STORAGE_KEY = 'v8-theme'
+const DARK_QUERY = '(prefers-color-scheme: dark)'
+const THEMES = ['system', 'light', 'dark']
+
+function subscribeToSystemTheme(callback) {
+  const mql = window.matchMedia(DARK_QUERY)
+  mql.addEventListener('change', callback)
+  return () => mql.removeEventListener('change', callback)
+}
 
 function getSystemTheme() {
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+  return window.matchMedia(DARK_QUERY).matches ? 'dark' : 'light'
+}
+
+function readStoredTheme() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY)
+    return THEMES.includes(saved) ? saved : 'system'
+  } catch {
+    return 'system'
+  }
 }
 
 export function useDarkMode() {
-  const [theme, setThemeState] = useState(() => {
-    const saved = localStorage.getItem(STORAGE_KEY)
-    if (saved === 'light' || saved === 'dark' || saved === 'system') return saved
-    return 'system'
-  })
+  const [theme, setThemeState] = useState(readStoredTheme)
+  const systemTheme = useSyncExternalStore(subscribeToSystemTheme, getSystemTheme)
+  const resolvedTheme = theme === 'system' ? systemTheme : theme
 
-  const [resolvedTheme, setResolvedTheme] = useState(() => {
-    const saved = localStorage.getItem(STORAGE_KEY)
-    if (saved === 'light' || saved === 'dark') return saved
-    return getSystemTheme()
-  })
-
-  // Apply resolved theme to DOM
   useEffect(() => {
-    const root = document.documentElement
-    if (resolvedTheme === 'dark') {
-      root.classList.add('dark')
-    } else {
-      root.classList.remove('dark')
-    }
+    document.documentElement.classList.toggle('dark', resolvedTheme === 'dark')
   }, [resolvedTheme])
 
-  // Resolve theme + listen for system changes
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, theme)
-
-    if (theme !== 'system') {
-      setResolvedTheme(theme)
-      return
-    }
-
-    // System mode: resolve now and listen for changes
-    setResolvedTheme(getSystemTheme())
-
-    const mql = window.matchMedia('(prefers-color-scheme: dark)')
-    const handler = (e) => setResolvedTheme(e.matches ? 'dark' : 'light')
-    mql.addEventListener('change', handler)
-    return () => mql.removeEventListener('change', handler)
-  }, [theme])
-
   const setTheme = useCallback((value) => {
+    if (!THEMES.includes(value)) return
     setThemeState(value)
+    try {
+      localStorage.setItem(STORAGE_KEY, value)
+    } catch {
+      // Private browsing or full storage: the theme still applies for this visit.
+    }
   }, [])
 
   return { theme, resolvedTheme, setTheme }

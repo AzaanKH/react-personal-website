@@ -8,6 +8,7 @@ import HomePage from './pages/HomePage'
 import ProjectsPage from './pages/ProjectsPage'
 import GamingPage from './pages/GamingPage'
 import ContactPage from './pages/ContactPage'
+import { applyPageMetadata, getPageFromPath, routes } from './lib/routes'
 
 const pages = {
   home: HomePage,
@@ -16,31 +17,19 @@ const pages = {
   contact: ContactPage,
 }
 
-const pagePaths = {
-  home: '/',
-  projects: '/projects',
-  gaming: '/gaming',
-  contact: '/contact',
-}
-
-function getPageFromPath(pathname) {
-  const normalizedPath = pathname === '/' ? '/' : pathname.replace(/\/+$/, '')
-  const match = Object.entries(pagePaths).find(([, path]) => path === normalizedPath)
-
-  return match ? match[0] : 'home'
-}
-
 export default function App() {
   const [activePage, setActivePage] = useState(() => getPageFromPath(window.location.pathname))
   const { theme, resolvedTheme, setTheme } = useDarkMode()
 
   const mainRef = useRef(null)
+  // Only move focus after in-app navigation, never on the initial page load.
+  const [hasNavigated, setHasNavigated] = useState(false)
   const isDark = resolvedTheme === 'dark'
   const PageComponent = pages[activePage]
 
   useEffect(() => {
     const currentPage = getPageFromPath(window.location.pathname)
-    const canonicalPath = pagePaths[currentPage]
+    const canonicalPath = routes[currentPage].path
 
     if (window.location.pathname !== canonicalPath) {
       window.history.replaceState({ page: currentPage }, '', canonicalPath)
@@ -48,7 +37,12 @@ export default function App() {
   }, [])
 
   useEffect(() => {
+    applyPageMetadata(activePage)
+  }, [activePage])
+
+  useEffect(() => {
     const handlePopState = () => {
+      setHasNavigated(true)
       setActivePage(getPageFromPath(window.location.pathname))
     }
 
@@ -59,8 +53,8 @@ export default function App() {
   const navigateToPage = useCallback((page) => {
     if (!pages[page] || page === activePage) return
 
-    const path = pagePaths[page]
-    window.history.pushState({ page }, '', path)
+    window.history.pushState({ page }, '', routes[page].path)
+    setHasNavigated(true)
     setActivePage(page)
   }, [activePage])
 
@@ -73,6 +67,10 @@ export default function App() {
           transition: 'background-color 0.6s ease',
         }}
       >
+        <a href="#main" className="skip-link">
+          Skip to content
+        </a>
+
         {/* Grain texture overlay */}
         <div
           className="fixed inset-0 -z-10 grain-overlay"
@@ -93,22 +91,28 @@ export default function App() {
           }}
         />
 
+        {/* Navigation is fixed-position, so it sits before <main> in the DOM to come
+            first in keyboard order while still floating at the top/bottom visually. */}
+        <Navigation activePage={activePage} onNavigate={navigateToPage} />
+
         {/* Dark Mode Toggle */}
         <DarkModeToggle theme={theme} setTheme={setTheme} isHome={activePage === 'home'} />
 
         {/* Page Content */}
-        <main ref={mainRef} className="relative h-full overflow-y-auto pt-20">
+        <main
+          ref={mainRef}
+          id="main"
+          tabIndex={-1}
+          className="relative h-full overflow-y-auto pt-20 focus:outline-none"
+        >
           <AnimatePresence mode="wait" initial={false} onExitComplete={() => {
             if (mainRef.current) mainRef.current.scrollTop = 0
           }}>
-            <PageTransition key={activePage}>
+            <PageTransition key={activePage} focusHeading={hasNavigated}>
               <PageComponent onNavigate={navigateToPage} />
             </PageTransition>
           </AnimatePresence>
         </main>
-
-        {/* Bottom Navigation */}
-        <Navigation activePage={activePage} onNavigate={navigateToPage} />
       </div>
     </MotionConfig>
   )

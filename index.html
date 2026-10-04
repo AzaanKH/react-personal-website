@@ -30,6 +30,16 @@
     <meta name="twitter:image" content="https://azaankhalfe.netlify.app/og-image.png" />
     <meta name="twitter:image:alt" content="Azaan Khalfe, Software Engineer" />
     <title>Azaan Khalfe | Software Engineer</title>
+    <script>
+      // Apply the saved theme before first paint (see src/hooks/useDarkMode.js).
+      (function () {
+        try {
+          var saved = localStorage.getItem('v8-theme');
+          var dark = saved === 'dark' || (saved !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
+          if (dark) document.documentElement.classList.add('dark');
+        } catch (e) {}
+      })();
+    </script>
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -67,13 +77,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   </head>
   <body>
-    <!-- Hidden form for Netlify Forms SPA detection -->
-    <form name="contact" netlify netlify-honeypot="bot-field" hidden>
-      <input name="bot-field" />
-      <input name="name" />
-      <input name="email" />
-      <textarea name="message"></textarea>
-    </form>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
