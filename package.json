@@ -18,7 +18,6 @@
     "prebuild": "echo 'Running pre-build Steam API tests...'"
   },
   "dependencies": {
-    "@emailjs/browser": "^4.4.1",
     "@upstash/ratelimit": "^2.0.5",
     "@upstash/redis": "^1.35.1",
     "clsx": "^2.1.1",

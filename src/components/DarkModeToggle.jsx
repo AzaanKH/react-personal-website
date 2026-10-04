@@ -8,12 +8,12 @@ const themeIcons = {
   dark: Moon,
 }
 const themeLabels = {
-  system: 'Using system theme',
+  system: 'Switch to light mode',
   light: 'Switch to dark mode',
   dark: 'Switch to system theme',
 }
 
-export default function DarkModeToggle({ theme, setTheme }) {
+export default function DarkModeToggle({ theme, setTheme, isHome }) {
   const cycle = () => {
     const idx = themeOrder.indexOf(theme)
     const next = themeOrder[(idx + 1) % themeOrder.length]
@@ -26,9 +26,10 @@ export default function DarkModeToggle({ theme, setTheme }) {
     <button
       onClick={cycle}
       aria-label={themeLabels[theme] || 'Toggle theme'}
-      className="fixed top-6 right-6 z-50 p-2.5 rounded-full cursor-pointer hover-text hover:bg-[var(--color-border-subtle)]"
+      className={`fixed right-5 z-50 flex h-10 w-10 items-center justify-center rounded-full cursor-pointer hover-text hover:bg-[var(--color-border-subtle)] ${isHome ? 'top-5' : 'top-20 sm:top-5'}`}
       style={{
         color: 'var(--color-text-secondary)',
+        borderRadius: 9999,
         transition: 'color 0.2s ease, background-color 0.2s ease',
       }}
     >

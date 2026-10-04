@@ -1,48 +1,314 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
-import { ArrowUpRight, ChevronDown } from 'lucide-react'
+import {
+  ArrowUpRight,
+  BarChart3,
+  ChevronDown,
+  ExternalLink,
+  Github,
+  GitBranch,
+  Layers,
+  ShieldCheck,
+  Terminal,
+} from 'lucide-react'
 
 const projects = [
   {
     name: 'DevEnv MCP Server',
+    eyebrow: 'AI infrastructure tooling',
     description:
       'Model Context Protocol server enabling AI assistants to manage local development environments with Docker orchestration, virtual environments, and system monitoring.',
-    highlights: [
-      'Architected MCP server with 12 tools for Docker orchestration, virtual environments, process monitoring, and system health',
-      'Optimized concurrent operations using asyncio.gather for parallel subprocess execution, reducing virtual environment discovery latency from 5.1s to 1.2s (4.2x speedup)',
-      'Designed structured Pydantic response schemas for AI-parseable outputs with cross-platform abstractions (Windows/macOS/Linux) using psutil',
-      'Built comprehensive test suite with 80+ unit tests and implemented safety patterns using confirmation dialogs for destructive operations',
+    proof: 'A local automation layer with typed FastMCP tools, destructive-action confirmations, and cross-platform health/resource reporting.',
+    screenshot: {
+      type: 'terminal',
+      title: 'MCP tool surface',
+      lines: [
+        'devenv_health_check  -> Docker, disk, memory',
+        'devenv_docker_stats  -> live container usage',
+        'devenv_venv_list     -> 5.1s to 1.2s',
+        'devenv_port_kill     -> confirmation required',
+      ],
+    },
+    metrics: [
+      { value: '12', label: 'MCP tools' },
+      { value: '4.2x', label: 'faster venv scan' },
+      { value: '80+', label: 'unit tests' },
     ],
-    tech: 'Python, FastMCP, asyncio, Pydantic, psutil, Docker',
-    metrics: '80+ unit tests · 4.2x speedup',
-    url: 'https://github.com/AzaanKH/devenv-mcp',
+    caseStudy: [
+      {
+        label: 'Problem',
+        text: 'AI assistants can write code, but they still need safe visibility into Docker, Python environments, ports, and machine health.',
+      },
+      {
+        label: 'Build',
+        text: 'Designed a FastMCP server with Pydantic schemas, psutil-backed platform abstractions, and asyncio fan-out for slow environment discovery.',
+      },
+      {
+        label: 'Proof',
+        text: 'Benchmarked virtual environment discovery from 5.1s to 1.2s and covered the tool surface with 80+ focused unit tests.',
+      },
+    ],
+    highlights: [
+      'Architected MCP server with tools for Docker orchestration, virtual environments, process monitoring, ports, and system health.',
+      'Optimized concurrent operations using asyncio.gather for parallel subprocess execution.',
+      'Designed structured Pydantic response schemas for AI-parseable outputs across Windows, macOS, and Linux.',
+      'Implemented safety patterns using confirmation prompts for destructive operations.',
+    ],
+    architecture: [
+      ['AI assistant', 'FastMCP server', 'Typed tool router', 'Docker / venv / process / health providers'],
+      ['psutil + subprocess', 'Pydantic response schemas', 'AI-readable results'],
+    ],
+    tech: ['Python', 'FastMCP', 'asyncio', 'Pydantic', 'psutil', 'Docker'],
+    links: [
+      { label: 'Source', href: 'https://github.com/AzaanKH/devenv-mcp', icon: Github },
+      { label: 'README', href: 'https://github.com/AzaanKH/devenv-mcp#devenv-mcp-server', icon: ExternalLink },
+    ],
   },
   {
     name: 'NFL Fantasy Picker',
+    eyebrow: 'ML product system',
     description:
       'Machine learning-powered fantasy football recommendations using XGBoost predictions with multi-source data pipelines.',
-    highlights: [
-      'Architected multi-source data pipeline with automatic fallback orchestration (Sleeper API → ESPN API → web scraping), processing 10,000+ player-week statistical records with rate limiting',
-      'Trained position-specific XGBoost models achieving 2.9 MAE with confidence intervals, using 22 engineered features including rolling averages, efficiency metrics, and trend indicators',
-      'Designed PostgreSQL + TimescaleDB schema for time-series statistics, enabling efficient rolling window queries across 17 weeks × 3 seasons of historical data',
+    proof: 'A full local app: React search interface, Flask prediction API, TimescaleDB/Postgres feature store, and position-specific XGBoost models.',
+    screenshot: {
+      type: 'image',
+      src: 'https://raw.githubusercontent.com/AzaanKH/football/main/website_homepage.jpeg',
+      alt: 'Fantasy football predictor homepage screenshot',
+    },
+    metrics: [
+      { value: '2.9', label: 'MAE model error' },
+      { value: '10k+', label: 'player-week records' },
+      { value: '800+', label: 'searchable players' },
     ],
-    tech: 'React, Python, Flask, PostgreSQL, TimescaleDB',
-    metrics: '2.9 MAE · 10,000+ records',
-    url: 'https://github.com/AzaanKH/football',
+    caseStudy: [
+      {
+        label: 'Problem',
+        text: 'Weekly start/sit decisions need current player context, matchup data, and uncertainty, not just season averages.',
+      },
+      {
+        label: 'Build',
+        text: 'Created a pipeline with Sleeper, ESPN, and scraping fallbacks, then trained position-specific XGBoost models on engineered rolling features.',
+      },
+      {
+        label: 'Proof',
+        text: 'The UI returns predictions with confidence intervals, 3-game averages, and instant player filtering over an 800+ player dataset.',
+      },
+    ],
+    highlights: [
+      'Architected multi-source data pipeline with automatic fallback orchestration and rate limiting.',
+      'Trained position-specific XGBoost models using rolling averages, reliability flags, efficiency metrics, and trend indicators.',
+      'Designed PostgreSQL + TimescaleDB schema for weekly statistics and efficient rolling-window feature queries.',
+      'Shipped a React interface for week/position selection, player search, and prediction comparison.',
+    ],
+    architecture: [
+      ['Sleeper API / ESPN / scraper', 'Feature pipeline', 'Postgres + TimescaleDB', 'XGBoost models'],
+      ['Flask API', 'React + shadcn UI', 'Prediction cards with confidence ranges'],
+    ],
+    tech: ['React', 'Python', 'Flask', 'PostgreSQL', 'TimescaleDB', 'XGBoost'],
+    links: [
+      { label: 'Source', href: 'https://github.com/AzaanKH/football', icon: Github },
+      { label: 'Screenshots', href: 'https://github.com/AzaanKH/football#screenshots', icon: ExternalLink },
+      { label: 'Local demo', href: 'https://github.com/AzaanKH/football#quick-start', icon: ArrowUpRight },
+    ],
   },
   {
     name: 'Distributed Paxos Consensus',
+    eyebrow: 'Distributed systems',
     description:
       'Fault-tolerant distributed system using the Paxos consensus algorithm, ensuring agreement across nodes under network partition scenarios.',
-    highlights: [
-      'Implemented Paxos consensus algorithm ensuring consensus across 12+ nodes under network partition scenarios',
-      'Built communication protocols handling 1000+ messages/second with fault tolerance',
+    proof: 'A Java consensus simulation focused on proposer/acceptor coordination, message throughput, and partition-tolerant agreement.',
+    screenshot: {
+      type: 'terminal',
+      title: 'Consensus trace',
+      lines: [
+        'cluster: 12 nodes, quorum: 7',
+        'partition: minority isolated, majority proceeds',
+        'prepare -> promise -> accept -> learned',
+        'throughput: 1000+ messages/sec',
+      ],
+    },
+    metrics: [
+      { value: '12+', label: 'nodes tested' },
+      { value: '1k+', label: 'messages/sec' },
+      { value: '2', label: 'partition modes' },
     ],
-    tech: 'Java',
-    metrics: '12+ nodes · 1000+ msg/sec',
-    url: null,
+    caseStudy: [
+      {
+        label: 'Problem',
+        text: 'Consensus must preserve agreement when messages arrive out of order, nodes fail, or the network splits.',
+      },
+      {
+        label: 'Build',
+        text: 'Implemented Paxos roles, quorum checks, proposal numbering, and message protocols for partition scenarios.',
+      },
+      {
+        label: 'Proof',
+        text: 'Validated agreement across 12+ simulated nodes while sustaining 1000+ protocol messages per second.',
+      },
+    ],
+    highlights: [
+      'Implemented Paxos consensus algorithm ensuring agreement across 12+ nodes under network partitions.',
+      'Built communication protocols handling 1000+ messages per second with fault tolerance.',
+      'Modeled proposer, acceptor, and learner flows with quorum-based acceptance.',
+    ],
+    architecture: [
+      ['Client request', 'Proposers', 'Acceptors / quorum', 'Learners'],
+      ['Partition simulator', 'Message bus', 'Consensus log'],
+    ],
+    tech: ['Java', 'Distributed systems', 'Consensus', 'Fault tolerance'],
+    links: [],
   },
 ]
+
+function MetricStrip({ metrics }) {
+  return (
+    <div className="grid grid-cols-3 gap-2">
+      {metrics.map((metric) => (
+        <div
+          key={`${metric.value}-${metric.label}`}
+          className="min-h-[68px] px-3 py-3"
+          style={{
+            backgroundColor: 'var(--color-surface-elevated)',
+            border: '1px solid var(--color-border)',
+            borderRadius: 10,
+          }}
+        >
+          <p
+            className="font-semibold leading-none"
+            style={{ color: 'var(--color-text)', fontSize: 'clamp(1.15rem, 2vw, 1.55rem)' }}
+          >
+            {metric.value}
+          </p>
+          <p
+            className="mt-2 text-[0.68rem] uppercase tracking-[0.12em] leading-tight"
+            style={{ color: 'var(--color-text-secondary)' }}
+          >
+            {metric.label}
+          </p>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function ProofVisual({ screenshot, name }) {
+  if (screenshot.type === 'image') {
+    return (
+      <div
+        className="relative h-full min-h-[190px] overflow-hidden"
+        style={{
+          backgroundColor: 'var(--color-surface-elevated)',
+          border: '1px solid var(--color-border)',
+          borderRadius: 10,
+        }}
+      >
+        <img src={screenshot.src} alt={screenshot.alt} className="h-full w-full object-cover" />
+        <div
+          className="absolute inset-x-0 bottom-0 px-4 py-3"
+          style={{
+            background: 'linear-gradient(to top, rgba(0,0,0,0.68), transparent)',
+            color: '#fff',
+          }}
+        >
+          <p className="text-xs uppercase tracking-[0.16em]">Screenshot</p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div
+      className="h-full min-h-[190px] overflow-hidden p-4"
+      style={{
+        backgroundColor: 'var(--color-surface-elevated)',
+        border: '1px solid var(--color-border)',
+        borderRadius: 10,
+      }}
+      aria-label={`${name} proof screenshot`}
+    >
+      <div className="mb-4 flex items-center gap-2">
+        <div className="flex gap-1.5" aria-hidden="true">
+          <span className="h-2.5 w-2.5 rounded-full bg-[#ef4444]" />
+          <span className="h-2.5 w-2.5 rounded-full bg-[#f59e0b]" />
+          <span className="h-2.5 w-2.5 rounded-full bg-[#22c55e]" />
+        </div>
+        <p className="text-[0.68rem] uppercase tracking-[0.16em]" style={{ color: 'var(--color-text-secondary)' }}>
+          {screenshot.title}
+        </p>
+      </div>
+      <div className="space-y-3 font-mono text-[0.72rem] leading-relaxed" style={{ color: 'var(--color-text)' }}>
+        {screenshot.lines.map((line, index) => (
+          <motion.p
+            key={line}
+            initial={{ opacity: 0, x: -6 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.08 + index * 0.05, duration: 0.25 }}
+          >
+            <span style={{ color: 'var(--color-accent)' }}>$ </span>
+            {line}
+          </motion.p>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function ArchitectureDiagram({ rows }) {
+  return (
+    <div className="space-y-3">
+      {rows.map((row, rowIndex) => (
+        <div key={row.join('-')} className="grid gap-2 md:grid-cols-4">
+          {row.map((node, nodeIndex) => (
+            <div key={node} className="flex items-center gap-2">
+              <div
+                className="flex min-h-[58px] flex-1 items-center justify-center px-3 text-center text-[0.74rem] font-medium leading-snug"
+                style={{
+                  color: 'var(--color-text)',
+                  backgroundColor: rowIndex === 0 ? 'var(--color-surface)' : 'var(--color-surface-elevated)',
+                  border: '1px solid var(--color-border)',
+                  borderRadius: 10,
+                }}
+              >
+                {node}
+              </div>
+              {nodeIndex < row.length - 1 && (
+                <ArrowUpRight
+                  className="hidden shrink-0 rotate-45 md:block"
+                  size={14}
+                  strokeWidth={1.5}
+                  style={{ color: 'var(--color-text-secondary)', opacity: 0.55 }}
+                  aria-hidden="true"
+                />
+              )}
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function LinkPill({ link }) {
+  const Icon = link.icon
+
+  return (
+    <a
+      href={link.href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex h-9 items-center gap-2 px-3 font-mono text-[0.68rem] font-medium uppercase tracking-[0.08em] transition-transform hover:-translate-y-0.5 hover:opacity-85"
+      style={{
+        color: 'var(--color-text)',
+        backgroundColor: 'var(--color-surface-elevated)',
+        border: '1px solid var(--color-border)',
+        borderRadius: 9999,
+      }}
+    >
+      <Icon size={14} strokeWidth={1.5} />
+      {link.label}
+    </a>
+  )
+}
 
 export default function ProjectsPage() {
   const [expandedIndex, setExpandedIndex] = useState(null)
@@ -52,190 +318,295 @@ export default function ProjectsPage() {
   }
 
   return (
-    <div className="w-full max-w-[800px] mx-auto pt-4 md:pt-8 pb-8 px-6">
-      <h2
-        className="font-bold tracking-[-0.02em] mb-12"
-        style={{
-          fontSize: 'clamp(2rem, 5vw, 4rem)',
-          color: 'var(--color-text)',
-        }}
-      >
-        Projects
-      </h2>
+    <div className="w-full max-w-[1080px] mx-auto pt-4 md:pt-8 pb-12 px-5 sm:px-6">
+      <div className="mb-10 flex flex-col gap-4 border-b pb-8 md:mb-12 md:flex-row md:items-end md:justify-between" style={{ borderColor: 'var(--color-border)' }}>
+        <div>
+          <p
+            className="eyebrow mb-3"
+            style={{ color: 'var(--color-accent)' }}
+          >
+            Selected work
+          </p>
+          <h2
+            className="display-heading"
+            style={{
+              fontSize: 'clamp(3.5rem, 8vw, 7rem)',
+              color: 'var(--color-text)',
+            }}
+          >
+            Projects
+          </h2>
+        </div>
+        <p
+          className="max-w-[360px] text-sm leading-6 md:text-right"
+          style={{ color: 'var(--color-text-secondary)' }}
+        >
+          Proof-first cards: metrics, visuals, and repo evidence stay visible before you open the
+          deeper build notes.
+        </p>
+      </div>
 
-      <div className="space-y-4">
+      <div className="space-y-5">
         {projects.map((project, i) => {
           const isExpanded = expandedIndex === i
 
           return (
-            <motion.div
+            <motion.article
               key={project.name}
               initial={{ y: 30, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: i * 0.1, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ delay: i * 0.08, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              className="relative overflow-hidden"
+              style={{
+                backgroundColor: 'var(--color-surface)',
+                border: '1px solid var(--color-border)',
+                boxShadow: isExpanded ? 'var(--shadow-lg)' : 'var(--shadow-sm)',
+                borderRadius: 16,
+              }}
             >
-              <motion.div
-                className="group block cursor-pointer rounded-xl px-6 py-5"
-                style={{
-                  backgroundColor: isExpanded ? 'var(--color-surface)' : 'transparent',
-                  border: `1px solid ${isExpanded ? 'var(--color-border)' : 'transparent'}`,
-                  boxShadow: isExpanded ? 'var(--shadow-md)' : 'none',
-                  transition: 'background-color 0.3s, border-color 0.3s, box-shadow 0.3s',
-                }}
-                whileHover={!isExpanded ? { x: 4 } : {}}
-                transition={{ duration: 0.2 }}
+              <button
+                type="button"
+                className="block w-full cursor-pointer p-4 text-left sm:p-5 md:p-6"
                 onClick={() => toggle(i)}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault()
-                    toggle(i)
-                  }
-                }}
+                aria-expanded={isExpanded}
               >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1 min-w-0">
-                    <h3
-                      className="font-semibold"
-                      style={{
-                        fontSize: 'clamp(1.3rem, 2.5vw, 2rem)',
-                        color: 'var(--color-text)',
-                      }}
-                    >
-                      {project.name}
-                    </h3>
-                    {!isExpanded && (
-                      <p
-                        className="mt-2 line-clamp-2"
-                        style={{
-                          fontSize: 'clamp(0.85rem, 1.3vw, 1rem)',
-                          color: 'var(--color-text-secondary)',
-                        }}
-                      >
-                        {project.description}
-                      </p>
-                    )}
-                  </div>
-                  <motion.div
-                    animate={{ rotate: isExpanded ? 180 : 0 }}
-                    transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                    className="mt-2 flex-shrink-0"
-                  >
-                    <ChevronDown
-                      size={20}
-                      strokeWidth={1.5}
-                      style={{
-                        color: 'var(--color-text-secondary)',
-                        opacity: 0.5,
-                        transition: 'opacity 0.2s',
-                      }}
-                      aria-hidden="true"
-                    />
-                  </motion.div>
-                </div>
-
-                <AnimatePresence initial={false}>
-                  {isExpanded && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.3, ease: 'easeInOut' }}
-                      className="overflow-hidden"
-                    >
-                      <div className="pt-4 pb-1">
-                        <ul className="space-y-2.5 mb-5">
-                          {project.highlights.map((point, pi) => (
-                            <motion.li
-                              key={pi}
-                              className="flex items-start gap-3"
-                              style={{
-                                fontSize: 'clamp(0.85rem, 1.2vw, 0.95rem)',
-                                color: 'var(--color-text-secondary)',
-                                lineHeight: 1.6,
-                              }}
-                              initial={{ opacity: 0, x: -8 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              transition={{
-                                delay: 0.05 + pi * 0.06,
-                                duration: 0.3,
-                                ease: [0.16, 1, 0.3, 1],
-                              }}
-                            >
-                              <span
-                                className="mt-2 w-1 h-1 rounded-full flex-shrink-0"
-                                style={{ backgroundColor: 'var(--color-accent)' }}
-                                aria-hidden="true"
-                              />
-                              <span>{point}</span>
-                            </motion.li>
-                          ))}
-                        </ul>
-
-                        <div className="flex flex-wrap gap-2 mb-4">
-                          {project.tech.split(', ').map((t, ti) => (
-                            <motion.span
-                              key={t}
-                              className="px-3 py-1 rounded-full text-[0.7rem] font-medium tracking-wide"
-                              style={{
-                                backgroundColor: 'var(--color-border-subtle)',
-                                color: 'var(--color-text-secondary)',
-                                border: '1px solid var(--color-border)',
-                              }}
-                              initial={{ opacity: 0, scale: 0.8 }}
-                              animate={{ opacity: 1, scale: 1 }}
-                              transition={{
-                                delay: 0.3 + ti * 0.05,
-                                duration: 0.25,
-                                ease: [0.16, 1, 0.3, 1],
-                              }}
-                            >
-                              {t}
-                            </motion.span>
-                          ))}
-                        </div>
-
-                        <motion.p
-                          className="text-[0.7rem] tracking-[0.15em] uppercase font-light mb-3"
-                          style={{ color: 'var(--color-text-secondary)', opacity: 0.7 }}
-                          initial={{ opacity: 0, y: 8 }}
-                          animate={{ opacity: 0.7, y: 0 }}
-                          transition={{ delay: 0.4, duration: 0.3 }}
+                <div className="grid gap-5 lg:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
+                  <div className="flex min-w-0 flex-col justify-between gap-5">
+                    <div>
+                      <div className="mb-3 flex flex-wrap items-center gap-2">
+                        <span
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 font-mono text-[0.64rem] uppercase tracking-[0.14em]"
+                          style={{
+                            color: 'var(--color-accent)',
+                            backgroundColor: 'var(--color-border-subtle)',
+                            borderRadius: 9999,
+                          }}
                         >
-                          {project.metrics}
-                        </motion.p>
-
-                        {project.url && (
-                          <motion.a
-                            href={project.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 text-sm font-medium transition-colors hover:opacity-80"
-                            style={{ color: 'var(--color-accent)' }}
-                            onClick={(e) => e.stopPropagation()}
-                            initial={{ opacity: 0, y: 8 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.5, duration: 0.3 }}
+                          <BarChart3 size={12} strokeWidth={1.5} />
+                          {project.eyebrow}
+                        </span>
+                        {project.links.length > 0 && (
+                          <span
+                            className="inline-flex items-center gap-1.5 text-[0.72rem]"
+                            style={{ color: 'var(--color-text-secondary)' }}
                           >
-                            View on GitHub
-                            <ArrowUpRight size={14} strokeWidth={1.5} />
-                          </motion.a>
+                            <ExternalLink size={12} strokeWidth={1.5} />
+                            {project.links.length} proof links
+                          </span>
                         )}
                       </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.div>
 
-              {i < projects.length - 1 && !isExpanded && (
-                <div
-                  className="h-px mx-6"
-                  style={{ backgroundColor: 'var(--color-border)' }}
-                  aria-hidden="true"
-                />
-              )}
-            </motion.div>
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="min-w-0">
+                          <h3
+                            className="font-display font-semibold tracking-[-0.035em]"
+                            style={{
+                              fontSize: 'clamp(1.8rem, 3.5vw, 3rem)',
+                              color: 'var(--color-text)',
+                            }}
+                          >
+                            {project.name}
+                          </h3>
+                          <p
+                            className="mt-3 max-w-[640px] leading-6"
+                            style={{
+                              fontSize: 'clamp(0.9rem, 1.3vw, 1rem)',
+                              color: 'var(--color-text-secondary)',
+                            }}
+                          >
+                            {project.description}
+                          </p>
+                        </div>
+                        <motion.span
+                          animate={{ rotate: isExpanded ? 180 : 0 }}
+                          transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                          className="mt-2 flex h-9 w-9 shrink-0 items-center justify-center"
+                          style={{
+                            color: 'var(--color-text-secondary)',
+                            backgroundColor: 'var(--color-surface-elevated)',
+                            border: '1px solid var(--color-border)',
+                            borderRadius: 9999,
+                          }}
+                        >
+                          <ChevronDown size={18} strokeWidth={1.5} aria-hidden="true" />
+                        </motion.span>
+                      </div>
+                    </div>
+
+                    <MetricStrip metrics={project.metrics} />
+
+                    <p className="text-sm leading-6" style={{ color: 'var(--color-text-secondary)' }}>
+                      <span className="font-medium" style={{ color: 'var(--color-text)' }}>
+                        Proof:
+                      </span>{' '}
+                      {project.proof}
+                    </p>
+                  </div>
+
+                  <ProofVisual screenshot={project.screenshot} name={project.name} />
+                </div>
+              </button>
+
+              <div className="flex flex-wrap gap-2 px-4 pb-4 sm:px-5 md:px-6">
+                {project.links.map((link) => (
+                  <LinkPill key={link.label} link={link} />
+                ))}
+                {project.links.length === 0 && (
+                  <span
+                    className="inline-flex h-9 items-center gap-2 px-3 text-xs font-medium"
+                    style={{
+                      color: 'var(--color-text-secondary)',
+                      backgroundColor: 'var(--color-surface-elevated)',
+                      border: '1px solid var(--color-border)',
+                      borderRadius: 9999,
+                    }}
+                  >
+                    <Terminal size={14} strokeWidth={1.5} />
+                    Demo notes available on request
+                  </span>
+                )}
+              </div>
+
+              <AnimatePresence initial={false}>
+                {isExpanded && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                    className="overflow-hidden"
+                  >
+                    <div
+                      className="border-t px-4 py-5 sm:px-5 md:px-6 md:py-6"
+                      style={{ borderColor: 'var(--color-border)' }}
+                    >
+                      <div className="grid gap-5 lg:grid-cols-[0.95fr_1.05fr]">
+                        <section>
+                          <div className="mb-3 flex items-center gap-2">
+                            <Layers size={16} strokeWidth={1.5} style={{ color: 'var(--color-accent)' }} />
+                            <h4 className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                              Case Study
+                            </h4>
+                          </div>
+                          <div className="space-y-3">
+                            {project.caseStudy.map((section) => (
+                              <div
+                                key={section.label}
+                                className="rounded-lg p-4"
+                                style={{
+                                  backgroundColor: 'var(--color-surface-elevated)',
+                                  border: '1px solid var(--color-border)',
+                                }}
+                              >
+                                <p
+                                  className="text-[0.68rem] uppercase tracking-[0.16em]"
+                                  style={{ color: 'var(--color-accent)' }}
+                                >
+                                  {section.label}
+                                </p>
+                                <p
+                                  className="mt-2 text-sm leading-6"
+                                  style={{ color: 'var(--color-text-secondary)' }}
+                                >
+                                  {section.text}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        </section>
+
+                        <section
+                          className="rounded-lg p-4"
+                          style={{
+                            backgroundColor: 'var(--color-surface-elevated)',
+                            border: '1px solid var(--color-border)',
+                          }}
+                        >
+                          <div className="mb-4 flex items-center gap-2">
+                            <GitBranch size={16} strokeWidth={1.5} style={{ color: 'var(--color-accent)' }} />
+                            <h4 className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                              Architecture
+                            </h4>
+                          </div>
+                          <ArchitectureDiagram rows={project.architecture} />
+                        </section>
+                      </div>
+
+                      <div className="mt-5 grid gap-5 lg:grid-cols-[1fr_0.8fr]">
+                        <section>
+                          <div className="mb-3 flex items-center gap-2">
+                            <ShieldCheck size={16} strokeWidth={1.5} style={{ color: 'var(--color-accent)' }} />
+                            <h4 className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                              Implementation Proof
+                            </h4>
+                          </div>
+                          <ul className="grid gap-2">
+                            {project.highlights.map((point, pi) => (
+                              <motion.li
+                                key={point}
+                                className="flex items-start gap-3 rounded-lg p-3"
+                                style={{
+                                  color: 'var(--color-text-secondary)',
+                                  backgroundColor: 'var(--color-surface-elevated)',
+                                  border: '1px solid var(--color-border)',
+                                  fontSize: 'clamp(0.84rem, 1.2vw, 0.94rem)',
+                                  lineHeight: 1.55,
+                                }}
+                                initial={{ opacity: 0, x: -8 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{
+                                  delay: 0.05 + pi * 0.05,
+                                  duration: 0.3,
+                                  ease: [0.16, 1, 0.3, 1],
+                                }}
+                              >
+                                <span
+                                  className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full"
+                                  style={{ backgroundColor: 'var(--color-accent)' }}
+                                  aria-hidden="true"
+                                />
+                                <span>{point}</span>
+                              </motion.li>
+                            ))}
+                          </ul>
+                        </section>
+
+                        <section>
+                          <div className="mb-3 flex items-center gap-2">
+                            <Layers size={16} strokeWidth={1.5} style={{ color: 'var(--color-accent)' }} />
+                            <h4 className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+                              Stack
+                            </h4>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {project.tech.map((t, ti) => (
+                              <motion.span
+                                key={t}
+                                className="rounded-full px-3 py-1.5 text-[0.72rem] font-medium"
+                                style={{
+                                  backgroundColor: 'var(--color-border-subtle)',
+                                  color: 'var(--color-text-secondary)',
+                                  border: '1px solid var(--color-border)',
+                                }}
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{
+                                  delay: 0.2 + ti * 0.04,
+                                  duration: 0.25,
+                                  ease: [0.16, 1, 0.3, 1],
+                                }}
+                              >
+                                {t}
+                              </motion.span>
+                            ))}
+                          </div>
+                        </section>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.article>
           )
         })}
       </div>

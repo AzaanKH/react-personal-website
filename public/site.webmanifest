@@ -1,0 +1,16 @@
+{
+  "name": "Azaan Khalfe",
+  "short_name": "Azaan",
+  "description": "Azaan Khalfe is a software engineer building polished web experiences, developer tools, and interactive projects with React.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f5f0eb",
+  "theme_color": "#c45d3e",
+  "icons": [
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

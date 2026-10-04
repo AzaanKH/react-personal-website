@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, MotionConfig } from 'motion/react'
 import { useDarkMode } from './hooks/useDarkMode'
 import Navigation from './components/Navigation'
@@ -16,13 +16,53 @@ const pages = {
   contact: ContactPage,
 }
 
+const pagePaths = {
+  home: '/',
+  projects: '/projects',
+  gaming: '/gaming',
+  contact: '/contact',
+}
+
+function getPageFromPath(pathname) {
+  const normalizedPath = pathname === '/' ? '/' : pathname.replace(/\/+$/, '')
+  const match = Object.entries(pagePaths).find(([, path]) => path === normalizedPath)
+
+  return match ? match[0] : 'home'
+}
+
 export default function App() {
-  const [activePage, setActivePage] = useState('home')
+  const [activePage, setActivePage] = useState(() => getPageFromPath(window.location.pathname))
   const { theme, resolvedTheme, setTheme } = useDarkMode()
 
   const mainRef = useRef(null)
   const isDark = resolvedTheme === 'dark'
   const PageComponent = pages[activePage]
+
+  useEffect(() => {
+    const currentPage = getPageFromPath(window.location.pathname)
+    const canonicalPath = pagePaths[currentPage]
+
+    if (window.location.pathname !== canonicalPath) {
+      window.history.replaceState({ page: currentPage }, '', canonicalPath)
+    }
+  }, [])
+
+  useEffect(() => {
+    const handlePopState = () => {
+      setActivePage(getPageFromPath(window.location.pathname))
+    }
+
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [])
+
+  const navigateToPage = useCallback((page) => {
+    if (!pages[page] || page === activePage) return
+
+    const path = pagePaths[page]
+    window.history.pushState({ page }, '', path)
+    setActivePage(page)
+  }, [activePage])
 
   return (
     <MotionConfig reducedMotion="user">
@@ -54,7 +94,7 @@ export default function App() {
         />
 
         {/* Dark Mode Toggle */}
-        <DarkModeToggle theme={theme} setTheme={setTheme} />
+        <DarkModeToggle theme={theme} setTheme={setTheme} isHome={activePage === 'home'} />
 
         {/* Page Content */}
         <main ref={mainRef} className="relative h-full overflow-y-auto pt-20">
@@ -62,13 +102,13 @@ export default function App() {
             if (mainRef.current) mainRef.current.scrollTop = 0
           }}>
             <PageTransition key={activePage}>
-              <PageComponent onNavigate={setActivePage} />
+              <PageComponent onNavigate={navigateToPage} />
             </PageTransition>
           </AnimatePresence>
         </main>
 
         {/* Bottom Navigation */}
-        <Navigation activePage={activePage} onNavigate={setActivePage} />
+        <Navigation activePage={activePage} onNavigate={navigateToPage} />
       </div>
     </MotionConfig>
   )

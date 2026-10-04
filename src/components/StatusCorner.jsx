@@ -73,7 +73,7 @@ export default function StatusCorner({ enterDelay = 1.6, animate: shouldAnimate 
     <>
       {/* Book info — bottom left */}
       <motion.div
-        className="fixed bottom-10 left-8 hidden sm:flex flex-col items-start gap-1.5 max-w-[20rem] pointer-events-none select-none"
+        className="status-corner fixed bottom-10 left-8 hidden sm:flex flex-col items-start gap-1.5 max-w-[20rem] pointer-events-none select-none"
         initial={initialState}
         animate={{ opacity: 1, y: 0 }}
         transition={transition}
@@ -122,7 +122,7 @@ export default function StatusCorner({ enterDelay = 1.6, animate: shouldAnimate 
 
       {/* Status + location/weather — bottom right */}
       <motion.div
-        className="fixed bottom-10 right-8 hidden sm:flex flex-col items-end gap-1.5 max-w-[20rem] pointer-events-none select-none"
+        className="status-corner fixed bottom-10 right-8 hidden sm:flex flex-col items-end gap-1.5 max-w-[20rem] pointer-events-none select-none"
         initial={initialState}
         animate={{ opacity: 1, y: 0 }}
         transition={transition}
