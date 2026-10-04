@@ -51,6 +51,8 @@ Modern (v2) functions: `export default async (req, context) => Response` plus `e
 | `POST /api/contact` | `functions/contact.js`, `lib/contact.js` | JSON only, same-origin only, ≤20 KB. Honeypot field `website` → fake 200. Validates with `src/lib/contactValidation.js` (shared with the form), then sends via Resend REST. Rate limiting is Netlify's platform limit only (5 per 3 min per IP, 429 before the function runs, no JSON body; ContactPage handles that). Upstash was removed: its database stopped resolving, and the old fail-open limiter had been hiding that. |
 | `/.netlify/functions/weather` | `functions/weather.js` | Bellevue, WA; 15 min cache. |
 
+Platform rate limits (`config.rateLimit`): the free plan allows **2 code-based rules per project**, and both are used (contact, steam-proxy). Netlify checks that rules are active during the deploy's post-processing stage, and they also apply to deploy previews. Enforcement can lag up to ~10s after a client crosses the threshold, so a fast burst can get a few extra requests through before 429s begin. Verified on deploy-preview-1: the 429 has an empty body.
+
 Netlify Forms is **no longer used**: there is no hidden form in `index.html`. Delivery happens only inside the function, so the rate limit can't be bypassed.
 
 Local testing: `CONTACT_FROM_EMAIL=Portfolio <onboarding@resend.dev>` only delivers to the Resend account's email (azaankhalfe@gmail.com), which is also `CONTACT_TO_EMAIL`. Every local submit sends a real email.
