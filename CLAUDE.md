@@ -33,7 +33,8 @@ npm run test:live  # network smoke test of /api/steam (TEST_BASE_URL to override
 ## Routing (`src/lib/routes.js`)
 
 - `routes` is the single source of truth: path, nav label, `<title>`, meta description.
-- `applyPageMetadata(page)` updates title, description, canonical, og:*, twitter:* on every page change. `index.html` ships the home page's values for non-JS crawlers.
+- `applyPageMetadata(page)` updates title, description, canonical, og:*, twitter:* on every page change.
+- Non-JS crawlers: the `prerender-route-heads` plugin in `vite.config.js` emits `dist/<page>.html` (a copy of the built `index.html` with `renderPageHead(html, page)` applied). Netlify serves `/projects` from `projects.html` because a static file shadows the non-forced SPA rewrite; under `netlify dev` the rewrite to `index.html` still applies. `renderPageHead` throws if `index.html` loses one of the tags in `HEAD_TAGS`, which keeps the key attribute first (`<meta name="…" content="…">`).
 - Nav and in-page links use `components/RouteLink.jsx`: a real `<a href>` that does client-side navigation on a plain left click and leaves modifier clicks to the browser.
 - After in-app navigation (not the first load), `PageTransition` focuses the new page's `h1`. **Every page must render exactly one `h1`.** GamingPage uses a stable `sr-only` h1 because its visible heading changes with loading/playing state.
 - `netlify.toml` lists SPA routes explicitly. **Do not reintroduce a `/*` → `/index.html` rewrite**: under `netlify dev` it rewrites Vite's `/src/*` and `/@vite/*` modules to HTML and the page goes blank. Adding a page means updating `routes.js` and `netlify.toml`.
@@ -47,7 +48,7 @@ Modern (v2) functions: `export default async (req, context) => Response` plus `e
 
 | Path | Files | Behaviour |
 |------|-------|-----------|
-| `GET /api/steam?endpoint=` | `functions/steam-proxy.js`, `lib/steam.js` | Endpoints: profile, recent, games, level. Ignores `steamid`, clamps `count` to 1–20, builds URLs with `URLSearchParams`, 8s upstream timeout (504), never echoes upstream bodies. Cache: profile 60s, recent 10m, games 1h, level 1d. Platform limit 60/min/IP. |
+| `GET /api/steam?endpoint=` | `functions/steam-proxy.js`, `lib/steam.js` | Endpoints: profile, recent, games, level. Ignores `steamid`, clamps `count` to 1–20, builds URLs with `URLSearchParams`, 8s upstream timeout (504), never echoes upstream bodies. Cache: profile 60s, recent 10m, games 1h, level 1d, with `Netlify-Vary: query=endpoint|count|refresh`. Any `refresh` param → `no-store` (Refresh button; always reaches Steam). Fetch *and* body parse are both inside the try (bad JSON → 502, mid-body timeout → 504). `_metadata.timestamp` = when Steam was queried. Platform limit 60/min/IP. |
 | `POST /api/contact` | `functions/contact.js`, `lib/contact.js` | JSON only, same-origin only, ≤20 KB. Honeypot field `website` → fake 200. Validates with `src/lib/contactValidation.js` (shared with the form), then sends via Resend REST. Rate limiting is Netlify's platform limit only (5 per 3 min per IP, 429 before the function runs, no JSON body; ContactPage handles that). Upstash was removed: its database stopped resolving, and the old fail-open limiter had been hiding that. |
 | `/.netlify/functions/weather` | `functions/weather.js` | Bellevue, WA; 15 min cache. |
 
@@ -61,7 +62,7 @@ Local testing: `CONTACT_FROM_EMAIL=Portfolio <onboarding@resend.dev>` only deliv
 
 ## Hooks
 
-- **`useSteamData(endpoints)`**: `endpoints` must be a stable reference (module constant or `useMemo`). Returns `{ steamData, loading, refreshing, error, errors, partialFailure, lastUpdated, usingCache, refetch, formatPlaytime, ... }`. Per-endpoint localStorage cache TTLs mirror the proxy. If everything is fresh in cache, the first render skips the network. `refetch()` uses `cache: 'reload'`. Requests abort on unmount and time out after 10s. Failed endpoints keep previously shown data and are reported in `errors`.
+- **`useSteamData(endpoints)`**: `endpoints` must be a stable reference (module constant or `useMemo`). Returns `{ steamData, loading, refreshing, error, errors, partialFailure, lastUpdated, usingCache, refetch, formatPlaytime, ... }`. Per-endpoint localStorage cache TTLs mirror the proxy. If everything is fresh in cache, the first render skips the network. `refetch()` adds a unique `refresh=<nonce>` and `cache: 'no-store'`. (`cache: 'reload'` alone was not enough, because it skips the browser cache but not Netlify's CDN.) `lastUpdated` is the oldest server `_metadata.timestamp` on screen, not the client's receive time, and the localStorage TTLs are measured from it too. Requests abort on unmount and time out after 10s. Failed endpoints keep previously shown data and are reported in `errors`.
 - **`useDarkMode()`**: `{ theme, resolvedTheme, setTheme }`. System preference comes from `useSyncExternalStore(matchMedia)`. The stored key `v8-theme` is also read by the inline script in `index.html` to avoid a flash; keep them in sync.
 - **`useWeather()`**: cached 15 min; aborts on unmount; fails silently.
 
@@ -72,7 +73,8 @@ ESLint uses `eslint-plugin-react-hooks` 7, which includes the React Compiler rul
 ## Contact page
 
 - Fields `name`, `email`, `message` (+ hidden honeypot `website`).
-- Drafts are saved to `sessionStorage['contact-draft']` and cleared on success.
+- State (draft, status, error, server errors) lives in `src/lib/contactForm.js`, a module-level `useSyncExternalStore` store, **not** in ContactPage. The page unmounts on navigation while a send can still be in flight, so `submitContact` itself clears the draft on success, but only if the draft still equals what was sent (edits made while sending are kept). On return, the page shows the in-flight "Sending…" or the "sent" result.
+- Drafts are mirrored to `sessionStorage['contact-draft']` (survive reload). Tests call `resetContactForm()` in `beforeEach`.
 - Server field errors (`{ errors }` in a 400) are merged into the client errors.
 
 ---

@@ -69,7 +69,57 @@ describe('useSteamData', () => {
 
     await waitFor(() => expect(result.current.steamData.profile.personaname).toBe('after'))
     expect(result.current.refreshing).toBe(false)
-    expect(fetchMock.mock.calls.at(-1)[1].cache).toBe('reload')
+    const [url, init] = fetchMock.mock.calls.at(-1)
+    expect(init.cache).toBe('no-store')
+    expect(new URL(url, 'https://x.test').searchParams.get('refresh')).toMatch(/^\d+$/)
+  })
+
+  it('uses a new refresh nonce on every refresh', async () => {
+    const fetchMock = routeFetch({ profile: () => profile('x'), recent })
+    vi.stubGlobal('fetch', fetchMock)
+    const nonces = () => fetchMock.mock.calls
+      .map(([url]) => new URL(url, 'https://x.test').searchParams.get('refresh'))
+      .filter(Boolean)
+
+    const { result } = renderHook(() => useSteamData(['profile']))
+    await waitFor(() => expect(result.current.loading).toBe(false))
+    expect(nonces()).toEqual([])
+
+    act(() => result.current.refetch())
+    await waitFor(() => expect(result.current.refreshing).toBe(false))
+    act(() => result.current.refetch())
+    await waitFor(() => expect(result.current.refreshing).toBe(false))
+
+    expect(nonces()).toHaveLength(2)
+    expect(new Set(nonces()).size).toBe(2)
+  })
+
+  it('reports freshness from the server timestamp, not the time of the response', async () => {
+    // A CDN hit replays the body cached when Steam was last queried.
+    const steamQueriedAt = new Date(Date.now() - 45_000).toISOString()
+    vi.stubGlobal('fetch', vi.fn(async () => Response.json({
+      response: { players: [{ personaname: 'azaan' }] },
+      _metadata: { endpoint: 'profile', timestamp: steamQueriedAt },
+    })))
+
+    const { result } = renderHook(() => useSteamData(['profile']))
+    await waitFor(() => expect(result.current.loading).toBe(false))
+
+    expect(result.current.lastUpdated).toBe(Date.parse(steamQueriedAt))
+  })
+
+  it('reports the oldest timestamp when endpoints differ in age', async () => {
+    const old = new Date(Date.now() - 5 * 60_000).toISOString()
+    const fresh = new Date().toISOString()
+    vi.stubGlobal('fetch', routeFetch({
+      profile: () => Response.json({ response: { players: [{}] }, _metadata: { timestamp: fresh } }),
+      recent: () => Response.json({ response: { games: [] }, _metadata: { timestamp: old } }),
+    }))
+
+    const { result } = renderHook(() => useSteamData(ENDPOINTS))
+    await waitFor(() => expect(result.current.loading).toBe(false))
+
+    expect(result.current.lastUpdated).toBe(Date.parse(old))
   })
 
   it('serves fresh cached data without a network request', async () => {

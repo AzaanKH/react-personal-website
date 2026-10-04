@@ -15,6 +15,13 @@ const DEFAULT_TTL = 5 * 60 * 1000;
 
 const getCacheKey = (endpoint) => `${CACHE_KEY_PREFIX}${endpoint}`;
 
+// When the proxy actually queried Steam. A CDN hit replays the original value, so
+// this (not the time the browser received the response) is how old the data is.
+export const getServerTimestamp = (data) => {
+  const parsed = Date.parse(data?._metadata?.timestamp);
+  return Number.isNaN(parsed) ? Date.now() : Math.min(parsed, Date.now());
+};
+
 const getCachedEntry = (endpoint) => {
   try {
     const cached = localStorage.getItem(getCacheKey(endpoint));
@@ -33,7 +40,7 @@ const getCachedEntry = (endpoint) => {
 
 const setCachedData = (endpoint, data) => {
   try {
-    localStorage.setItem(getCacheKey(endpoint), JSON.stringify({ data, timestamp: Date.now() }));
+    localStorage.setItem(getCacheKey(endpoint), JSON.stringify({ data, timestamp: getServerTimestamp(data) }));
   } catch {
     // Storage full or unavailable: data still renders, it just won't be cached.
   }
@@ -66,10 +73,19 @@ export function normalizeSteamResponse(endpoint, data) {
   }
 }
 
-async function fetchEndpoint(endpoint, { signal, bypassCache }) {
-  const response = await fetch(`/api/steam?endpoint=${encodeURIComponent(endpoint)}`, {
+// A manual refresh adds a unique `refresh` param. `cache: 'reload'` only skips the
+// browser cache, but the param is part of Netlify's CDN cache key, so it also
+// guarantees a trip to Steam (see netlify/lib/steam.js).
+export function buildSteamRequestUrl(endpoint, refreshNonce) {
+  const params = new URLSearchParams({ endpoint });
+  if (refreshNonce) params.set('refresh', String(refreshNonce));
+  return `/api/steam?${params}`;
+}
+
+async function fetchEndpoint(endpoint, { signal, refreshNonce }) {
+  const response = await fetch(buildSteamRequestUrl(endpoint, refreshNonce), {
     signal: AbortSignal.any([signal, AbortSignal.timeout(REQUEST_TIMEOUT_MS)]),
-    cache: bypassCache ? 'reload' : 'default',
+    cache: refreshNonce ? 'no-store' : 'default',
   });
 
   if (!response.ok) {
@@ -84,7 +100,7 @@ async function fetchEndpoint(endpoint, { signal, bypassCache }) {
 
 function readInitialState(endpointList) {
   const steamData = {};
-  let oldest = null;
+  const fetchedAt = {};
   let complete = true;
 
   for (const endpoint of endpointList) {
@@ -95,11 +111,17 @@ function readInitialState(endpointList) {
     }
     const [key, value] = normalizeSteamResponse(endpoint, entry.data);
     steamData[key] = value;
-    oldest = oldest === null ? entry.timestamp : Math.min(oldest, entry.timestamp);
+    fetchedAt[endpoint] = entry.timestamp;
   }
 
-  return { steamData, complete, lastUpdated: oldest };
+  return { steamData, fetchedAt, complete };
 }
+
+// "Updated" reflects the stalest data on screen, so it never claims more freshness than it has.
+const oldestTimestamp = (fetchedAt) => {
+  const times = Object.values(fetchedAt);
+  return times.length > 0 ? Math.min(...times) : null;
+};
 
 export const useSteamData = (endpoints = ['profile', 'recent']) => {
   const endpointsKey = endpoints.join(',');
@@ -111,23 +133,24 @@ export const useSteamData = (endpoints = ['profile', 'recent']) => {
   const [loading, setLoading] = useState(!initial.complete);
   const [refreshing, setRefreshing] = useState(false);
   const [usingCache, setUsingCache] = useState(initial.complete);
-  const [lastUpdated, setLastUpdated] = useState(initial.lastUpdated);
-  const [refreshKey, setRefreshKey] = useState(0);
+  const [fetchedAt, setFetchedAt] = useState(initial.fetchedAt);
+  // 0 = initial load; otherwise a unique nonce per Refresh click.
+  const [refreshNonce, setRefreshNonce] = useState(0);
 
   useEffect(() => {
     // Fresh cache for every endpoint on mount: render it without a network round trip.
     // (Derived from state rather than a ref so StrictMode's double effect run agrees.)
-    if (refreshKey === 0 && initial.complete) return;
+    if (refreshNonce === 0 && initial.complete) return;
 
     const controller = new AbortController();
-    const bypassCache = refreshKey > 0;
 
     Promise.allSettled(
-      endpointList.map((endpoint) => fetchEndpoint(endpoint, { signal: controller.signal, bypassCache })),
+      endpointList.map((endpoint) => fetchEndpoint(endpoint, { signal: controller.signal, refreshNonce })),
     ).then((results) => {
       if (controller.signal.aborted) return;
 
       const updates = {};
+      const updatedAt = {};
       const nextErrors = {};
       results.forEach((result, index) => {
         const endpoint = endpointList[index];
@@ -135,6 +158,7 @@ export const useSteamData = (endpoints = ['profile', 'recent']) => {
           setCachedData(endpoint, result.value);
           const [key, value] = normalizeSteamResponse(endpoint, result.value);
           updates[key] = value;
+          updatedAt[endpoint] = getServerTimestamp(result.value);
         } else {
           nextErrors[endpoint] = result.reason?.name === 'TimeoutError'
             ? 'Request timed out'
@@ -144,21 +168,20 @@ export const useSteamData = (endpoints = ['profile', 'recent']) => {
 
       // Failed endpoints keep whatever was shown before rather than blanking out.
       setSteamData((prev) => ({ ...prev, ...updates }));
+      setFetchedAt((prev) => ({ ...prev, ...updatedAt }));
       setErrors(nextErrors);
-      if (Object.keys(updates).length > 0) {
-        setUsingCache(false);
-        setLastUpdated(Date.now());
-      }
+      if (Object.keys(updates).length > 0) setUsingCache(false);
       setLoading(false);
       setRefreshing(false);
     });
 
     return () => controller.abort();
-  }, [endpointList, refreshKey, initial.complete]);
+  }, [endpointList, refreshNonce, initial.complete]);
 
   const refetch = useCallback(() => {
     setRefreshing(true);
-    setRefreshKey((key) => key + 1);
+    // Strictly increasing, so two clicks in the same millisecond still differ.
+    setRefreshNonce((previous) => Math.max(Date.now(), previous + 1));
   }, []);
 
   const failedEndpoints = Object.keys(errors);
@@ -183,7 +206,7 @@ export const useSteamData = (endpoints = ['profile', 'recent']) => {
     errors,
     partialFailure: failedEndpoints.length > 0 && !error,
     usingCache,
-    lastUpdated,
+    lastUpdated: oldestTimestamp(fetchedAt),
     refetch,
     formatPlaytime,
     isOnline: () => steamData.profile?.personastate === 1,

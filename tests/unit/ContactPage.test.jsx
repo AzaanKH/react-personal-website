@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import ContactPage from '../../src/pages/ContactPage'
+import { resetContactForm } from '../../src/lib/contactForm'
 
 async function fillForm(user, { name = 'Ada Lovelace', email = 'ada@example.com', message = 'I would love to chat about a role.' } = {}) {
   if (name) await user.type(screen.getByLabelText('Name'), name)
@@ -15,6 +16,7 @@ describe('ContactPage', () => {
   let fetchMock
 
   beforeEach(() => {
+    resetContactForm()
     fetchMock = vi.fn(async () => Response.json({ ok: true }))
     vi.stubGlobal('fetch', fetchMock)
   })
@@ -128,5 +130,72 @@ describe('ContactPage', () => {
     render(<ContactPage />)
     expect(screen.getByLabelText('Name')).toHaveValue('Ada Lovelace')
     expect(screen.getByLabelText('Message')).toHaveValue('Half-written thought')
+  })
+
+  it('restores a draft from sessionStorage after a reload', () => {
+    sessionStorage.setItem('contact-draft', JSON.stringify({ name: 'Grace', email: '', message: 'Saved' }))
+    resetContactForm() // a reload starts with empty in-memory state
+
+    render(<ContactPage />)
+    expect(screen.getByLabelText('Name')).toHaveValue('Grace')
+    expect(screen.getByLabelText('Message')).toHaveValue('Saved')
+  })
+
+  describe('when the page is left while a message is sending', () => {
+    let respond
+
+    beforeEach(() => {
+      fetchMock.mockImplementationOnce(() => new Promise((resolve) => { respond = resolve }))
+    })
+
+    async function submitAndLeave() {
+      const user = userEvent.setup()
+      const view = render(<ContactPage />)
+      await fillForm(user)
+      await user.click(submit())
+      view.unmount()
+    }
+
+    it('clears the submitted draft and shows success on return', async () => {
+      await submitAndLeave()
+      await act(async () => respond(Response.json({ ok: true })))
+
+      expect(sessionStorage.getItem('contact-draft')).toBeNull()
+      render(<ContactPage />)
+      expect(screen.getByLabelText('Message')).toHaveValue('')
+      expect(screen.getByText(/your message was sent/i)).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /sent/i })).toBeDisabled()
+    })
+
+    it('shows the send in progress on return instead of offering a duplicate', async () => {
+      await submitAndLeave()
+
+      render(<ContactPage />)
+      expect(screen.getByRole('button', { name: /sending/i })).toBeDisabled()
+
+      await act(async () => respond(Response.json({ ok: true })))
+      expect(await screen.findByText(/your message was sent/i)).toBeInTheDocument()
+      expect(screen.getByLabelText('Message')).toHaveValue('')
+      expect(fetchMock).toHaveBeenCalledTimes(1)
+    })
+
+    it('keeps the draft and reports the failure on return', async () => {
+      await submitAndLeave()
+      await act(async () => respond(Response.json({ error: 'Failed to send message.' }, { status: 502 })))
+
+      render(<ContactPage />)
+      expect(screen.getByLabelText('Message')).toHaveValue('I would love to chat about a role.')
+      expect(screen.getByText('Failed to send message.')).toBeInTheDocument()
+    })
+
+    it('keeps edits made while the message was in flight', async () => {
+      await submitAndLeave()
+      const user = userEvent.setup()
+      render(<ContactPage />)
+      await user.type(screen.getByLabelText('Message'), ' Also, one more thing.')
+
+      await act(async () => respond(Response.json({ ok: true })))
+      expect(screen.getByLabelText('Message')).toHaveValue('I would love to chat about a role. Also, one more thing.')
+    })
   })
 })

@@ -2,9 +2,14 @@ import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import { Send, Check, Loader2, ArrowUpRight } from 'lucide-react'
 import { CONTACT_LIMITS, validateContact } from '../lib/contactValidation'
+import {
+  resetStatus,
+  showValidationError,
+  submitContact,
+  updateField,
+  useContactForm,
+} from '../lib/contactForm'
 
-const DRAFT_STORAGE_KEY = 'contact-draft'
-const EMPTY_FORM = { name: '', email: '', message: '' }
 const inputClassName =
   'w-full bg-transparent border-0 border-b px-0 py-2.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--color-accent)]'
 
@@ -27,36 +32,12 @@ const fields = [
   },
 ]
 
-// Drafts live in sessionStorage so switching pages (which unmounts this component)
-// doesn't throw away a half-written message, while nothing lingers after the tab closes.
-function readDraft() {
-  try {
-    const saved = JSON.parse(sessionStorage.getItem(DRAFT_STORAGE_KEY))
-    return saved && typeof saved === 'object' ? { ...EMPTY_FORM, ...saved } : EMPTY_FORM
-  } catch {
-    return EMPTY_FORM
-  }
-}
-
-function writeDraft(data) {
-  try {
-    if (Object.values(data).some((value) => value.trim())) {
-      sessionStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(data))
-    } else {
-      sessionStorage.removeItem(DRAFT_STORAGE_KEY)
-    }
-  } catch {
-    // Storage unavailable: the form still works, the draft just won't survive navigation.
-  }
-}
-
 export default function ContactPage() {
-  const [formData, setFormData] = useState(readDraft)
+  // Draft and submission state are in a store that outlives this page (lib/contactForm.js),
+  // so a send that finishes after navigating away still clears the draft and reports success.
+  const { draft: formData, status, errorMessage, serverErrors } = useContactForm()
   const [honeypot, setHoneypot] = useState('')
   const [touched, setTouched] = useState({})
-  const [serverErrors, setServerErrors] = useState({})
-  const [status, setStatus] = useState('idle')
-  const [errorMessage, setErrorMessage] = useState('')
   const validationErrors = { ...serverErrors, ...validateContact(formData) }
   const messageError = touched.message && validationErrors.message
   const feedbackMessage =
@@ -66,28 +47,15 @@ export default function ContactPage() {
         ? "Thanks, your message was sent. I'll get back to you soon."
         : errorMessage
 
-  useEffect(() => {
-    writeDraft(formData)
-  }, [formData])
-
   // Return the button to its idle state a few seconds after success or failure.
   useEffect(() => {
     if (status !== 'success' && status !== 'error') return
-    const timer = setTimeout(() => setStatus('idle'), 4000)
+    const timer = setTimeout(resetStatus, 4000)
     return () => clearTimeout(timer)
   }, [status])
 
   const handleChange = (e) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-    setServerErrors((prev) => {
-      if (!prev[name]) return prev
-      const next = { ...prev }
-      delete next[name]
-      return next
-    })
-    if (errorMessage) setErrorMessage('')
-    if (status === 'error') setStatus('idle')
+    updateField(e.target.name, e.target.value)
   }
 
   const handleBlur = (e) => {
@@ -102,50 +70,22 @@ export default function ContactPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    if (status === 'sending') return
     const errors = validateContact(formData)
 
     if (Object.keys(errors).length > 0) {
       setTouched({ name: true, email: true, message: true })
-      setErrorMessage('Please fix the highlighted fields.')
-      setStatus('idle')
+      showValidationError('Please fix the highlighted fields.')
       focusFirstError(errors)
       return
     }
 
-    setStatus('sending')
-    setErrorMessage('')
-
-    try {
-      const response = await fetch('/api/contact', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, website: honeypot }),
-      })
-      const result = await response.json().catch(() => ({}))
-
-      if (!response.ok) {
-        if (result.errors) {
-          setServerErrors(result.errors)
-          setTouched({ name: true, email: true, message: true })
-          focusFirstError(result.errors)
-        }
-        // Netlify's platform rate limit answers 429 before the function runs, without a JSON body.
-        setErrorMessage(
-          result.error ||
-            (response.status === 429
-              ? 'Too many messages. Please wait a few minutes and try again.'
-              : 'Failed to send message. Please try again.'),
-        )
-        setStatus('error')
-        return
-      }
-
-      setStatus('success')
-      setFormData(EMPTY_FORM)
+    const result = await submitContact(formData, honeypot)
+    if (result.ok) {
       setTouched({})
-    } catch {
-      setErrorMessage('Failed to send message. Check your connection and try again.')
-      setStatus('error')
+    } else if (result.errors) {
+      setTouched({ name: true, email: true, message: true })
+      focusFirstError(result.errors)
     }
   }
 

@@ -1,9 +1,34 @@
 import path from 'node:path'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { pageIds, renderPageHead, routes } from './src/lib/routes.js'
+
+// Emits projects.html, gaming.html, contact.html: copies of the built index.html
+// with that page's title, description, canonical, and social tags. Netlify serves
+// /projects from projects.html (a static file shadows the SPA rewrite in netlify.toml),
+// so crawlers that don't run JavaScript get the right metadata. The app is unchanged.
+function prerenderRouteHeads() {
+  return {
+    name: 'prerender-route-heads',
+    apply: 'build',
+    enforce: 'post',
+    generateBundle(_options, bundle) {
+      const index = bundle['index.html']
+      if (!index) this.error('index.html was not found in the bundle')
+      for (const page of pageIds) {
+        if (routes[page].path === '/') continue
+        this.emitFile({
+          type: 'asset',
+          fileName: `${routes[page].path.slice(1)}.html`,
+          source: renderPageHead(String(index.source), page),
+        })
+      }
+    },
+  }
+}
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), prerenderRouteHeads()],
   build: {
     outDir: 'dist',
     assetsDir: 'assets',

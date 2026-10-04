@@ -68,6 +68,48 @@ describe('steam proxy', () => {
   it('caches profile responses briefly and adds metadata', async () => {
     const res = await handleSteamRequest(get('endpoint=profile'), options())
     expect(res.headers.get('Cache-Control')).toBe('public, max-age=60')
-    expect((await res.json())._metadata.endpoint).toBe('profile')
+    expect(res.headers.get('Netlify-Vary')).toBe('query=endpoint|count|refresh')
+    const body = await res.json()
+    expect(body._metadata.endpoint).toBe('profile')
+    expect(Number.isNaN(Date.parse(body._metadata.timestamp))).toBe(false)
+  })
+
+  it('never caches a forced refresh', async () => {
+    const res = await handleSteamRequest(get('endpoint=profile&refresh=1712345678'), options())
+    expect(res.status).toBe(200)
+    expect(res.headers.get('Cache-Control')).toBe('no-store')
+    expect(res.headers.get('Netlify-Vary')).toBeNull()
+  })
+
+  it('returns a JSON 502 when Steam answers 200 with a non-JSON body', async () => {
+    const fetchImpl = vi.fn(async () => new Response('<html>Service Unavailable</html>', { status: 200 }))
+    const res = await handleSteamRequest(get('endpoint=profile'), options({ fetchImpl }))
+
+    expect(res.status).toBe(502)
+    expect(res.headers.get('Cache-Control')).toBe('no-store')
+    expect(await res.json()).toEqual({ error: 'Steam API returned an invalid response' })
+  })
+
+  it('returns a JSON 502 when Steam answers with a non-object JSON body', async () => {
+    const fetchImpl = vi.fn(async () => Response.json(null))
+    const res = await handleSteamRequest(get('endpoint=profile'), options({ fetchImpl }))
+    expect(res.status).toBe(502)
+  })
+
+  it('maps a timeout while reading the body to a JSON 504', async () => {
+    const timeout = Object.assign(new Error('timed out'), { name: 'TimeoutError' })
+    const upstream = { ok: true, status: 200, json: vi.fn(async () => { throw timeout }) }
+    const res = await handleSteamRequest(get('endpoint=profile'), options({ fetchImpl: vi.fn(async () => upstream) }))
+
+    expect(res.status).toBe(504)
+    expect(await res.json()).toEqual({ error: 'Steam API timed out' })
+  })
+
+  it('maps a dropped connection while reading the body to a JSON 502', async () => {
+    const upstream = { ok: true, status: 200, json: vi.fn(async () => { throw new TypeError('terminated') }) }
+    const res = await handleSteamRequest(get('endpoint=profile'), options({ fetchImpl: vi.fn(async () => upstream) }))
+
+    expect(res.status).toBe(502)
+    expect(await res.json()).toEqual({ error: 'Steam API unreachable' })
   })
 })

@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { applyPageMetadata, getPageFromPath, routes } from '../../src/lib/routes'
+import { readFileSync } from 'node:fs'
+import path from 'node:path'
+import { applyPageMetadata, getPageFromPath, renderPageHead, routes } from '../../src/lib/routes'
 
 describe('getPageFromPath', () => {
   it.each([
@@ -45,5 +47,60 @@ describe('applyPageMetadata', () => {
     expect(document.head.querySelector('link[rel="canonical"]').getAttribute('href')).toBe(
       'https://azaankhalfe.netlify.app/',
     )
+  })
+})
+
+describe('renderPageHead', () => {
+  const indexHtml = readFileSync(path.resolve(import.meta.dirname, '../../index.html'), 'utf8')
+  const headOf = (html) => {
+    const doc = new DOMParser().parseFromString(html, 'text/html')
+    const attr = (selector, name) => doc.head.querySelector(selector)?.getAttribute(name)
+    return {
+      title: doc.title,
+      description: attr('meta[name="description"]', 'content'),
+      canonical: attr('link[rel="canonical"]', 'href'),
+      ogUrl: attr('meta[property="og:url"]', 'content'),
+      ogTitle: attr('meta[property="og:title"]', 'content'),
+      ogDescription: attr('meta[property="og:description"]', 'content'),
+      twitterTitle: attr('meta[name="twitter:title"]', 'content'),
+      twitterDescription: attr('meta[name="twitter:description"]', 'content'),
+    }
+  }
+
+  it.each(['projects', 'gaming', 'contact'])('prerenders every %s head tag from the real index.html', (page) => {
+    const { title, description } = routes[page]
+    const url = `https://azaankhalfe.netlify.app${routes[page].path}`
+
+    expect(headOf(renderPageHead(indexHtml, page))).toEqual({
+      title,
+      description,
+      canonical: url,
+      ogUrl: url,
+      ogTitle: title,
+      ogDescription: description,
+      twitterTitle: title,
+      twitterDescription: description,
+    })
+  })
+
+  it('leaves the rest of the document alone', () => {
+    const rendered = renderPageHead(indexHtml, 'projects')
+    expect(rendered).toContain('<div id="root"></div>')
+    expect(rendered).toContain('<script type="module" src="/src/main.jsx"></script>')
+  })
+
+  it('escapes values and treats $ literally', () => {
+    const original = routes.projects.title
+    routes.projects.title = 'A "quoted" <b> & $& title'
+    try {
+      expect(headOf(renderPageHead(indexHtml, 'projects')).title).toBe('A "quoted" <b> & $& title')
+    } finally {
+      routes.projects.title = original
+    }
+  })
+
+  it('fails the build if index.html loses a tag', () => {
+    const broken = indexHtml.replace(/<link rel="canonical"[^>]*>/, '')
+    expect(() => renderPageHead(broken, 'projects')).toThrow(/canonical/)
   })
 })

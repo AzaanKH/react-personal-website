@@ -77,27 +77,49 @@ export async function handleSteamRequest(req, { apiKey, steamId, fetchImpl = fet
     return json({ error: 'Invalid endpoint', availableEndpoints: Object.keys(STEAM_ENDPOINTS) }, 400)
   }
 
-  let upstream
+  // `refresh` is a cache-busting nonce from the Refresh button. Query params are
+  // part of Netlify's cache key, so a new value always misses the CDN; the answer
+  // is then marked no-store so one visitor's refresh never fills the shared cache.
+  const forceRefresh = query.has('refresh')
+
+  let data
   try {
-    upstream = await fetchImpl(upstreamUrl, { signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS) })
+    const upstream = await fetchImpl(upstreamUrl, { signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS) })
+    if (!upstream.ok) {
+      // Never echo upstream bodies: Steam error pages can include the request URL (and key).
+      console.error(`steam-proxy: ${endpoint} upstream returned ${upstream.status}`)
+      return json({ error: 'Steam API error', upstreamStatus: upstream.status }, 502)
+    }
+    // Parsing is inside the try: the timeout also covers reading the body, and
+    // Steam occasionally answers 200 with an HTML error page.
+    data = await upstream.json()
   } catch (error) {
     const timedOut = error?.name === 'TimeoutError'
-    console.error(`steam-proxy: ${endpoint} request ${timedOut ? 'timed out' : 'failed'}`, error?.message)
-    return json({ error: timedOut ? 'Steam API timed out' : 'Steam API unreachable' }, timedOut ? 504 : 502)
+    const invalid = error instanceof SyntaxError
+    console.error(
+      `steam-proxy: ${endpoint} ${timedOut ? 'timed out' : invalid ? 'returned invalid JSON' : 'request failed'}`,
+      error?.message,
+    )
+    if (timedOut) return json({ error: 'Steam API timed out' }, 504)
+    return json({ error: invalid ? 'Steam API returned an invalid response' : 'Steam API unreachable' }, 502)
   }
 
-  if (!upstream.ok) {
-    // Never echo upstream bodies: Steam error pages can include the request URL (and key).
-    console.error(`steam-proxy: ${endpoint} upstream returned ${upstream.status}`)
-    return json({ error: 'Steam API error', upstreamStatus: upstream.status }, 502)
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+    console.error(`steam-proxy: ${endpoint} returned an unexpected JSON shape`)
+    return json({ error: 'Steam API returned an invalid response' }, 502)
   }
 
-  const data = await upstream.json()
   const { maxAge } = STEAM_ENDPOINTS[endpoint]
+  const cacheHeaders = forceRefresh
+    ? { 'Cache-Control': 'no-store' }
+    : {
+        'Cache-Control': `public, max-age=${maxAge}`,
+        // Only these params select a cached object; `refresh` is listed so a
+        // refresh request can never be answered from cache.
+        'Netlify-Vary': 'query=endpoint|count|refresh',
+      }
 
-  return json(
-    { ...data, _metadata: { endpoint, timestamp: new Date().toISOString() } },
-    200,
-    { 'Cache-Control': `public, max-age=${maxAge}` },
-  )
+  // `timestamp` is when Steam was actually queried. A CDN hit replays it
+  // unchanged, so clients use it (not their own clock) to show data age.
+  return json({ ...data, _metadata: { endpoint, timestamp: new Date().toISOString() } }, 200, cacheHeaders)
 }
