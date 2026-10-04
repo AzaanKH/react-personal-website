@@ -1,169 +1,205 @@
 import { useEffect } from 'react'
-import { motion } from 'motion/react'
-import { Github, Linkedin, Mail, FileText } from 'lucide-react'
+import { motion, useMotionValue, useReducedMotion, useSpring } from 'motion/react'
+import { ArrowRight, Mail, FileText } from 'lucide-react'
+import { GithubIcon, LinkedinIcon } from '../components/BrandIcons'
+import RouteLink from '../components/RouteLink'
 import StatusCorner from '../components/StatusCorner'
+
+const MotionRouteLink = motion.create(RouteLink)
 
 let hasPlayedIntro = false
 
-const firstName = 'AZAAN'.split('')
-const lastName = 'KHALFE'.split('')
-
 const socialLinks = [
-  {
-    icon: Github,
-    href: 'https://github.com/AzaanKH',
-    label: 'GitHub',
-  },
-  {
-    icon: Linkedin,
-    href: 'https://www.linkedin.com/in/azaan-khalfe-43b90b221/',
-    label: 'LinkedIn',
-  },
+  { icon: GithubIcon, href: 'https://github.com/AzaanKH', label: 'GitHub' },
+  { icon: LinkedinIcon, href: 'https://www.linkedin.com/in/azaan-khalfe-43b90b221/', label: 'LinkedIn' },
 ]
 
+const reveal = (delay, playIntro, distance = 16) => ({
+  initial: playIntro ? { opacity: 0, y: distance } : false,
+  animate: { opacity: 1, y: 0 },
+  transition: playIntro
+    ? { delay, duration: 0.55, ease: [0.16, 1, 0.3, 1] }
+    : { duration: 0 },
+})
+
+function AnimatedNameLine({ text, startDelay, playIntro }) {
+  return (
+    <span className="block overflow-hidden" aria-hidden="true">
+      <span className="block whitespace-nowrap">
+        {text.split('').map((letter, index) => (
+          <motion.span
+            key={`${letter}-${index}`}
+            className="inline-block"
+            initial={playIntro ? { opacity: 0, y: '85%', rotate: 1.5 } : false}
+            animate={{ opacity: 1, y: 0, rotate: 0 }}
+            transition={playIntro ? {
+              delay: startDelay + index * 0.035,
+              duration: 0.62,
+              ease: [0.16, 1, 0.3, 1],
+            } : { duration: 0 }}
+          >
+            {letter}
+          </motion.span>
+        ))}
+      </span>
+    </span>
+  )
+}
+
+const socialMotion = {
+  whileHover: { y: -3, scale: 1.06 },
+  whileTap: { scale: 0.94 },
+  transition: { type: 'spring', stiffness: 360, damping: 22 },
+}
+
 export default function HomePage({ onNavigate }) {
+  const prefersReducedMotion = useReducedMotion()
   const isFirstVisit = !hasPlayedIntro
+  const playIntro = isFirstVisit && !prefersReducedMotion
+  const glowX = useMotionValue(0)
+  const glowY = useMotionValue(0)
+  const smoothGlowX = useSpring(glowX, { stiffness: 90, damping: 24, mass: 0.7 })
+  const smoothGlowY = useSpring(glowY, { stiffness: 90, damping: 24, mass: 0.7 })
 
   useEffect(() => {
     hasPlayedIntro = true
   }, [])
 
-  const totalLetters = firstName.length + lastName.length
-  const letterDelay = 0.06
-  const nameAnimDuration = totalLetters * letterDelay + 0.5
-  const subtitleDelay = nameAnimDuration
-  const socialDelay = subtitleDelay + 0.3
+  const handlePointerMove = (event) => {
+    if (prefersReducedMotion || event.pointerType === 'touch') return
+
+    const bounds = event.currentTarget.getBoundingClientRect()
+    glowX.set(event.clientX - bounds.left - bounds.width / 2)
+    glowY.set(event.clientY - bounds.top - bounds.height * 0.42)
+  }
+
+  const resetGlow = () => {
+    glowX.set(0)
+    glowY.set(0)
+  }
 
   return (
-    <div className="flex flex-col items-center text-center justify-center min-h-[calc(100vh-5rem)] pb-24 px-8 md:px-16 lg:px-24 max-w-[1200px] mx-auto">
-      <h1
-        className="leading-[0.85] font-bold select-none tracking-[-0.03em]"
-        aria-label="Azaan Khalfe"
-      >
-        <span
-          className="block"
-          style={{ fontSize: 'clamp(4rem, 12vw, 10rem)' }}
-        >
-          {firstName.map((letter, i) => (
-            <motion.span
-              key={`f-${i}`}
-              className="inline-block"
-              initial={isFirstVisit ? { opacity: 0, y: 50, scale: 0.9 } : false}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={isFirstVisit ? {
-                delay: i * letterDelay,
-                duration: 0.5,
-                ease: [0.16, 1, 0.3, 1],
-              } : { duration: 0 }}
-              style={{ color: 'var(--color-text)' }}
-            >
-              {letter}
-            </motion.span>
-          ))}
-        </span>
-        <span
-          className="block"
-          style={{ fontSize: 'clamp(4rem, 12vw, 10rem)' }}
-        >
-          {lastName.map((letter, i) => (
-            <motion.span
-              key={`l-${i}`}
-              className="inline-block"
-              initial={isFirstVisit ? { opacity: 0, y: 50, scale: 0.9 } : false}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={isFirstVisit ? {
-                delay: firstName.length * letterDelay + i * letterDelay,
-                duration: 0.5,
-                ease: [0.16, 1, 0.3, 1],
-              } : { duration: 0 }}
-              style={{ color: 'var(--color-text)' }}
-            >
-              {letter}
-            </motion.span>
-          ))}
-        </span>
-      </h1>
-
-      <motion.p
-        className="mt-6 uppercase tracking-[0.25em] font-light"
-        style={{
-          fontSize: 'clamp(0.75rem, 1.2vw, 1rem)',
-          color: 'var(--color-text-secondary)',
-        }}
-        initial={isFirstVisit ? { opacity: 0, y: 20 } : false}
-        animate={{ opacity: 1, y: 0 }}
-        transition={isFirstVisit ? { delay: subtitleDelay, duration: 0.5 } : { duration: 0 }}
-      >
-        Software Engineer
-      </motion.p>
-
-      {/* Terracotta accent line */}
-      <motion.div
-        className="mt-6 h-[2px] w-12 rounded-full mx-auto"
-        style={{ backgroundColor: 'var(--color-accent)' }}
-        initial={isFirstVisit ? { opacity: 0, scaleX: 0 } : false}
-        animate={{ opacity: 1, scaleX: 1 }}
-        transition={isFirstVisit ? { delay: subtitleDelay + 0.15, duration: 0.4, ease: [0.16, 1, 0.3, 1] } : { duration: 0 }}
-      />
-
-      <motion.div
-        className="mt-8 flex items-center justify-center gap-5"
-        initial={isFirstVisit ? { opacity: 0, y: 20 } : false}
-        animate={{ opacity: 1, y: 0 }}
-        transition={isFirstVisit ? { delay: socialDelay, duration: 0.5 } : { duration: 0 }}
-      >
-        {socialLinks.map(({ icon: Icon, href, label }) => (
-          <a
-            key={label}
-            href={href}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={label}
-            className="hover:scale-110 active:scale-95 hover-accent"
-            style={{
-              color: 'var(--color-text-secondary)',
-              transition: 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s ease',
-            }}
-          >
-            <Icon size={20} strokeWidth={1.5} />
-          </a>
-        ))}
-
-        <button
-          onClick={() => onNavigate('contact')}
-          aria-label="Send email"
-          className="hover:scale-110 active:scale-95 cursor-pointer hover-accent"
+    <div
+      className="page-shell relative flex min-h-[calc(100vh-5rem)] flex-col items-center justify-center overflow-hidden px-1 pb-32 pt-8 text-center lg:pb-24"
+      onPointerMove={handlePointerMove}
+      onPointerLeave={resetGlow}
+    >
+      <div className="pointer-events-none absolute left-1/2 top-[42%] hidden -translate-x-1/2 -translate-y-1/2 md:block" aria-hidden="true">
+        <motion.div
+          className="h-[420px] w-[420px] rounded-full"
           style={{
-            color: 'var(--color-text-secondary)',
-            transition: 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s ease',
+            x: smoothGlowX,
+            y: smoothGlowY,
+            opacity: prefersReducedMotion ? 0 : 1,
+            willChange: 'transform',
+            background: 'radial-gradient(circle, color-mix(in srgb, var(--color-accent) 11%, transparent) 0%, transparent 68%)',
           }}
-        >
-          <Mail size={20} strokeWidth={1.5} />
-        </button>
+        />
+      </div>
 
-        <span
-          className="w-px h-4"
-          style={{ backgroundColor: 'var(--color-border)' }}
+      <div className="relative z-10 flex w-full flex-col items-center">
+        <h1
+          className="select-none font-bold uppercase leading-[0.8] tracking-[-0.065em]"
+          style={{ color: 'var(--color-text)', fontSize: 'clamp(4rem, min(12vw, 20vh), 9.5rem)' }}
+          aria-label="Azaan Khalfe"
+        >
+          <AnimatedNameLine text="AZAAN" startDelay={0.02} playIntro={playIntro} />
+          <AnimatedNameLine text="KHALFE" startDelay={0.15} playIntro={playIntro} />
+        </h1>
+
+        <motion.p
+          {...reveal(0.58, playIntro, 10)}
+          className="mt-7 text-[0.72rem] font-light uppercase tracking-[0.32em] sm:text-sm"
+          style={{ color: 'var(--color-text-secondary)' }}
+        >
+          Software Engineer
+        </motion.p>
+
+        <motion.div
+          className="mt-5 h-[3px] rounded-full"
+          style={{ backgroundColor: 'var(--color-accent)' }}
+          initial={playIntro ? { opacity: 0, width: 0 } : false}
+          animate={{ opacity: 1, width: 56 }}
+          transition={playIntro ? { delay: 0.7, duration: 0.55, ease: [0.16, 1, 0.3, 1] } : { duration: 0 }}
           aria-hidden="true"
         />
 
-        <a
-          href="/Azaan_Resume.pdf"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-1.5 hover-accent"
-          style={{
-            color: 'var(--color-text-secondary)',
-            transition: 'color 0.2s ease',
-            fontSize: 'clamp(0.75rem, 1vw, 0.85rem)',
-          }}
+        <motion.p
+          {...reveal(0.78, playIntro, 12)}
+          className="mt-5 max-w-[560px] px-4 text-sm leading-6 sm:text-[0.95rem]"
+          style={{ color: 'var(--color-text-secondary)' }}
         >
-          <FileText size={16} strokeWidth={1.5} />
-          <span className="tracking-[0.15em] uppercase font-light">Resume</span>
-        </a>
-      </motion.div>
+          I build reliable developer tools, intelligent systems, and polished web experiences.
+        </motion.p>
 
-      <StatusCorner enterDelay={socialDelay + 0.5} animate={isFirstVisit} />
+        <motion.div {...reveal(0.86, playIntro, 10)} className="mt-8">
+          <RouteLink
+            to="projects"
+            onNavigate={onNavigate}
+            className="group inline-flex items-center gap-2 rounded-full px-6 py-3 text-[0.75rem] font-medium uppercase tracking-[0.15em] hover-accent-bg"
+            style={{
+              backgroundColor: 'var(--color-accent)',
+              color: 'var(--color-bg)',
+              boxShadow: 'var(--shadow-sm)',
+            }}
+          >
+            View projects
+            <ArrowRight
+              size={15}
+              strokeWidth={1.75}
+              className="transition-transform group-hover:translate-x-0.5"
+              aria-hidden="true"
+            />
+          </RouteLink>
+        </motion.div>
+
+        <motion.div
+          {...reveal(0.94, playIntro, 10)}
+          className="mt-7 flex items-center justify-center gap-5"
+        >
+          {socialLinks.map(({ icon: Icon, href, label }) => (
+            <motion.a
+              key={label}
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={label}
+              className="hover-accent"
+              style={{ color: 'var(--color-text-secondary)' }}
+              {...socialMotion}
+            >
+              <Icon size={19} strokeWidth={1.5} aria-hidden="true" />
+            </motion.a>
+          ))}
+
+          <MotionRouteLink
+            to="contact"
+            onNavigate={onNavigate}
+            aria-label="Contact me"
+            className="hover-accent"
+            style={{ color: 'var(--color-text-secondary)' }}
+            {...socialMotion}
+          >
+            <Mail size={19} strokeWidth={1.5} aria-hidden="true" />
+          </MotionRouteLink>
+
+          <span className="h-4 w-px" style={{ backgroundColor: 'var(--color-border)' }} aria-hidden="true" />
+
+          <motion.a
+            href="/Azaan_Resume.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 text-[0.7rem] font-light uppercase tracking-[0.16em] hover-accent sm:text-xs"
+            style={{ color: 'var(--color-text-secondary)' }}
+            {...socialMotion}
+          >
+            <FileText size={15} strokeWidth={1.5} aria-hidden="true" />
+            Résumé
+          </motion.a>
+        </motion.div>
+      </div>
+
+      <StatusCorner enterDelay={1.12} animate={playIntro} />
     </div>
   )
 }

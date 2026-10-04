@@ -1,18 +1,32 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, useSpring, useTransform, useReducedMotion } from 'motion/react'
+import RouteLink from './RouteLink'
+import { pageIds, routes } from '../lib/routes'
 
-const navItems = [
-  { id: 'home', label: 'Home' },
-  { id: 'projects', label: 'Projects' },
-  { id: 'gaming', label: 'Gaming' },
-  { id: 'contact', label: 'Contact' },
-]
+const TOP_OFFSET = 24
+const HOME_BOTTOM_OFFSET = 40
+const HOME_BOTTOM_OFFSET_WITH_STATUS = 136
+const STATUS_VISIBLE_MIN_WIDTH = 640
+const STATUS_CAN_SHARE_ROW_MIN_WIDTH = 1280
+
+function getHomeBottomOffset() {
+  if (typeof window === 'undefined') return HOME_BOTTOM_OFFSET
+
+  if (window.innerHeight <= 720) return HOME_BOTTOM_OFFSET
+
+  const statusCornersVisible = window.innerWidth >= STATUS_VISIBLE_MIN_WIDTH
+  const statusCanShareBottomRow = window.innerWidth >= STATUS_CAN_SHARE_ROW_MIN_WIDTH
+
+  return statusCornersVisible && !statusCanShareBottomRow
+    ? HOME_BOTTOM_OFFSET_WITH_STATUS
+    : HOME_BOTTOM_OFFSET
+}
 
 export default function Navigation({ activePage, onNavigate }) {
   const isHome = activePage === 'home'
   const prefersReducedMotion = useReducedMotion()
   const navRef = useRef(null)
-  const buttonRefs = useRef({})
+  const linkRefs = useRef({})
   const [navHeight, setNavHeight] = useState(56)
   const [indicator, setIndicator] = useState(null)
 
@@ -27,7 +41,7 @@ export default function Navigation({ activePage, onNavigate }) {
   }, [])
 
   const measureIndicator = useCallback(() => {
-    const btn = buttonRefs.current[activePage]
+    const btn = linkRefs.current[activePage]
     if (btn) {
       setIndicator({
         left: btn.offsetLeft,
@@ -45,12 +59,12 @@ export default function Navigation({ activePage, onNavigate }) {
     return () => window.removeEventListener('resize', measureIndicator)
   }, [measureIndicator])
 
-  const getTargetY = () => {
+  const getTargetY = useCallback(() => {
     if (isHome) {
-      return window.innerHeight - navHeight - 40
+      return window.innerHeight - navHeight - getHomeBottomOffset()
     }
-    return 24
-  }
+    return TOP_OFFSET
+  }, [isHome, navHeight])
 
   const springY = useSpring(getTargetY(), {
     stiffness: 200,
@@ -64,7 +78,7 @@ export default function Navigation({ activePage, onNavigate }) {
     } else {
       springY.set(getTargetY())
     }
-  }, [isHome, navHeight, prefersReducedMotion])
+  }, [getTargetY, prefersReducedMotion, springY])
 
   useEffect(() => {
     const handleResize = () => {
@@ -77,10 +91,12 @@ export default function Navigation({ activePage, onNavigate }) {
     }
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
-  }, [isHome, navHeight, prefersReducedMotion])
+  }, [getTargetY, prefersReducedMotion, springY])
 
-  const homeY = typeof window !== 'undefined' ? window.innerHeight - navHeight - 40 : 700
-  const otherY = 24
+  const homeY = typeof window !== 'undefined'
+    ? window.innerHeight - navHeight - getHomeBottomOffset()
+    : 700
+  const otherY = TOP_OFFSET
   const midY = (homeY + otherY) / 2
 
   const scale = useTransform(springY, [otherY, midY, homeY], [1, 0.97, 1])
@@ -89,9 +105,8 @@ export default function Navigation({ activePage, onNavigate }) {
   return (
     <motion.nav
       ref={navRef}
-      role="navigation"
       aria-label="Main navigation"
-      className="fixed left-1/2 z-50"
+      className="fixed left-1/2 z-50 w-[calc(100vw-1rem)] max-w-[390px] sm:w-auto sm:max-w-none"
       style={{
         top: 0,
         y: springY,
@@ -112,11 +127,12 @@ export default function Navigation({ activePage, onNavigate }) {
         />
 
         <div
-          className="relative rounded-full px-2 py-2 flex items-center gap-1 backdrop-blur-sm"
+          className="relative grid w-full grid-cols-4 items-center gap-1 rounded-full px-1 py-1.5 backdrop-blur-sm sm:flex sm:w-auto sm:px-2 sm:py-2"
           style={{
             backgroundColor: 'var(--color-surface)',
             border: '1px solid var(--color-border)',
             boxShadow: 'var(--shadow-md)',
+            borderRadius: 9999,
           }}
         >
           {/* Active indicator — terracotta dot beneath text */}
@@ -137,20 +153,21 @@ export default function Navigation({ activePage, onNavigate }) {
             />
           )}
 
-          {navItems.map(({ id, label }) => (
-            <button
+          {pageIds.map((id) => (
+            <RouteLink
               key={id}
-              ref={(el) => { buttonRefs.current[id] = el }}
-              onClick={() => onNavigate(id)}
+              to={id}
+              onNavigate={onNavigate}
+              ref={(el) => { linkRefs.current[id] = el }}
               aria-current={activePage === id ? 'page' : undefined}
-              className={`relative z-10 px-5 py-2.5 rounded-full text-[0.8rem] font-medium uppercase tracking-[0.12em] cursor-pointer ${activePage !== id ? 'hover-text' : ''}`}
+              className={`relative z-10 min-w-0 rounded-full px-1 py-2 text-center text-[0.68rem] font-medium uppercase tracking-[0.05em] sm:px-5 sm:py-2.5 sm:text-[0.8rem] sm:tracking-[0.12em] ${activePage !== id ? 'hover-text' : ''}`}
               style={{
                 color: activePage === id ? 'var(--color-text)' : 'var(--color-text-secondary)',
                 transition: 'color 0.2s ease',
               }}
             >
-              {label}
-            </button>
+              {routes[id].label}
+            </RouteLink>
           ))}
         </div>
       </div>

@@ -3,13 +3,78 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Azaan Khalfe - Software Engineer" />
-    <title>Azaan Khalfe</title>
+    <meta name="description" content="Azaan Khalfe is a software engineer building polished web experiences, developer tools, and interactive projects with React." />
+    <meta name="author" content="Azaan Khalfe" />
+    <meta name="application-name" content="Azaan Khalfe" />
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#f5f0eb" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0f0f0f" media="(prefers-color-scheme: dark)" />
+    <link rel="canonical" href="https://azaankhalfe.netlify.app/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Azaan Khalfe" />
+    <meta property="og:title" content="Azaan Khalfe | Software Engineer" />
+    <meta property="og:description" content="Software engineer building polished web experiences, developer tools, and interactive projects with React." />
+    <meta property="og:url" content="https://azaankhalfe.netlify.app/" />
+    <meta property="og:image" content="https://azaankhalfe.netlify.app/og-image.png" />
+    <meta property="og:image:secure_url" content="https://azaankhalfe.netlify.app/og-image.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Azaan Khalfe, Software Engineer" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Azaan Khalfe | Software Engineer" />
+    <meta name="twitter:description" content="Software engineer building polished web experiences, developer tools, and interactive projects with React." />
+    <meta name="twitter:image" content="https://azaankhalfe.netlify.app/og-image.png" />
+    <meta name="twitter:image:alt" content="Azaan Khalfe, Software Engineer" />
+    <title>Azaan Khalfe | Software Engineer</title>
+    <script>
+      // Apply the saved theme before first paint (see src/hooks/useDarkMode.js).
+      (function () {
+        try {
+          var saved = localStorage.getItem('v8-theme');
+          var dark = saved === 'dark' || (saved !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
+          if (dark) document.documentElement.classList.add('dark');
+        } catch (e) {}
+      })();
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "ProfilePage",
+        "@id": "https://azaankhalfe.netlify.app/#profile",
+        "url": "https://azaankhalfe.netlify.app/",
+        "name": "Azaan Khalfe | Software Engineer",
+        "description": "Azaan Khalfe is a software engineer building polished web experiences, developer tools, and interactive projects with React.",
+        "image": "https://azaankhalfe.netlify.app/og-image.png",
+        "mainEntity": {
+          "@type": "Person",
+          "@id": "https://azaankhalfe.netlify.app/#person",
+          "name": "Azaan Khalfe",
+          "givenName": "Azaan",
+          "familyName": "Khalfe",
+          "jobTitle": "Software Engineer",
+          "url": "https://azaankhalfe.netlify.app/",
+          "sameAs": [
+            "https://github.com/AzaanKH",
+            "https://www.linkedin.com/in/azaan-khalfe-43b90b221/"
+          ],
+          "knowsAbout": [
+            "Software engineering",
+            "React",
+            "Developer tools",
+            "Interactive web applications"
+          ]
+        }
+      }
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preload" href="https://fonts.gstatic.com/s/spacegrotesk/v22/V8mDoQDjQSkFtoMM3T6r8E7mPbF4Cw.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="https://fonts.gstatic.com/s/cormorantgaramond/v21/co3bmX5slCNuHLi8bLeY9MK7whWMhyjYqXtK.woff2" as="font" type="font/woff2" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   </head>
   <body>
     <div id="root"></div>

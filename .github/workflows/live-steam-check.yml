@@ -1,0 +1,30 @@
+# Calls the deployed /api/steam endpoint. Kept separate from CI because it depends
+# on the network, Steam, and a live deploy. Needs no secrets: the site holds the key.
+name: Live Steam check
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: Site to check
+        default: https://azaankhalfe.netlify.app
+        required: true
+  schedule:
+    - cron: '0 14 * * 1' # Mondays 14:00 UTC
+
+permissions:
+  contents: read
+
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - run: npm run test:live
+        env:
+          TEST_BASE_URL: ${{ inputs.base_url || 'https://azaankhalfe.netlify.app' }}

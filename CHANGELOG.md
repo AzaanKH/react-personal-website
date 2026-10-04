@@ -4,6 +4,38 @@ All notable changes and improvements to this project are documented in this file
 
 ---
 
+## [3.0.0] - 2026-10-04 - Security, tooling, and accessibility overhaul
+
+### Security
+- Steam proxy (`/api/steam`) now always uses the configured `STEAM_ID`, ignores `steamid`, clamps `count`, encodes parameters, times out upstream calls, and has a Netlify platform rate limit.
+- Contact form now posts to a `/api/contact` function that validates and sends via Resend, behind Netlify's platform per-IP rate limit. Netlify Forms, `rate-check`, and Upstash were removed (the Upstash database no longer existed, and the old check let everything through when it failed), so the limit can't be bypassed.
+- CI no longer writes Steam secrets to `.env.test` or lists that file for artifact upload (upload-artifact v4 skips dotfiles, so no leak was established), and it now needs no secrets at all.
+- Production source maps are no longer published.
+
+### Tooling
+- Node 24 (Netlify, CI, `.nvmrc`); React 19.3; Vite 8 + `@vitejs/plugin-react` 6; ESLint React Compiler rules (`react-hooks` 7); lucide-react 1.x; motion 12.43.
+- Removed unused `clsx`, `tailwind-merge`, `tailwindcss-animate`, `node-fetch`, `dotenv`, `http-proxy-middleware`, shadcn `components.json`.
+- `npm audit`: 21 findings down to 5 (all dev-only, via Tailwind 3; 0 in production deps).
+- `npm run build` is just `vite build`. Added `npm test` (Vitest, 88 tests), `npm run check`, and a separate `npm run test:live`.
+
+### Fixes
+- `netlify dev` no longer serves a blank page: SPA routes are now explicit instead of a `/*` rewrite that captured Vite's modules. Unknown URLs return a real 404.
+- Steam "Refresh" really refetches: it sends a unique `refresh` param (part of Netlify's CDN cache key, answered `no-store`) instead of relying on `cache: 'reload'`, which only skips the browser cache. "Updated" comes from the server's `_metadata.timestamp`, so a CDN hit shows its true age. Partial failures are surfaced; requests abort on unmount; the profile cache was shortened from 30 min to 60 s.
+- The Steam proxy's body parsing is inside its error handling: a non-JSON body or a timeout mid-body returns a JSON 502/504 instead of throwing.
+- No light flash for dark-mode visitors on load.
+
+### Accessibility & SEO
+- Navigation uses real links; skip link; focus moves to the new page's `h1`; every page has an `h1`.
+- Per-page `<title>`, description, canonical, and Open Graph/Twitter tags, prerendered at build time into `projects.html`, `gaming.html`, `contact.html` so crawlers that don't run JavaScript see them too.
+- Contact drafts persist across page switches. Draft and send state live in a store outside the page, so a send that finishes after you navigate away clears the draft and shows "sent" on return, rather than offering the same message again.
+
+### Content
+- Prominent "View projects" link on Home.
+- Project screenshot served as an optimized local WebP (176 KB → 11 KB) and lazy-loaded.
+- Manifest gains 192px and maskable icons.
+
+---
+
 ## [2.0.0] - 2025-01-11 - Major Refactoring & Optimization
 
 ### 🎯 Overview

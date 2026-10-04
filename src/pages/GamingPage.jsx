@@ -1,6 +1,84 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { motion } from 'motion/react'
+import { ExternalLink, Gamepad2, RefreshCw } from 'lucide-react'
 import { useSteamData } from '../hooks/useSteamData'
+
+function GameFallbackBanner({ game }) {
+  const steamUrl = game.appid ? `https://store.steampowered.com/app/${game.appid}` : null
+
+  return (
+    <div
+      className="relative h-full w-full overflow-hidden p-4 sm:p-5"
+      style={{
+        backgroundColor: 'var(--color-surface-elevated)',
+        backgroundImage: [
+          'radial-gradient(circle at 18% 24%, rgba(196, 93, 62, 0.18), transparent 30%)',
+          'radial-gradient(circle at 82% 76%, rgba(100, 116, 139, 0.16), transparent 32%)',
+          'repeating-linear-gradient(135deg, transparent 0 12px, var(--color-border-subtle) 12px 13px)',
+          'linear-gradient(135deg, var(--color-surface-elevated), var(--color-surface))',
+        ].join(', '),
+      }}
+    >
+      <div
+        className="absolute -right-8 -top-10 h-28 w-28 rounded-full"
+        style={{
+          border: '1px solid var(--color-border)',
+          opacity: 0.45,
+        }}
+        aria-hidden="true"
+      />
+      <div
+        className="absolute bottom-3 right-4 hidden text-[4.5rem] font-bold leading-none sm:block"
+        style={{
+          color: 'var(--color-border-subtle)',
+        }}
+        aria-hidden="true"
+      >
+        {String(game.appid || '').slice(-2).padStart(2, '0')}
+      </div>
+
+      <div className="relative z-10 flex h-full flex-col justify-between gap-3">
+        <div className="flex items-center gap-2 text-xs font-medium" style={{ color: 'var(--color-accent)' }}>
+          <Gamepad2 size={16} strokeWidth={1.6} aria-hidden="true" />
+          <span>Steam library</span>
+        </div>
+
+        <div className="min-w-0">
+          <p
+            className="mb-2 text-xs"
+            style={{ color: 'var(--color-text-secondary)' }}
+          >
+            Artwork unavailable
+          </p>
+          <h3
+            className="line-clamp-2 text-xl font-semibold leading-tight sm:text-2xl"
+            style={{ color: 'var(--color-text)' }}
+          >
+            {game.name}
+          </h3>
+        </div>
+
+        {steamUrl && (
+          <a
+            href={steamUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex w-fit items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium transition-transform hover:-translate-y-0.5 hover:opacity-85"
+            style={{
+              color: 'var(--color-text)',
+              backgroundColor: 'var(--color-surface)',
+              border: '1px solid var(--color-border)',
+              boxShadow: 'var(--shadow-sm)',
+            }}
+          >
+            View on Steam
+            <ExternalLink size={13} strokeWidth={1.6} aria-hidden="true" />
+          </a>
+        )}
+      </div>
+    </div>
+  )
+}
 
 function GameCard({ game, index, playtimeRatio, formatPlaytime }) {
   // 0 = library_hero (1920x620), 1 = header (460x215), 2 = all failed
@@ -19,6 +97,7 @@ function GameCard({ game, index, playtimeRatio, formatPlaytime }) {
       style={{
         backgroundColor: 'var(--color-surface)',
         border: '1px solid var(--color-border)',
+        borderRadius: 12,
       }}
     >
       {/* Full-width banner image */}
@@ -43,16 +122,7 @@ function GameCard({ game, index, playtimeRatio, formatPlaytime }) {
             onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)' }}
           />
         ) : (
-          <div
-            className="w-full h-full flex items-center justify-center"
-            style={{ color: 'var(--color-text-secondary)', opacity: 0.3 }}
-          >
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="2" y="2" width="20" height="20" rx="0" />
-              <circle cx="8.5" cy="8.5" r="1.5" />
-              <path d="M21 15l-5-5L5 21" />
-            </svg>
-          </div>
+          <GameFallbackBanner game={game} />
         )}
       </div>
 
@@ -94,14 +164,57 @@ function GameCard({ game, index, playtimeRatio, formatPlaytime }) {
   )
 }
 
-export default function GamingPage() {
-  const endpoints = useMemo(() => ['profile', 'recent'], [])
-  const options = useMemo(() => ({ autoRefresh: false }), [])
-  const { steamData, loading, error, formatPlaytime } = useSteamData(
-    endpoints,
-    options
-  )
+const ENDPOINTS = ['profile', 'recent']
 
+function SteamStatusBar({ lastUpdated, refreshing, partialFailure, onRefresh }) {
+  return (
+    <div
+      className="mx-auto mt-10 flex w-full max-w-[900px] flex-wrap items-center justify-center gap-x-4 gap-y-2 px-6 pb-10 text-xs"
+      style={{ color: 'var(--color-text-secondary)' }}
+    >
+      <p role="status" aria-live="polite">
+        {refreshing
+          ? 'Refreshing Steam data…'
+          : lastUpdated
+            ? `Updated ${new Date(lastUpdated).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`
+            : null}
+        {partialFailure && !refreshing && ' · Some Steam data could not be loaded.'}
+      </p>
+      <button
+        type="button"
+        onClick={onRefresh}
+        disabled={refreshing}
+        className="inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 uppercase tracking-[0.12em] hover-text disabled:cursor-default disabled:opacity-60"
+        style={{ border: '1px solid var(--color-border)' }}
+      >
+        <RefreshCw size={12} strokeWidth={1.6} className={refreshing ? 'animate-spin' : ''} aria-hidden="true" />
+        Refresh
+      </button>
+    </div>
+  )
+}
+
+export default function GamingPage() {
+  const steam = useSteamData(ENDPOINTS)
+
+  return (
+    <>
+      {/* Stable heading across loading/playing/list states so focus after navigation has a target. */}
+      <h1 className="sr-only">Gaming activity</h1>
+      <GamingContent {...steam} />
+      {!steam.loading && (
+        <SteamStatusBar
+          lastUpdated={steam.lastUpdated}
+          refreshing={steam.refreshing}
+          partialFailure={steam.partialFailure}
+          onRefresh={steam.refetch}
+        />
+      )}
+    </>
+  )
+}
+
+function GamingContent({ steamData, loading, error, formatPlaytime }) {
   const player = steamData.profile
   const recentGames = steamData.recentGames || []
   const isCurrentlyPlaying = player?.gameextrainfo || player?.gameid
@@ -109,7 +222,7 @@ export default function GamingPage() {
   if (loading) {
     return (
       <div className="w-full max-w-[800px] mx-auto pt-4 md:pt-8 pb-8 px-6">
-        <div className="animate-pulse space-y-6">
+        <div className="animate-pulse space-y-6" aria-busy="true" aria-label="Loading Steam data">
           <div
             className="h-10 w-48 rounded-lg"
             style={{ backgroundColor: 'var(--color-border-subtle)' }}
@@ -197,16 +310,20 @@ export default function GamingPage() {
   }
 
   return (
-    <div className="w-full max-w-[800px] mx-auto pt-4 md:pt-8 pb-8 px-6">
+    <div className="w-full max-w-[900px] mx-auto pt-4 md:pt-8 pb-12 px-6">
+      <p className="eyebrow mb-4 accent-slash" style={{ color: 'var(--color-text-secondary)' }}>Off duty archive</p>
       <h2
-        className="font-bold mb-12 tracking-[-0.02em]"
+        className="display-heading mb-5"
         style={{
-          fontSize: 'clamp(2rem, 5vw, 4rem)',
+          fontSize: 'clamp(3.5rem, 8vw, 7rem)',
           color: 'var(--color-text)',
         }}
       >
-        Recently Played
+        Recently <em style={{ color: 'var(--color-accent)' }}>played.</em>
       </h2>
+      <p className="mb-12 max-w-lg text-sm leading-6" style={{ color: 'var(--color-text-secondary)' }}>
+        A live window into the games currently stealing a few hours after the code compiles.
+      </p>
 
       {(() => {
         const maxPlaytime = Math.max(...recentGames.map(g => g.playtime_2weeks || 0), 1)

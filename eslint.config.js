@@ -11,11 +11,7 @@ export default [
       'dist', 
       'node_modules', 
       'netlify/functions/**/*.cjs',
-      'dev-*.js',
-      'quick-steam-test.js',
-      'test-steam-function.js',
-      'tests/**/*.js',
-      'vite.config.js'
+      'tests/live/**/*.js',
     ] 
   },
   {
@@ -33,7 +29,7 @@ export default [
         sourceType: 'module',
       },
     },
-    settings: { react: { version: '18.3' } },
+    settings: { react: { version: '19.3' } },
     plugins: {
       react,
       'react-hooks': reactHooks,
@@ -52,6 +48,12 @@ export default [
       'no-case-declarations': 'off',
       'react/no-unknown-property': 'off',
       'react-hooks/exhaustive-deps': 'warn'
+    },
+  },
+  {
+    files: ['netlify/**/*.js'],
+    languageOptions: {
+      globals: { Netlify: 'readonly' },
     },
   },
 ]
