@@ -25,7 +25,12 @@ export default function PosterCarousel({ children, reverse = false, label }) {
   const count = Children.count(children)
 
   useEffect(() => {
+    // Hold the nodes, not the refs: React nulls refs when the page unmounts, before this
+    // effect's cleanup runs, and the ResizeObserver can fire in between.
     const viewport = viewportRef.current
+    const thumb = thumbRef.current
+    const thumbWrap = thumbWrapRef.current
+    const counter = counterRef.current
     const copies = viewport.querySelectorAll('[data-copy]')
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
 
@@ -38,6 +43,8 @@ export default function PosterCarousel({ children, reverse = false, label }) {
     let touchTimer = 0
 
     const measure = () => {
+      // Removing the row resizes it to zero; there's nothing left to measure.
+      if (!viewport.isConnected) return
       const previous = copyWidth
       copyWidth = copies[1].offsetLeft - copies[0].offsetLeft
       // First measure (or a resize): land on the same spot within the middle copy.
@@ -48,10 +55,10 @@ export default function PosterCarousel({ children, reverse = false, label }) {
 
     const paint = () => {
       const { left, width, wrapWidth, fraction } = thumbGeometry(position, copyWidth, viewport.clientWidth)
-      thumbRef.current.style.left = `${left}%`
-      thumbRef.current.style.width = `${Math.min(width, 100 - left)}%`
-      thumbWrapRef.current.style.width = `${wrapWidth}%`
-      counterRef.current.textContent = `${String(Math.floor(fraction * count) + 1).padStart(2, '0')} / ${String(count).padStart(2, '0')}`
+      thumb.style.left = `${left}%`
+      thumb.style.width = `${Math.min(width, 100 - left)}%`
+      thumbWrap.style.width = `${wrapWidth}%`
+      counter.textContent = `${String(Math.floor(fraction * count) + 1).padStart(2, '0')} / ${String(count).padStart(2, '0')}`
     }
 
     // While a poster has keyboard focus the row never wraps: wrapping jumps the view by
@@ -158,8 +165,8 @@ export default function PosterCarousel({ children, reverse = false, label }) {
     const onBarDown = (event) => {
       if (event.button !== 0) return
       event.preventDefault()
-      const onThumb = event.target === thumbRef.current
-      const rect = thumbRef.current.getBoundingClientRect()
+      const onThumb = event.target === thumb
+      const rect = thumb.getBoundingClientRect()
       const grabOffset = onThumb ? (event.clientX - rect.left) / rect.width : 0.5
       barDrag = { grabOffset }
       pause.drag = true
