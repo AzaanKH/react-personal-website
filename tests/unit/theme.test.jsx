@@ -64,4 +64,17 @@ describe('DarkModeToggle', () => {
     await user.click(screen.getByRole('button', { name: 'Switch to system theme' }))
     expect(localStorage.getItem(STORAGE_KEY)).toBe('system')
   })
+
+  it('fades out on mobile only after a non-home page scrolls', () => {
+    const props = { theme: 'system', setTheme: () => {} }
+    const { rerender } = render(<DarkModeToggle {...props} isHome={false} isScrolled={false} />)
+    const button = screen.getByRole('button')
+    expect(button).not.toHaveClass('max-sm:opacity-0')
+
+    rerender(<DarkModeToggle {...props} isHome={false} isScrolled />)
+    expect(button).toHaveClass('max-sm:opacity-0', 'max-sm:pointer-events-none')
+
+    rerender(<DarkModeToggle {...props} isHome isScrolled />)
+    expect(button).not.toHaveClass('max-sm:opacity-0')
+  })
 })

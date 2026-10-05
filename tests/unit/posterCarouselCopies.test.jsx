@@ -30,4 +30,21 @@ describe('PosterCarousel copies', () => {
     for (const link of middle.querySelectorAll('a')) expect(link).not.toHaveAttribute('tabindex')
     expect(container.querySelectorAll('[inert]')).toHaveLength(0)
   })
+
+  // Leaving the page removes the row, which fires the ResizeObserver after React has
+  // nulled the refs but before the effect cleanup disconnects it.
+  it('ignores a resize that arrives after the row unmounts', () => {
+    const callbacks = []
+    vi.stubGlobal('ResizeObserver', class {
+      constructor(callback) { callbacks.push(callback) }
+      observe() {}
+      disconnect() {}
+    })
+
+    const { unmount } = render(<PosterShelf label="Movies" rotate>{posters}</PosterShelf>)
+    unmount()
+
+    expect(callbacks).not.toHaveLength(0)
+    for (const callback of callbacks) expect(() => callback([])).not.toThrow()
+  })
 })
