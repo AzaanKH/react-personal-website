@@ -24,8 +24,19 @@ export default function App() {
   const mainRef = useRef(null)
   // Only move focus after in-app navigation, never on the initial page load.
   const [hasNavigated, setHasNavigated] = useState(false)
+  // Whether <main> has scrolled away from the top; fades the theme toggle on mobile.
+  const [isScrolled, setIsScrolled] = useState(false)
   const isDark = resolvedTheme === 'dark'
   const PageComponent = pages[activePage]
+
+  useEffect(() => {
+    const main = mainRef.current
+    if (!main) return
+
+    const handleScroll = () => setIsScrolled(main.scrollTop > 24)
+    main.addEventListener('scroll', handleScroll, { passive: true })
+    return () => main.removeEventListener('scroll', handleScroll)
+  }, [])
 
   useEffect(() => {
     const currentPage = getPageFromPath(window.location.pathname)
@@ -97,7 +108,12 @@ export default function App() {
         <Navigation activePage={activePage} onNavigate={navigateToPage} />
 
         {/* Dark Mode Toggle */}
-        <DarkModeToggle theme={theme} setTheme={setTheme} isHome={activePage === 'home'} />
+        <DarkModeToggle
+          theme={theme}
+          setTheme={setTheme}
+          isHome={activePage === 'home'}
+          isScrolled={isScrolled}
+        />
 
         {/* Page Content */}
         <main
