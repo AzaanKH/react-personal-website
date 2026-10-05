@@ -4,6 +4,25 @@ All notable changes and improvements to this project are documented in this file
 
 ---
 
+## [Unreleased] - Interests page
+
+### Changed
+- Removed the terracotta glow that followed the cursor on the Home page.
+- Fantasy Draft Assistant project card (copy, facts, and status from its portfolio handoff). The card shows a readable crop of the draft board around My Team; the expanded notes show the full board and the Assistant comparison at full width, each opening at full size. Image projects support a caption, crop position, and gallery.
+- Lineup rows show player headshots (team logos for defenses) from Sleeper's image CDN, loaded only when lineups are opened, with initials as a fallback.
+- Projects panels fill their cards: DevEnv is a terminal session (each command with its output, a status bar, a blinking cursor), and Paxos is a quorum diagram (7-node majority vs 5-node minority across a partition, with one Paxos round stepping through its phases). The stock red/amber/green window dots are now neutral.
+- Consistent pages: one width (`.page-shell`, 1080px), one page-title size, and one label style (`Kicker`) everywhere. Labels now only appear where they add meaning; Interests sections are numbered (01–05) to match their jump links.
+
+### Added
+- `/interests` page (replaces `/gaming`, which now 301s to `/interests#gaming`): fantasy football, gaming, movies, shows, and anime.
+- Sleeper card: record, rank, points for, and this week's score, fetched directly from Sleeper in the browser. Only my team is named and the league isn't identified or linked. "Show lineups" expands both starting lineups, with player names from a new day-cached `/api/nfl-players` function. Refreshes every 3 minutes while visible and keeps the last good result.
+- Movies, shows, anime, and favorite games are endless poster carousels: slow auto-scroll that eases to a stop on hover, mouse drag, trackpad/touch scrolling, a hairline scrollbar with a position counter, and "Show all" for the full grid.
+- Lineups show "Yet to play", a live indicator, or "Bye" instead of a misleading 0.00, using Sleeper's NFL schedule. Player names are cached in the browser for a day.
+- Gaming: live Steam status, Recently Played and Most Played poster shelves, and a Favorites shelf across Steam, PlayStation, and Switch.
+- `npm run add`: looks up a movie, show, anime (TMDB) or game (Steam store / IGDB), lets you pick the match, and saves its poster ID, rating, and review to `src/data/interests.json`. Keys are local-only.
+
+---
+
 ## [3.0.0] - 2026-10-04 - Security, tooling, and accessibility overhaul
 
 ### Security

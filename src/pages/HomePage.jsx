@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { motion, useMotionValue, useReducedMotion, useSpring } from 'motion/react'
+import { motion, useReducedMotion } from 'motion/react'
 import { ArrowRight, Mail, FileText } from 'lucide-react'
 import { GithubIcon, LinkedinIcon } from '../components/BrandIcons'
 import RouteLink from '../components/RouteLink'
@@ -56,47 +56,15 @@ export default function HomePage({ onNavigate }) {
   const prefersReducedMotion = useReducedMotion()
   const isFirstVisit = !hasPlayedIntro
   const playIntro = isFirstVisit && !prefersReducedMotion
-  const glowX = useMotionValue(0)
-  const glowY = useMotionValue(0)
-  const smoothGlowX = useSpring(glowX, { stiffness: 90, damping: 24, mass: 0.7 })
-  const smoothGlowY = useSpring(glowY, { stiffness: 90, damping: 24, mass: 0.7 })
 
   useEffect(() => {
     hasPlayedIntro = true
   }, [])
 
-  const handlePointerMove = (event) => {
-    if (prefersReducedMotion || event.pointerType === 'touch') return
-
-    const bounds = event.currentTarget.getBoundingClientRect()
-    glowX.set(event.clientX - bounds.left - bounds.width / 2)
-    glowY.set(event.clientY - bounds.top - bounds.height * 0.42)
-  }
-
-  const resetGlow = () => {
-    glowX.set(0)
-    glowY.set(0)
-  }
-
   return (
     <div
       className="page-shell relative flex min-h-[calc(100vh-5rem)] flex-col items-center justify-center overflow-hidden px-1 pb-32 pt-8 text-center lg:pb-24"
-      onPointerMove={handlePointerMove}
-      onPointerLeave={resetGlow}
     >
-      <div className="pointer-events-none absolute left-1/2 top-[42%] hidden -translate-x-1/2 -translate-y-1/2 md:block" aria-hidden="true">
-        <motion.div
-          className="h-[420px] w-[420px] rounded-full"
-          style={{
-            x: smoothGlowX,
-            y: smoothGlowY,
-            opacity: prefersReducedMotion ? 0 : 1,
-            willChange: 'transform',
-            background: 'radial-gradient(circle, color-mix(in srgb, var(--color-accent) 11%, transparent) 0%, transparent 68%)',
-          }}
-        />
-      </div>
-
       <div className="relative z-10 flex w-full flex-col items-center">
         <h1
           className="select-none font-bold uppercase leading-[0.8] tracking-[-0.065em]"

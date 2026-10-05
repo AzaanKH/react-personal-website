@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import { Send, Check, Loader2, ArrowUpRight } from 'lucide-react'
+import Kicker from '../components/Kicker'
 import { CONTACT_LIMITS, validateContact } from '../lib/contactValidation'
 import {
   resetStatus,
@@ -93,8 +94,8 @@ export default function ContactPage() {
     <div className="page-shell pb-12 pt-4 md:pt-8">
       <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
         <div>
-          <p className="eyebrow mb-5 accent-slash" style={{ color: 'var(--color-text-secondary)' }}>Let&apos;s work together</p>
-          <h1 className="display-heading" style={{ fontSize: 'clamp(4.5rem, 10vw, 8.5rem)', color: 'var(--color-text)' }}>
+          <Kicker className="mb-5">Let&apos;s work together</Kicker>
+          <h1 className="display-heading page-title" style={{ color: 'var(--color-text)' }}>
             Say<br /><em style={{ color: 'var(--color-accent)' }}>hello.</em>
           </h1>
           <p className="mt-8 max-w-sm text-base leading-7" style={{ color: 'var(--color-text-secondary)' }}>
@@ -114,8 +115,7 @@ export default function ContactPage() {
           borderRadius: 16,
         }}
       >
-        <div className="mb-8 flex items-center justify-between border-b pb-4" style={{ borderColor: 'var(--color-border)' }}>
-          <span className="eyebrow" style={{ color: 'var(--color-text-secondary)' }}>Message form</span>
+        <div className="mb-8 flex items-center border-b pb-4" style={{ borderColor: 'var(--color-border)' }}>
           <span className="text-[0.65rem] uppercase tracking-[0.12em]" style={{ color: 'var(--color-accent)' }}>Replies in 1–2 days</span>
         </div>
         <form onSubmit={handleSubmit} className="space-y-6" noValidate>

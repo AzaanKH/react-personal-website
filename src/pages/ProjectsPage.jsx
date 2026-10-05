@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
+import Kicker from '../components/Kicker'
 import {
   ArrowUpRight,
   BarChart3,
@@ -8,7 +9,6 @@ import {
   GitBranch,
   Layers,
   ShieldCheck,
-  Terminal,
 } from 'lucide-react'
 import { GithubIcon } from '../components/BrandIcons'
 
@@ -19,15 +19,17 @@ const projects = [
     description:
       'Model Context Protocol server enabling AI assistants to manage local development environments with Docker orchestration, virtual environments, and system monitoring.',
     proof: 'A local automation layer with typed FastMCP tools, destructive-action confirmations, and cross-platform health/resource reporting.',
+    // Outputs restate facts from this card; they are not captured real output.
     screenshot: {
       type: 'terminal',
       title: 'MCP tool surface',
-      lines: [
-        'devenv_health_check  -> Docker, disk, memory',
-        'devenv_docker_stats  -> live container usage',
-        'devenv_venv_list     -> 5.1s to 1.2s',
-        'devenv_port_kill     -> confirmation required',
+      session: [
+        { command: 'devenv_health_check', output: 'Docker, disk, and memory status' },
+        { command: 'devenv_docker_stats', output: 'live container CPU and memory usage' },
+        { command: 'devenv_venv_list', output: 'environment scan: 5.1s → 1.2s (asyncio fan-out)' },
+        { command: 'devenv_port_kill 3000', output: 'destructive action: confirmation required', warn: true },
       ],
+      status: ['FastMCP', '12 tools', '80+ tests'],
     },
     metrics: [
       { value: '12', label: 'MCP tools' },
@@ -62,6 +64,80 @@ const projects = [
     links: [
       { label: 'Source', href: 'https://github.com/AzaanKH/devenv-mcp', icon: GithubIcon },
       { label: 'README', href: 'https://github.com/AzaanKH/devenv-mcp#devenv-mcp-server', icon: ExternalLink },
+    ],
+  },
+  {
+    // Copy, facts, and status come from the project's portfolio handoff. The screenshots
+    // are from a Sleeper mock draft (pick 2.06); the card uses a crop of the board so
+    // player names stay readable at card size.
+    name: 'Fantasy Draft Assistant',
+    eyebrow: 'Fantasy football tooling',
+    description:
+      'A local fantasy football draft workspace that tracks picks, compares available players, and explains roster fit and draft timing. Includes a Chrome extension companion for Sleeper, Yahoo, and ESPN draft rooms.',
+    proof: 'The React workspace and terminal CLI share draft calculations, while a local sync server and Chrome extension bring provider picks into the board. Data readiness checks block recommendations when required inputs are missing or stale.',
+    screenshot: {
+      type: 'image',
+      src: '/projects/fantasy-draft-assistant/board-card.webp',
+      width: 1000,
+      height: 808,
+      position: 'top center',
+      alt: 'Fantasy football draft board around My Team: Puka Nacua taken at 1.05, Amon-Ra St. Brown at 2.05, and My Team on the clock at pick 2.06.',
+      caption: 'Sleeper mock draft · pick 2.06',
+    },
+    gallery: [
+      {
+        src: '/projects/fantasy-draft-assistant/board.webp',
+        width: 2000,
+        height: 1268,
+        alt: 'Full draft workspace at pick 2.06: the draft board, the Best Pick bar recommending CeeDee Lamb, available players with value and next-pick availability, and the roster panel.',
+        caption: 'Draft workspace at pick 2.06 of a Sleeper mock draft: the board, available players ranked by Best Pick, and the roster.',
+      },
+      {
+        src: '/projects/fantasy-draft-assistant/assistant-compare.webp',
+        width: 2000,
+        height: 1264,
+        alt: 'Draft Assistant comparing CeeDee Lamb and Justin Jefferson at pick 2.06 on value above replacement, projected points, availability at the next pick, waiting cost, tier, and ECR.',
+        caption: 'The Assistant comparing CeeDee Lamb and Justin Jefferson at the same pick: Lamb grades ahead because only one WR remains in Tier 2.',
+      },
+    ],
+    metrics: [
+      { value: '3', label: 'Provider adapters' },
+      { value: '4', label: 'Assistant questions' },
+      { value: 'Local', label: 'App runtime' },
+    ],
+    caseStudy: [
+      {
+        label: 'Problem',
+        text: "During a snake draft, rankings alone don't explain roster fit or whether a player will still be there at your next pick, and switching between the draft room, rankings, and roster makes those calls harder.",
+      },
+      {
+        label: 'Build',
+        text: 'A React draft board and Assistant backed by shared draft calculations, real player data, and a local sync server. Provider adapters and a Chrome extension track picks; local mock drafts support practice, and provisional picks with reconciliation recover from a sync outage.',
+      },
+      {
+        label: 'Proof',
+        text: 'The workspace shows pick history, available players, a shortlist, and your roster. The Assistant explains recommendations, compares alternatives, analyzes waiting until the next pick, and reviews roster needs.',
+      },
+      {
+        label: 'Status',
+        text: 'Local development project. Sleeper draft sync works, as shown in the screenshots; Yahoo and ESPN sync are not yet verified.',
+      },
+    ],
+    highlights: [
+      'Four Assistant questions: why this player, compare options, can I wait until my next pick, and what does my roster need.',
+      'Provider adapters for Sleeper, Yahoo, and ESPN draft rooms, with a Chrome extension that brings picks into the board.',
+      'Provisional picks and reconciliation keep the board recoverable after a sync outage.',
+      'The CLI exposes the same advice as the web app and replays exported drafts offline.',
+    ],
+    architecture: [
+      ['Sleeper + FantasyPros data', 'Refresh + identity scripts', 'Local sync server', 'React workspace'],
+      ['Chrome extension', 'Provider adapters', 'Shared TypeScript calculations', 'CLI + offline replay'],
+    ],
+    tech: ['TypeScript', 'React', 'Vite', 'TanStack Query', 'Zustand', 'Tailwind CSS', 'Effect 4', 'Node.js', 'Chrome Extensions', 'DuckDB', 'Vitest'],
+    links: [
+      { label: 'Source', href: 'https://github.com/AzaanKH/fantasy-draft-assistant', icon: GithubIcon },
+      { label: 'README', href: 'https://github.com/AzaanKH/fantasy-draft-assistant#fantasy-draft-assistant', icon: ExternalLink },
+      { label: 'Local setup', href: 'https://github.com/AzaanKH/fantasy-draft-assistant#get-started', icon: ArrowUpRight },
     ],
   },
   {
@@ -121,14 +197,12 @@ const projects = [
       'Fault-tolerant distributed system using the Paxos consensus algorithm, ensuring agreement across nodes under network partition scenarios.',
     proof: 'A Java consensus simulation focused on proposer/acceptor coordination, message throughput, and partition-tolerant agreement.',
     screenshot: {
-      type: 'terminal',
-      title: 'Consensus trace',
-      lines: [
-        'cluster: 12 nodes, quorum: 7',
-        'partition: minority isolated, majority proceeds',
-        'prepare -> promise -> accept -> learned',
-        'throughput: 1000+ messages/sec',
-      ],
+      type: 'quorum',
+      title: 'Consensus under partition',
+      nodes: 12,
+      quorum: 7,
+      phases: ['Prepare', 'Promise', 'Accept', 'Learned'],
+      status: ['Java', '1000+ messages/sec'],
     },
     metrics: [
       { value: '12+', label: 'nodes tested' },
@@ -213,6 +287,7 @@ function ProofVisual({ screenshot, name }) {
           loading="lazy"
           decoding="async"
           className="h-full w-full object-cover"
+          style={{ objectPosition: screenshot.position ?? 'center' }}
         />
         <div
           className="absolute inset-x-0 bottom-0 px-4 py-3"
@@ -221,44 +296,157 @@ function ProofVisual({ screenshot, name }) {
             color: '#fff',
           }}
         >
-          <p className="text-xs uppercase tracking-[0.16em]">Screenshot</p>
+          <p className="text-xs uppercase tracking-[0.16em]">{screenshot.caption ?? 'Screenshot'}</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div
-      className="h-full min-h-[190px] overflow-hidden p-4"
+    <PanelFrame title={screenshot.title} status={screenshot.status} label={`${name}: ${screenshot.title}`}>
+      {screenshot.type === 'quorum' ? <QuorumDiagram {...screenshot} /> : <TerminalSession session={screenshot.session} />}
+    </PanelFrame>
+  )
+}
+
+// Shared frame for the drawn panels: hairline title bar, content that fills the card's
+// height, and a status bar pinned to the bottom (so the panel never looks half empty).
+function PanelFrame({ title, status, label, children }) {
+  return (
+    <figure
+      className="flex h-full min-h-[240px] flex-col overflow-hidden"
       style={{
         backgroundColor: 'var(--color-surface-elevated)',
         border: '1px solid var(--color-border)',
         borderRadius: 10,
       }}
-      aria-label={`${name} proof screenshot`}
+      aria-label={label}
     >
-      <div className="mb-4 flex items-center gap-2">
+      <div className="flex items-center gap-3 border-b px-4 py-3" style={{ borderColor: 'var(--color-border)' }}>
         <div className="flex gap-1.5" aria-hidden="true">
-          <span className="h-2.5 w-2.5 rounded-full bg-[#ef4444]" />
-          <span className="h-2.5 w-2.5 rounded-full bg-[#f59e0b]" />
-          <span className="h-2.5 w-2.5 rounded-full bg-[#22c55e]" />
+          {[0, 1, 2].map((dot) => (
+            <span key={dot} className="h-2 w-2 rounded-full" style={{ backgroundColor: 'var(--color-border)' }} />
+          ))}
         </div>
-        <p className="text-[0.68rem] uppercase tracking-[0.16em]" style={{ color: 'var(--color-text-secondary)' }}>
-          {screenshot.title}
-        </p>
+        <figcaption className="text-[0.64rem] uppercase tracking-[0.16em]" style={{ color: 'var(--color-text-secondary)' }}>
+          {title}
+        </figcaption>
       </div>
-      <div className="space-y-3 font-mono text-[0.72rem] leading-relaxed" style={{ color: 'var(--color-text)' }}>
-        {screenshot.lines.map((line, index) => (
-          <motion.p
-            key={line}
-            initial={{ opacity: 0, x: -6 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.08 + index * 0.05, duration: 0.25 }}
-          >
+      <div className="flex flex-1 flex-col p-4">{children}</div>
+      {status && (
+        <div
+          className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t px-4 py-2.5 font-mono text-[0.62rem] uppercase tracking-[0.12em]"
+          style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-secondary)' }}
+        >
+          {status.map((item, index) => (
+            <span key={item} className="flex items-center gap-3">
+              {index > 0 && <span aria-hidden="true" style={{ color: 'var(--color-border)' }}>│</span>}
+              {item}
+            </span>
+          ))}
+        </div>
+      )}
+    </figure>
+  )
+}
+
+function TerminalSession({ session }) {
+  return (
+    <div className="flex flex-1 flex-col justify-between gap-3 font-mono text-[0.72rem] leading-relaxed">
+      {session.map(({ command, output, warn }, index) => (
+        <motion.div
+          key={command}
+          initial={{ opacity: 0, x: -6 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.08 + index * 0.08, duration: 0.25 }}
+        >
+          <p style={{ color: 'var(--color-text)' }}>
             <span style={{ color: 'var(--color-accent)' }}>$ </span>
-            {line}
-          </motion.p>
+            {command}
+          </p>
+          <p className="pl-4" style={{ color: warn ? 'var(--color-accent)' : 'var(--color-text-secondary)' }}>
+            {warn ? '! ' : '→ '}
+            {output}
+          </p>
+        </motion.div>
+      ))}
+      <p aria-hidden="true" style={{ color: 'var(--color-accent)' }}>
+        $ <span className="terminal-cursor">▍</span>
+      </p>
+    </div>
+  )
+}
+
+// Paxos under a network partition: the majority side still forms a quorum and commits;
+// the minority side can't. The phase row steps through one round on a loop (CSS, so
+// reduced motion leaves it still).
+function QuorumNode({ active }) {
+  return (
+    <span
+      className="h-4 w-4 rounded-full"
+      style={
+        active
+          ? { backgroundColor: 'var(--color-accent)' }
+          : { border: '1px solid var(--color-text-secondary)', opacity: 0.55 }
+      }
+    />
+  )
+}
+
+function QuorumDiagram({ nodes, quorum, phases }) {
+  const minority = nodes - quorum
+
+  return (
+    <div className="flex flex-1 flex-col gap-5">
+      <div className="grid flex-1 grid-cols-[1fr_auto_1fr] items-center gap-4">
+        <div>
+          <div className="grid w-fit grid-cols-4 gap-3" aria-hidden="true">
+            {Array.from({ length: quorum }, (_, i) => <QuorumNode key={i} active />)}
+          </div>
+          <p className="mt-3 text-[0.72rem] font-medium" style={{ color: 'var(--color-text)' }}>
+            Majority · {quorum} of {nodes}
+          </p>
+          <p className="text-[0.68rem]" style={{ color: 'var(--color-text-secondary)' }}>
+            Forms a quorum and commits
+          </p>
+        </div>
+
+        <div className="flex h-full min-h-[120px] flex-col items-center gap-1.5" aria-hidden="true">
+          <span className="w-px flex-1" style={{ borderLeft: '1px dashed var(--color-text-secondary)', opacity: 0.6 }} />
+          <span className="text-[0.55rem] uppercase tracking-[0.16em]" style={{ color: 'var(--color-text-secondary)', writingMode: 'vertical-rl' }}>
+            Partition
+          </span>
+          <span className="w-px flex-1" style={{ borderLeft: '1px dashed var(--color-text-secondary)', opacity: 0.6 }} />
+        </div>
+
+        <div>
+          <div className="grid w-fit grid-cols-4 gap-3" aria-hidden="true">
+            {Array.from({ length: minority }, (_, i) => <QuorumNode key={i} />)}
+          </div>
+          <p className="mt-3 text-[0.72rem] font-medium" style={{ color: 'var(--color-text)' }}>
+            Minority · {minority} of {nodes}
+          </p>
+          <p className="text-[0.68rem]" style={{ color: 'var(--color-text-secondary)' }}>
+            Isolated, can&apos;t reach quorum
+          </p>
+        </div>
+      </div>
+
+      <div>
+      <p className="mb-2 font-mono text-[0.6rem] uppercase tracking-[0.14em]" style={{ color: 'var(--color-text-secondary)' }}>
+        One Paxos round
+      </p>
+      <ol className="grid grid-cols-4 gap-1.5">
+        {phases.map((phase, index) => (
+          <li
+            key={phase}
+            className="phase-step rounded-md px-1 py-1.5 text-center font-mono text-[0.6rem] uppercase tracking-[0.08em]"
+            style={{ animationDelay: `${index}s` }}
+          >
+            {phase}
+          </li>
         ))}
+      </ol>
       </div>
     </div>
   )
@@ -329,22 +517,11 @@ export default function ProjectsPage() {
   }
 
   return (
-    <div className="w-full max-w-[1080px] mx-auto pt-4 md:pt-8 pb-12 px-5 sm:px-6">
+    <div className="page-shell pt-4 md:pt-8 pb-12">
       <div className="mb-10 flex flex-col gap-4 border-b pb-8 md:mb-12 md:flex-row md:items-end md:justify-between" style={{ borderColor: 'var(--color-border)' }}>
         <div>
-          <p
-            className="eyebrow mb-3"
-            style={{ color: 'var(--color-accent)' }}
-          >
-            Selected work
-          </p>
-          <h1
-            className="display-heading"
-            style={{
-              fontSize: 'clamp(3.5rem, 8vw, 7rem)',
-              color: 'var(--color-text)',
-            }}
-          >
+          <Kicker className="mb-4">Selected work</Kicker>
+          <h1 className="display-heading page-title" style={{ color: 'var(--color-text)' }}>
             Projects
           </h1>
         </div>
@@ -458,25 +635,13 @@ export default function ProjectsPage() {
                 </div>
               </button>
 
-              <div className="flex flex-wrap gap-2 px-4 pb-4 sm:px-5 md:px-6">
-                {project.links.map((link) => (
-                  <LinkPill key={link.label} link={link} />
-                ))}
-                {project.links.length === 0 && (
-                  <span
-                    className="inline-flex h-9 items-center gap-2 px-3 text-xs font-medium"
-                    style={{
-                      color: 'var(--color-text-secondary)',
-                      backgroundColor: 'var(--color-surface-elevated)',
-                      border: '1px solid var(--color-border)',
-                      borderRadius: 9999,
-                    }}
-                  >
-                    <Terminal size={14} strokeWidth={1.5} />
-                    Demo notes available on request
-                  </span>
-                )}
-              </div>
+              {project.links.length > 0 && (
+                <div className="flex flex-wrap gap-2 px-4 pb-4 sm:px-5 md:px-6">
+                  {project.links.map((link) => (
+                    <LinkPill key={link.label} link={link} />
+                  ))}
+                </div>
+              )}
 
               <AnimatePresence initial={false}>
                 {isExpanded && (
@@ -491,6 +656,38 @@ export default function ProjectsPage() {
                       className="border-t px-4 py-5 sm:px-5 md:px-6 md:py-6"
                       style={{ borderColor: 'var(--color-border)' }}
                     >
+                      {/* Full card width, and each image opens at full size: app screenshots
+                          are only readable when they aren't shrunk much. */}
+                      {project.gallery?.map((image) => (
+                        <figure key={image.src} className="mb-6">
+                          <a
+                            href={image.src}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="group block overflow-hidden"
+                            style={{ border: '1px solid var(--color-border)', borderRadius: 10 }}
+                          >
+                            <img
+                              src={image.src}
+                              alt={image.alt}
+                              width={image.width}
+                              height={image.height}
+                              loading="lazy"
+                              decoding="async"
+                              className="h-auto w-full transition-transform duration-500 group-hover:scale-[1.01]"
+                            />
+                            <span className="sr-only"> (opens full size in a new tab)</span>
+                          </a>
+                          <figcaption
+                            className="mt-2 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 text-xs leading-5"
+                            style={{ color: 'var(--color-text-secondary)' }}
+                          >
+                            <span>{image.caption}</span>
+                            <span className="uppercase tracking-[0.12em]" aria-hidden="true">Click to enlarge</span>
+                          </figcaption>
+                        </figure>
+                      ))}
+
                       <div className="grid gap-5 lg:grid-cols-[0.95fr_1.05fr]">
                         <section>
                           <div className="mb-3 flex items-center gap-2">
