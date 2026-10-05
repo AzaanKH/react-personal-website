@@ -1,12 +1,12 @@
 # Azaan Khalfe - Portfolio Website
 
-A minimal, animated portfolio built with React featuring client-side routing, live Steam gaming integration, weather display, and dark mode. Designed around an "Architectural Minimalism" aesthetic — terracotta accent, bone/ink palette, Space Grotesk typography.
+A minimal, animated portfolio built with React featuring client-side routing, an Interests page with live Sleeper fantasy football and Steam data plus movie/show/anime/game poster shelves, weather display, and dark mode. Designed around an "Architectural Minimalism" aesthetic — terracotta accent, bone/ink palette, Space Grotesk typography.
 
 **Live:** [azaankhalfe.netlify.app](https://azaankhalfe.netlify.app)
 
 ## Features
 
-- **Client-side routing** — real URLs (`/projects`, `/gaming`, `/contact`) with history support, per-page titles/canonical URLs, and focus moved to the new page heading
+- **Client-side routing** — real URLs (`/projects`, `/interests`, `/contact`; `/gaming` redirects to `/interests#gaming`) with history support, per-page titles/canonical URLs, and focus moved to the new page heading
 - **Gravity-shift navigation** — nav bar sits at bottom on Home, springs to top on other pages
 - **Steam integration** — recently played games, "now playing" state, manual refresh, partial-failure reporting
 - **Dark/Light/System theme** — three-way cycle, persisted, applied before first paint (no flash)
@@ -77,7 +77,7 @@ my-portfolio/
 ├── src/
 │   ├── App.jsx                    # Root: routing state, metadata, skip link
 │   ├── components/                # Navigation, RouteLink, DarkModeToggle, PageTransition, StatusCorner, BrandIcons
-│   ├── pages/                     # Home, Projects, Gaming, Contact
+│   ├── pages/                     # Home, Projects, Interests, Contact
 │   ├── hooks/                     # useSteamData, useDarkMode, useWeather
 │   ├── lib/
 │   │   ├── routes.js              # Route table, path parsing, per-page metadata

@@ -63,7 +63,8 @@
 @layer components {
   .font-display { font-family: var(--font-display); }
   .font-mono { font-family: var(--font-mono); }
-  .page-shell { width: min(100% - 2rem, 1180px); margin-inline: auto; }
+  /* Every page uses this width, so the left edge lines up across pages. */
+  .page-shell { width: min(100% - 3rem, 1080px); margin-inline: auto; }
   .technical-grid { background: transparent; }
   .eyebrow { font-family: var(--font-mono); font-size: 0.65rem; line-height: 1; letter-spacing: 0.16em; text-transform: uppercase; }
   .hairline-card { background: color-mix(in srgb, var(--color-surface) 94%, transparent); border: 1px solid var(--color-border); border-radius: 0.875rem; }
@@ -86,7 +87,57 @@
     pointer-events: none;
   }
   .display-heading { font-family: var(--font-display); font-weight: 600; letter-spacing: -0.035em; line-height: 0.94; }
-  .accent-slash::before { content: '/'; color: var(--color-accent); margin-right: 0.45em; }
+  /* The one size for page titles (h1). Section titles (h2) use their own, smaller size. */
+  .page-title { font-size: clamp(3.5rem, 8vw, 7rem); }
+  /* Kicker: the small label above a heading (components/Kicker.jsx). Optional accent
+     number, then a hairline rule, then the label: "01 ──── FANTASY FOOTBALL". */
+  .kicker {
+    display: flex; align-items: center; gap: 0.75rem;
+    font-family: var(--font-mono); font-size: 0.65rem; line-height: 1;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--color-text-secondary);
+  }
+  .kicker-number { color: var(--color-accent); font-variant-numeric: tabular-nums; letter-spacing: 0.08em; }
+  .kicker-rule { width: 2.5rem; height: 1px; flex-shrink: 0; background: color-mix(in srgb, var(--color-text-secondary) 45%, transparent); }
+}
+
+/* Poster carousels (components/interests/PosterCarousel.jsx). The native scrollbar is
+   hidden in favour of the hairline rail below each row; scrolling itself stays native. */
+@layer components {
+  .carousel-viewport {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    cursor: grab;
+    user-select: none;
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 3%, #000 97%, transparent);
+    mask-image: linear-gradient(to right, transparent, #000 3%, #000 97%, transparent);
+  }
+  .carousel-viewport::-webkit-scrollbar { display: none; }
+  .carousel-viewport[data-dragging] { cursor: grabbing; }
+  .carousel-viewport[data-dragging] a { pointer-events: none; }
+  .carousel-rail {
+    height: 2px;
+    background: var(--color-border);
+    transition: height 0.2s ease;
+  }
+  .carousel-track:hover .carousel-rail,
+  .carousel-track:active .carousel-rail { height: 4px; }
+  .carousel-thumb { background: var(--color-accent); border-radius: 9999px; }
+}
+
+/* Projects page drawn panels (ProjectsPage.jsx). */
+.terminal-cursor { animation: terminal-blink 1.1s steps(1) infinite; }
+@keyframes terminal-blink { 50% { opacity: 0; } }
+/* One Paxos round: each phase lights up in turn (delays set inline: 0s, 1s, 2s, 3s). */
+.phase-step {
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+  animation: phase-step 4s ease-in-out infinite;
+}
+@keyframes phase-step {
+  0%, 22% { color: var(--color-accent); border-color: var(--color-accent); }
+  32%, 100% { color: var(--color-text-secondary); border-color: var(--color-border); }
 }
 
 @media (max-height: 720px) { .status-corner { display: none !important; } }

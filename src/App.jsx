@@ -6,14 +6,14 @@ import DarkModeToggle from './components/DarkModeToggle'
 import PageTransition from './components/PageTransition'
 import HomePage from './pages/HomePage'
 import ProjectsPage from './pages/ProjectsPage'
-import GamingPage from './pages/GamingPage'
+import InterestsPage from './pages/InterestsPage'
 import ContactPage from './pages/ContactPage'
 import { applyPageMetadata, getPageFromPath, routes } from './lib/routes'
 
 const pages = {
   home: HomePage,
   projects: ProjectsPage,
-  gaming: GamingPage,
+  interests: InterestsPage,
   contact: ContactPage,
 }
 
@@ -32,7 +32,8 @@ export default function App() {
     const canonicalPath = routes[currentPage].path
 
     if (window.location.pathname !== canonicalPath) {
-      window.history.replaceState({ page: currentPage }, '', canonicalPath)
+      // Keep the hash: /interests#gaming scrolls to that section.
+      window.history.replaceState({ page: currentPage }, '', canonicalPath + window.location.hash)
     }
   }, [])
 

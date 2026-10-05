@@ -21,8 +21,14 @@
   to = "/index.html"
   status = 200
 
+# Gaming moved into Interests. Listed before the SPA routes; must match `aliases` in routes.js.
 [[redirects]]
   from = "/gaming"
+  to = "/interests#gaming"
+  status = 301
+
+[[redirects]]
+  from = "/interests"
   to = "/index.html"
   status = 200
 

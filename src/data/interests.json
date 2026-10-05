@@ -1,0 +1,456 @@
+{
+  "hideFromMostPlayed": [
+    {
+      "appid": 431960,
+      "title": "Wallpaper Engine"
+    }
+  ],
+  "movies": [
+    {
+      "tmdbId": 272,
+      "title": "Batman Begins",
+      "year": 2005,
+      "poster": "/sPX89Td70IDDjVr85jdSBb4rWGr.jpg",
+      "rating": null
+    },
+    {
+      "tmdbId": 155,
+      "title": "The Dark Knight",
+      "year": 2008,
+      "poster": "/qJ2tW6WMUDux911r6m7haRef0WH.jpg",
+      "rating": null
+    },
+    {
+      "tmdbId": 49026,
+      "title": "The Dark Knight Rises",
+      "year": 2012,
+      "poster": "/hr0L2aueqlP2BYUblTTjmtn0hw4.jpg",
+      "rating": null
+    },
+    {
+      "tmdbId": 324857,
+      "title": "Spider-Man: Into the Spider-Verse",
+      "year": 2018,
+      "poster": "/iiZZdoQBEYBv6id8su7ImL0oCbD.jpg",
+      "rating": null
+    },
+    {
+      "tmdbId": 569094,
+      "title": "Spider-Man: Across the Spider-Verse",
+      "year": 2023,
+      "poster": "/8Vt6mWEReuy4Of61Lnj5Xj704m8.jpg",
+      "rating": null
+    },
+    {
+      "tmdbId": 120,
+      "title": "The Lord of the Rings: The Fellowship of the Ring",
+      "year": 2001,
+      "poster": "/6oom5QYQ2yQTMJIbnvbkBL9cHo6.jpg",
+      "rating": null
+    },
+    {
+      "tmdbId": 121,
+      "title": "The Lord of the Rings: The Two Towers",
+      "year": 2002,
+      "poster": "/5VTN0pR8gcqV3EPUHHfMGnJYN9L.jpg",
+      "rating": null
+    },
+    {
+      "tmdbId": 122,
+      "title": "The Lord of the Rings: The Return of the King",
+      "year": 2003,
+      "poster": "/rCzpDGLbOoPwLjy3OAm5NUPOTrC.jpg",
+      "rating": null
+    },
+    {
+      "tmdbId": 263115,
+      "title": "Logan",
+      "year": 2017,
+      "poster": "/fnbjcRDYn6YviCcePDnGdyAkYsB.jpg",
+      "rating": null
+    },
+    {
+      "tmdbId": 533535,
+      "title": "Deadpool & Wolverine",
+      "year": 2024,
+      "poster": "/8cdWjvZQUExUUTzyp4t6EDMubfO.jpg",
+      "rating": null
+    },
+    {
+      "tmdbId": 27205,
+      "title": "Inception",
+      "year": 2010,
+      "poster": "/xlaY2zyzMfkhk0HSC5VUwzoZPU1.jpg",
+      "rating": null
+    },
+    {
+      "tmdbId": 8587,
+      "title": "The Lion King",
+      "year": 1994,
+      "poster": "/sKCr78MXSLixwmZ8DyJLrpMsd15.jpg",
+      "rating": null
+    },
+    {
+      "tmdbId": 284052,
+      "title": "Doctor Strange",
+      "year": 2016,
+      "poster": "/uGBVj3bEbCoZbDjjl9wTxcygko1.jpg",
+      "rating": null
+    },
+    {
+      "tmdbId": 1726,
+      "title": "Iron Man",
+      "year": 2008,
+      "poster": "/78lPtwv72eTNqFW9COBYI0dWDJa.jpg",
+      "rating": null
+    },
+    {
+      "tmdbId": 299536,
+      "title": "Avengers: Infinity War",
+      "year": 2018,
+      "poster": "/7WsyChQLEftFiDOVTGkv3hFpyyt.jpg",
+      "rating": null
+    },
+    {
+      "tmdbId": 671,
+      "title": "Harry Potter and the Sorcerer's Stone",
+      "year": 2001,
+      "poster": "/wuMc08IPKEatf9rnMNXvIDxqP4W.jpg",
+      "rating": null
+    },
+    {
+      "tmdbId": 911430,
+      "title": "F1",
+      "year": 2025,
+      "poster": "/9PXZIUsSDh4alB80jheWX4fhZmy.jpg",
+      "rating": null
+    },
+    {
+      "tmdbId": 211672,
+      "title": "Minions",
+      "year": 2015,
+      "poster": "/dr02BdCNAUPVU07aOodwPYv6HCf.jpg",
+      "rating": null
+    },
+    {
+      "tmdbId": 557,
+      "title": "Spider-Man",
+      "year": 2002,
+      "poster": "/or6XJBVpcEbIkma0V9zshnbEtx4.jpg",
+      "rating": null
+    },
+    {
+      "tmdbId": 558,
+      "title": "Spider-Man 2",
+      "year": 2004,
+      "poster": "/aGuvNAaaZuWXYQQ6N2v7DeuP6mB.jpg",
+      "rating": null
+    },
+    {
+      "tmdbId": 429617,
+      "title": "Spider-Man: Far From Home",
+      "year": 2019,
+      "poster": "/4q2NNj4S5dG2RLF9CpXsej7yXl.jpg",
+      "rating": null
+    },
+    {
+      "tmdbId": 634649,
+      "title": "Spider-Man: No Way Home",
+      "year": 2021,
+      "poster": "/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg",
+      "rating": null
+    },
+    {
+      "tmdbId": 969681,
+      "title": "Spider-Man: Brand New Day",
+      "year": 2026,
+      "poster": "/bjiS5ipwxb9JFy3XRRN4OAilSeX.jpg",
+      "rating": null
+    }
+  ],
+  "shows": [
+    {
+      "tmdbId": 94605,
+      "title": "Arcane",
+      "year": 2021,
+      "poster": "/fqldf2t8ztc9aiwn3k6mlX3tvRT.jpg",
+      "rating": null
+    },
+    {
+      "tmdbId": 2098,
+      "title": "Batman: The Animated Series",
+      "year": 1992,
+      "poster": "/lBomQFW1vlm1yUYMNSbFZ45R4Ox.jpg",
+      "rating": null
+    },
+    {
+      "tmdbId": 513,
+      "title": "Batman Beyond",
+      "year": 1999,
+      "poster": "/d01V9s1hjYYJwAeocLNmrhY0ToU.jpg",
+      "rating": null
+    },
+    {
+      "tmdbId": 95396,
+      "title": "Severance",
+      "year": 2022,
+      "poster": "/pPHpeI2X1qEd1CS1SeyrdhZ4qnT.jpg",
+      "rating": null
+    },
+    {
+      "tmdbId": 12971,
+      "title": "Dragon Ball Z",
+      "year": 1989,
+      "poster": "/oQ5CnVj3TRifXl2bIOri6H6rfNe.jpg",
+      "rating": null
+    },
+    {
+      "tmdbId": 110492,
+      "title": "Peacemaker",
+      "year": 2022,
+      "poster": "/yb4F1Oocq8GfQt6iIuAgYEBokhG.jpg",
+      "rating": null
+    },
+    {
+      "tmdbId": 84200,
+      "title": "Justice League Unlimited",
+      "year": 2004,
+      "poster": "/vRRvCUREeqqnp3hHdqep83eQjdP.jpg",
+      "rating": null
+    }
+  ],
+  "anime": [
+    {
+      "tmdbId": 30991,
+      "title": "Cowboy Bebop",
+      "year": 1998,
+      "poster": "/xDiXDfZwC6XYC6fxHI1jl3A3Ill.jpg",
+      "rating": null
+    },
+    {
+      "tmdbId": 46298,
+      "title": "Hunter x Hunter",
+      "year": 2011,
+      "poster": "/i2EEr2uBvRlAwJ8d8zTG2Y19mIa.jpg",
+      "rating": null
+    },
+    {
+      "tmdbId": 209867,
+      "title": "Frieren: Beyond Journey's End",
+      "year": 2023,
+      "poster": "/dqZENchTd7lp5zht7BdlqM7RBhD.jpg",
+      "rating": null
+    },
+    {
+      "tmdbId": 65942,
+      "title": "Re:ZERO -Starting Life in Another World-",
+      "year": 2016,
+      "poster": "/oHqYrPAsIiTD5m4DuxumV4er8BU.jpg",
+      "rating": null
+    },
+    {
+      "tmdbId": 30984,
+      "title": "Bleach",
+      "year": 2004,
+      "poster": "/2EewmxXe72ogD0EaWM8gqa0ccIw.jpg",
+      "rating": null
+    },
+    {
+      "tmdbId": 62715,
+      "title": "Dragon Ball Super",
+      "year": 2015,
+      "poster": "/qEUrbXJ2qt4Rg84Btlx4STOhgte.jpg",
+      "rating": null
+    },
+    {
+      "tmdbId": 1063,
+      "title": "Samurai Champloo",
+      "year": 2004,
+      "poster": "/lYpHeSm7BcUxAbBx1ucuEH7oGAe.jpg",
+      "rating": null
+    },
+    {
+      "tmdbId": 119100,
+      "title": "BOCCHI THE ROCK!",
+      "year": 2022,
+      "poster": "/Af4tZ3eKjKWXG4vfiQ8R1NJomAP.jpg",
+      "rating": null
+    },
+    {
+      "tmdbId": 196950,
+      "title": "Witch Hat Atelier",
+      "year": 2026,
+      "poster": "/78m1Tv3suHmUryTI9VNPwKLKjHZ.jpg",
+      "rating": null
+    },
+    {
+      "tmdbId": 43017,
+      "title": "Great Teacher Onizuka",
+      "year": 1999,
+      "poster": "/cgcvNzLUQUjkur8zfhHwcadwzVz.jpg",
+      "rating": null
+    },
+    {
+      "tmdbId": 105248,
+      "title": "Cyberpunk: Edgerunners",
+      "year": 2022,
+      "poster": "/v3JuB15WybKmxDeT1hWdK3j6eSJ.jpg",
+      "rating": null
+    },
+    {
+      "tmdbId": 65931,
+      "title": "Bungo Stray Dogs",
+      "year": 2016,
+      "poster": "/6AQmGhkYwAqW2OevjXbsh7tZnNO.jpg",
+      "rating": null
+    }
+  ],
+  "games": [
+    {
+      "appid": 782330,
+      "title": "DOOM Eternal",
+      "platform": "steam",
+      "rating": null
+    },
+    {
+      "igdbId": 740,
+      "title": "Halo: Combat Evolved",
+      "platform": "xbox",
+      "cover": "co2r2r",
+      "url": "https://www.igdb.com/games/halo-combat-evolved",
+      "rating": null
+    },
+    {
+      "igdbId": 986,
+      "title": "Halo 2",
+      "platform": "xbox",
+      "cover": "co1x77",
+      "url": "https://www.igdb.com/games/halo-2",
+      "rating": null
+    },
+    {
+      "igdbId": 987,
+      "title": "Halo 3",
+      "platform": "xbox",
+      "cover": "co1xhc",
+      "url": "https://www.igdb.com/games/halo-3",
+      "rating": null
+    },
+    {
+      "appid": 1325200,
+      "title": "Nioh 2 – The Complete Edition",
+      "platform": "steam",
+      "rating": null
+    },
+    {
+      "appid": 2680010,
+      "title": "The First Berserker: Khazan",
+      "platform": "steam",
+      "rating": null
+    },
+    {
+      "appid": 1245620,
+      "title": "ELDEN RING",
+      "platform": "steam",
+      "rating": null
+    },
+    {
+      "igdbId": 75235,
+      "title": "Ghost of Tsushima",
+      "platform": "ps5",
+      "cover": "co2crj",
+      "url": "https://www.igdb.com/games/ghost-of-tsushima",
+      "rating": null
+    },
+    {
+      "igdbId": 120176,
+      "title": "Teamfight Tactics",
+      "platform": "pc",
+      "cover": "cocsmb",
+      "url": "https://www.igdb.com/games/teamfight-tactics",
+      "rating": null
+    },
+    {
+      "appid": 1687950,
+      "title": "Persona 5 Royal",
+      "platform": "steam",
+      "rating": null
+    },
+    {
+      "appid": 1086940,
+      "title": "Baldur's Gate 3",
+      "platform": "steam",
+      "rating": null
+    },
+    {
+      "igdbId": 2183,
+      "title": "Mario Kart Wii",
+      "platform": "wii",
+      "cover": "co214e",
+      "url": "https://www.igdb.com/games/mario-kart-wii",
+      "rating": null
+    },
+    {
+      "igdbId": 90101,
+      "title": "Super Smash Bros. Ultimate",
+      "platform": "switch",
+      "cover": "co2255",
+      "url": "https://www.igdb.com/games/super-smash-bros-ultimate",
+      "rating": null
+    },
+    {
+      "igdbId": 7346,
+      "title": "The Legend of Zelda: Breath of the Wild",
+      "platform": "switch",
+      "cover": "co3p2d",
+      "url": "https://www.igdb.com/games/the-legend-of-zelda-breath-of-the-wild",
+      "rating": null
+    },
+    {
+      "appid": 1145350,
+      "title": "Hades II",
+      "platform": "steam",
+      "rating": null
+    },
+    {
+      "igdbId": 1560,
+      "title": "Pokémon Diamond Version",
+      "platform": "ds",
+      "cover": "co1zht",
+      "url": "https://www.igdb.com/games/pokemon-diamond-version",
+      "rating": null
+    },
+    {
+      "igdbId": 3363,
+      "title": "Mario & Luigi: Bowser's Inside Story",
+      "platform": "ds",
+      "cover": "co21vr",
+      "url": "https://www.igdb.com/games/mario-luigi-bowser-s-inside-story",
+      "rating": null
+    },
+    {
+      "igdbId": 1078,
+      "title": "Super Mario Galaxy 2",
+      "platform": "wii",
+      "cover": "co21tl",
+      "url": "https://www.igdb.com/games/super-mario-galaxy-2",
+      "rating": null
+    },
+    {
+      "igdbId": 2366,
+      "title": "Xenoblade Chronicles X",
+      "platform": "wiiu",
+      "cover": "coavor",
+      "url": "https://www.igdb.com/games/xenoblade-chronicles-x",
+      "rating": null
+    },
+    {
+      "igdbId": 306148,
+      "title": "Super Mario Party Jamboree",
+      "platform": "switch",
+      "cover": "cob9yk",
+      "url": "https://www.igdb.com/games/super-mario-party-jamboree",
+      "rating": null
+    }
+  ]
+}

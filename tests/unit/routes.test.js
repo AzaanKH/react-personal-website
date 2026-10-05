@@ -8,7 +8,8 @@ describe('getPageFromPath', () => {
     ['/', 'home'],
     ['/projects', 'projects'],
     ['/projects/', 'projects'],
-    ['/gaming//', 'gaming'],
+    ['/interests//', 'interests'],
+    ['/gaming', 'interests'],
     ['/contact', 'contact'],
   ])('maps %s to %s', (path, page) => {
     expect(getPageFromPath(path)).toBe(page)
@@ -67,7 +68,7 @@ describe('renderPageHead', () => {
     }
   }
 
-  it.each(['projects', 'gaming', 'contact'])('prerenders every %s head tag from the real index.html', (page) => {
+  it.each(['projects', 'interests', 'contact'])('prerenders every %s head tag from the real index.html', (page) => {
     const { title, description } = routes[page]
     const url = `https://azaankhalfe.netlify.app${routes[page].path}`
 

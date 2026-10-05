@@ -11,6 +11,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "add": "node --env-file=.env scripts/add.js",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:live": "node tests/live/steam-api.live.js",

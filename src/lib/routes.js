@@ -14,13 +14,16 @@ export const routes = {
     label: 'Projects',
     title: 'Projects | Azaan Khalfe',
     description:
-      'Case studies from Azaan Khalfe: an MCP server for local dev environments, an XGBoost fantasy football predictor, and a Paxos consensus simulation.',
+      'Case studies from Azaan Khalfe: an MCP server for local dev environments, a fantasy football draft assistant, an XGBoost fantasy football predictor, and a Paxos consensus simulation.',
   },
-  gaming: {
-    path: '/gaming',
-    label: 'Gaming',
-    title: 'Gaming | Azaan Khalfe',
-    description: 'What Azaan Khalfe has been playing recently, pulled from the Steam Web API.',
+  interests: {
+    path: '/interests',
+    // Old URLs that still resolve here. netlify.toml 301s them too; keep both in sync.
+    aliases: ['/gaming'],
+    label: 'Interests',
+    title: 'Interests | Azaan Khalfe',
+    description:
+      'Off the clock with Azaan Khalfe: fantasy football on Sleeper, games from Steam and beyond, and favorite movies, shows, and anime.',
   },
   contact: {
     path: '/contact',
@@ -34,7 +37,9 @@ export const pageIds = Object.keys(routes)
 
 export function getPageFromPath(pathname) {
   const normalizedPath = pathname === '/' ? '/' : pathname.replace(/\/+$/, '')
-  return pageIds.find((id) => routes[id].path === normalizedPath) ?? 'home'
+  return (
+    pageIds.find((id) => routes[id].path === normalizedPath || routes[id].aliases?.includes(normalizedPath)) ?? 'home'
+  )
 }
 
 // Head tags that change per page. index.html must contain each one with the key
