@@ -128,6 +128,28 @@ describe('fetchSleeperSummary', () => {
     expect(summary.matchup.gameStatus).toBeNull()
   })
 
+  it('does not let a stalled schedule hold back the scores', async () => {
+    const responses = {
+      '/state/nfl': fixture.state,
+      [`/user/${ME}/leagues/nfl/2026`]: [fixture.league],
+      '/league/L1/rosters': fixture.rosters,
+      '/league/L1/users': fixture.users,
+      '/league/L1/matchups/4': fixture.matchups,
+    }
+    vi.stubGlobal('fetch', vi.fn((url, { signal } = {}) => {
+      if (!url.includes('/schedule/')) {
+        return Promise.resolve(Response.json(responses[url.replace('https://api.sleeper.app/v1', '')]))
+      }
+      // Never answers; only gives up when its signal aborts.
+      return new Promise((_, reject) => signal.addEventListener('abort', () => reject(signal.reason)))
+    }))
+
+    const summary = await fetchSleeperSummary({ userId: ME, leagueName: 'Test League', scheduleTimeoutMs: 30 })
+
+    expect(summary.matchup.myPoints).toBe(125.92)
+    expect(summary.matchup.gameStatus).toBeNull()
+  })
+
   it('rejects when Sleeper fails', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => new Response('', { status: 503 })))
     await expect(fetchSleeperSummary({ userId: ME })).rejects.toThrow('503')

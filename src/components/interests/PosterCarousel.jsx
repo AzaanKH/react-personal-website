@@ -1,5 +1,6 @@
 import { Children, useEffect, useRef } from 'react'
 import { thumbGeometry, wrapPosition } from '../../lib/carousel'
+import { CarouselCopyContext } from './carouselCopy'
 
 // An endless poster row built on a real horizontal scroll container, so trackpad
 // swipes, touch momentum, Shift+wheel, and Tab-to-focus all work natively. On top:
@@ -33,7 +34,7 @@ export default function PosterCarousel({ children, reverse = false, label }) {
     let velocity = 0
     let lastFrame = performance.now()
     let frame = 0
-    const pause = { hover: false, focus: false, drag: false, touch: false, offscreen: false }
+    const pause = { hover: false, drag: false, touch: false, offscreen: false }
     let touchTimer = 0
 
     const measure = () => {
@@ -53,8 +54,15 @@ export default function PosterCarousel({ children, reverse = false, label }) {
       counterRef.current.textContent = `${String(Math.floor(fraction * count) + 1).padStart(2, '0')} / ${String(count).padStart(2, '0')}`
     }
 
+    // While a poster has keyboard focus the row never wraps: wrapping jumps the view by
+    // one copy, which would leave the focused link offscreen. Three copies leave enough
+    // room to scroll to any poster in the middle copy without wrapping.
+    // Checked directly rather than tracked via focusin/focusout, which aren't fired in
+    // every case (e.g. programmatic focus while the window itself isn't focused).
+    const hasFocusInside = () => viewport.contains(document.activeElement)
+
     const setPosition = (next) => {
-      position = wrapPosition(next, copyWidth)
+      position = wrapPosition(next, copyWidth, hasFocusInside())
       viewport.scrollLeft = position
       paint()
     }
@@ -62,7 +70,7 @@ export default function PosterCarousel({ children, reverse = false, label }) {
     const tick = (now) => {
       const dt = Math.min(0.05, (now - lastFrame) / 1000)
       lastFrame = now
-      const paused = reducedMotion.matches || Object.values(pause).some(Boolean)
+      const paused = reducedMotion.matches || hasFocusInside() || Object.values(pause).some(Boolean)
       const target = paused ? 0 : SPEED_PX_PER_S * (reverse ? -1 : 1)
       velocity += (target - velocity) * Math.min(1, dt * EASE_PER_S)
       if (Math.abs(velocity) > 0.5 && copyWidth) setPosition(position + velocity * dt)
@@ -114,10 +122,6 @@ export default function PosterCarousel({ children, reverse = false, label }) {
 
     const onEnter = () => { pause.hover = true }
     const onLeave = () => { pause.hover = false }
-    const onFocusIn = () => { pause.focus = true }
-    const onFocusOut = (event) => {
-      if (!viewport.contains(event.relatedTarget)) pause.focus = false
-    }
     const onTouchStart = () => {
       clearTimeout(touchTimer)
       pause.touch = true
@@ -139,8 +143,6 @@ export default function PosterCarousel({ children, reverse = false, label }) {
     viewport.addEventListener('click', onClickCapture, true)
     viewport.addEventListener('pointerenter', onEnter)
     viewport.addEventListener('pointerleave', onLeave)
-    viewport.addEventListener('focusin', onFocusIn)
-    viewport.addEventListener('focusout', onFocusOut)
     viewport.addEventListener('touchstart', onTouchStart, { passive: true })
     viewport.addEventListener('touchend', onTouchEnd, { passive: true })
 
@@ -191,8 +193,6 @@ export default function PosterCarousel({ children, reverse = false, label }) {
       viewport.removeEventListener('click', onClickCapture, true)
       viewport.removeEventListener('pointerenter', onEnter)
       viewport.removeEventListener('pointerleave', onLeave)
-      viewport.removeEventListener('focusin', onFocusIn)
-      viewport.removeEventListener('focusout', onFocusOut)
       viewport.removeEventListener('touchstart', onTouchStart)
       viewport.removeEventListener('touchend', onTouchEnd)
       track.removeEventListener('pointerdown', onBarDown)
@@ -214,9 +214,15 @@ export default function PosterCarousel({ children, reverse = false, label }) {
         onDragStart={(event) => event.preventDefault()}
       >
         <div className="flex w-max">
-          <ul data-copy className={listClasses} aria-hidden="true" inert>{children}</ul>
+          {/* The copies scroll into view, so they stay clickable; they're hidden from
+              screen readers and their links leave the Tab order (CarouselCopyContext). */}
+          <CarouselCopyContext value={true}>
+            <ul data-copy className={listClasses} aria-hidden="true">{children}</ul>
+          </CarouselCopyContext>
           <ul data-copy className={listClasses}>{children}</ul>
-          <ul data-copy className={listClasses} aria-hidden="true" inert>{children}</ul>
+          <CarouselCopyContext value={true}>
+            <ul data-copy className={listClasses} aria-hidden="true">{children}</ul>
+          </CarouselCopyContext>
         </div>
       </div>
 

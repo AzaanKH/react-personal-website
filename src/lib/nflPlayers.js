@@ -6,6 +6,8 @@
 const CACHE_KEY = 'nfl_players_v1'
 export const PLAYERS_TTL_MS = 24 * 60 * 60 * 1000
 
+// Only the in-flight request is shared (so opening both lineups at once fetches once).
+// It's cleared when it settles: after that, freshness is decided by the localStorage TTL.
 let request = null
 
 function readCache() {
@@ -40,9 +42,8 @@ export function loadNflPlayers() {
       writeCache(players)
       return players
     })
-    .catch((error) => {
+    .finally(() => {
       request = null
-      throw error
     })
   return request
 }

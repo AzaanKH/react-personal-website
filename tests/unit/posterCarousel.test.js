@@ -37,3 +37,10 @@ describe('thumbGeometry', () => {
     expect(thumbGeometry(1000, 10000, 300).width).toBe(8)
   })
 })
+
+describe('wrapPosition while a poster has focus', () => {
+  it('holds the position instead of wrapping, so the focused link stays on screen', () => {
+    expect(wrapPosition(1600, 1000, true)).toBe(1600)
+    expect(wrapPosition(1600, 1000, false)).toBe(600)
+  })
+})

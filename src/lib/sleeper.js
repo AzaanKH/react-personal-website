@@ -18,6 +18,9 @@ const getJson = async (path, signal, base = SLEEPER_API) => {
 // Undocumented (it's what Sleeper's own app uses), so it's optional: if it fails, the
 // lineup shows plain points instead of "Yet to play". Sleeper caches it for 10 minutes.
 const SLEEPER_SCHEDULE = 'https://api.sleeper.app/schedule/nfl'
+// The schedule only adds "Yet to play" labels, so it gets a short timeout of its own: a
+// stalled schedule must never hold back scores that have already arrived.
+export const SCHEDULE_TIMEOUT_MS = 4000
 
 // { DET: 'pre_game', KC: 'complete', ... } for one week. Teams without a game are on bye.
 export function weekGameStatus(schedule, week) {
@@ -106,7 +109,19 @@ export function summarizeLeague({ state, league, rosters, users, matchups, sched
   }
 }
 
-export async function fetchSleeperSummary({ signal, userId = SLEEPER_USER_ID, leagueName = SLEEPER_LEAGUE_NAME } = {}) {
+// Resolves to null on any failure or after `timeoutMs`, never rejects.
+function fetchSchedule(seasonType, season, signal, timeoutMs) {
+  const timeout = AbortSignal.timeout(timeoutMs)
+  const combined = signal ? AbortSignal.any([signal, timeout]) : timeout
+  return getJson(`/${seasonType}/${season}`, combined, SLEEPER_SCHEDULE).catch(() => null)
+}
+
+export async function fetchSleeperSummary({
+  signal,
+  userId = SLEEPER_USER_ID,
+  leagueName = SLEEPER_LEAGUE_NAME,
+  scheduleTimeoutMs = SCHEDULE_TIMEOUT_MS,
+} = {}) {
   const state = await getJson('/state/nfl', signal)
   const season = state.league_season ?? state.season
   const leagues = await getJson(`/user/${userId}/leagues/nfl/${season}`, signal)
@@ -119,7 +134,7 @@ export async function fetchSleeperSummary({ signal, userId = SLEEPER_USER_ID, le
     getJson(`/league/${league.league_id}/rosters`, signal),
     getJson(`/league/${league.league_id}/users`, signal),
     week ? getJson(`/league/${league.league_id}/matchups/${week}`, signal) : Promise.resolve([]),
-    week ? getJson(`/${seasonType}/${season}`, signal, SLEEPER_SCHEDULE).catch(() => null) : Promise.resolve(null),
+    week ? fetchSchedule(seasonType, season, signal, scheduleTimeoutMs) : Promise.resolve(null),
   ])
 
   const summary = summarizeLeague({ state, league, rosters, users, matchups, schedule, userId })

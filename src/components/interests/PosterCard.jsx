@@ -1,12 +1,15 @@
-import { useState } from 'react'
+import { use, useState } from 'react'
 import { Star } from 'lucide-react'
 import PosterCarousel from './PosterCarousel'
+import { CarouselCopyContext } from './carouselCopy'
 
 // One card for every shelf: movies, shows, anime, and games. Posters sit in a 2:3
 // frame; IGDB's ~3:4 covers are cropped slightly at the sides by object-cover.
 // Image stages: 0 = src, 1 = fallbackSrc (a landscape image, letterboxed), 2 = text tile.
 export default function PosterCard({ title, subtitle, src, fallbackSrc, href, badge, meta, rating, note }) {
   const [stage, setStage] = useState(src ? 0 : fallbackSrc ? 1 : 2)
+  // In a carousel's duplicate copy: still clickable, but not a Tab stop.
+  const isCopy = use(CarouselCopyContext)
   const imageSrc = stage === 0 ? src : stage === 1 ? fallbackSrc : null
 
   const poster = (
@@ -59,7 +62,13 @@ export default function PosterCard({ title, subtitle, src, fallbackSrc, href, ba
   return (
     <li className="group min-w-0">
       {href ? (
-        <a href={href} target="_blank" rel="noopener noreferrer" aria-label={`${title} (opens in a new tab)`}>
+        <a
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={`${title} (opens in a new tab)`}
+          tabIndex={isCopy ? -1 : undefined}
+        >
           {poster}
         </a>
       ) : (
