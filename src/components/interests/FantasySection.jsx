@@ -217,7 +217,7 @@ function FantasyCard({ summary }) {
         </p>
         <p
           className="display-heading mt-3"
-          style={{ fontSize: 'clamp(3.5rem, 9vw, 5.5rem)', color: 'var(--color-text)' }}
+          style={{ fontSize: 'var(--text-feature)', color: 'var(--color-text)' }}
         >
           <span className="sr-only">Record: </span>
           {recordText}

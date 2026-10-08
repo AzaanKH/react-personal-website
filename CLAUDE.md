@@ -98,7 +98,7 @@ ESLint uses `eslint-plugin-react-hooks` 7, which includes the React Compiler rul
 
 ## Theming
 
-CSS variables in `src/index.css` (`:root` / `.dark`): `--color-bg`, `--color-surface`, `--color-surface-elevated`, `--color-text`, `--color-text-secondary`, `--color-accent` (#c45d3e / #e07a5f), `--color-border`, `--shadow-*`. Use `var(--color-*)` rather than Tailwind colour classes. Helpers: `.hover-accent`, `.hover-text`, `.hover-accent-bg`, `.grain-overlay`, `.skip-link`.
+CSS variables in `src/index.css` (`:root` / `.dark`): `--color-bg`, `--color-surface`, `--color-surface-elevated`, `--color-text`, `--color-text-secondary`, `--color-accent` (#b04e32 / #e07a5f), `--color-border`, `--shadow-*`. Use `var(--color-*)` rather than Tailwind colour classes. Light-mode secondary text and accent are tuned to just clear 4.5:1 on `--color-bg`, including `--color-bg` text on an accent button. Re-check contrast before lightening them. `.dark` also sets `color-scheme`; `useDarkMode` points the `theme-color` metas at the resolved `--color-bg`. Helpers: `.hover-accent`, `.hover-text`, `.hover-accent-bg` (hover-gated to `(hover: hover) and (pointer: fine)`, as are Tailwind `hover:` variants via `hoverOnlyWhenSupported`), `.press` (primary-button press scale), `.hit-area` (44px tap target around a smaller visual), `.grain-overlay`, `.skip-link`. Font sizes come from the `--text-*` clamp tokens in `:root`. Don't write new bare-`vw` clamps.
 
 **Page conventions** (keep these consistent across pages):
 - Every page wraps its content in `.page-shell` (1080px max, 1.5rem gutters), so the left edge lines up everywhere.

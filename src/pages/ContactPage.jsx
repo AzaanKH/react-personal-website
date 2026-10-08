@@ -11,8 +11,9 @@ import {
   useContactForm,
 } from '../lib/contactForm'
 
+// text-base (16px) at every width: iOS Safari zooms the page when a smaller field is focused.
 const inputClassName =
-  'w-full bg-transparent border-0 border-b px-0 py-2.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--color-accent)]'
+  'w-full bg-transparent border-0 border-b px-0 py-2.5 text-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--color-accent)]'
 
 const fields = [
   {
@@ -165,7 +166,6 @@ export default function ContactPage() {
                   aria-describedby={error ? errorId : undefined}
                   className={inputClassName}
                   style={{
-                    fontSize: 'clamp(0.9rem, 1.3vw, 1rem)',
                     color: 'var(--color-text)',
                     borderColor: error
                       ? 'var(--color-accent)'
@@ -216,9 +216,8 @@ export default function ContactPage() {
               placeholder="Your message"
               aria-invalid={Boolean(messageError)}
               aria-describedby={messageError ? 'message-error' : undefined}
-              className={`${inputClassName} resize-none`}
+              className={`${inputClassName} resize-none [field-sizing:content] min-h-[calc(4lh+1.25rem)] max-h-[calc(14lh+1.25rem)]`}
               style={{
-                fontSize: 'clamp(0.9rem, 1.3vw, 1rem)',
                 color: 'var(--color-text)',
                 borderColor: messageError
                   ? 'var(--color-accent)'
@@ -252,11 +251,11 @@ export default function ContactPage() {
               disabled={status === 'sending' || status === 'success'}
               aria-describedby="contact-form-feedback"
               aria-busy={status === 'sending'}
-              className="rounded-full px-8 py-3 text-[0.8rem] font-medium uppercase tracking-[0.15em] hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:hover:scale-100 cursor-pointer hover-accent-bg"
+              className="rounded-full px-8 py-3 text-[0.8rem] font-medium uppercase tracking-[0.15em] press hover:scale-[1.02] disabled:opacity-60 disabled:hover:scale-100 cursor-pointer hover-accent-bg"
               style={{
                 backgroundColor: 'var(--color-accent)',
                 color: 'var(--color-bg)',
-                transition: 'transform 0.15s, opacity 0.2s, background-color 0.2s',
+                transition: 'transform 0.15s, scale 0.15s, opacity 0.2s, background-color 0.2s',
                 boxShadow: 'var(--shadow-sm)',
               }}
             >

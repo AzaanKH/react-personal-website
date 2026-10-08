@@ -252,7 +252,7 @@ function MetricStrip({ metrics }) {
         >
           <p
             className="font-semibold leading-none"
-            style={{ color: 'var(--color-text)', fontSize: 'clamp(1.15rem, 2vw, 1.55rem)' }}
+            style={{ color: 'var(--color-text)', fontSize: 'var(--text-metric)' }}
           >
             {metric.value}
           </p>
@@ -589,7 +589,7 @@ export default function ProjectsPage() {
                           <h2
                             className="font-display font-semibold tracking-[-0.035em]"
                             style={{
-                              fontSize: 'clamp(1.8rem, 3.5vw, 3rem)',
+                              fontSize: 'var(--text-card-title)',
                               color: 'var(--color-text)',
                             }}
                           >
@@ -598,7 +598,7 @@ export default function ProjectsPage() {
                           <p
                             className="mt-3 max-w-[640px] leading-6"
                             style={{
-                              fontSize: 'clamp(0.9rem, 1.3vw, 1rem)',
+                              fontSize: 'var(--text-body)',
                               color: 'var(--color-text-secondary)',
                             }}
                           >
@@ -757,7 +757,7 @@ export default function ProjectsPage() {
                                   color: 'var(--color-text-secondary)',
                                   backgroundColor: 'var(--color-surface-elevated)',
                                   border: '1px solid var(--color-border)',
-                                  fontSize: 'clamp(0.84rem, 1.2vw, 0.94rem)',
+                                  fontSize: 'var(--text-body-sm)',
                                   lineHeight: 1.55,
                                 }}
                                 initial={{ opacity: 0, x: -8 }}

@@ -63,7 +63,7 @@ export default function HomePage({ onNavigate }) {
 
   return (
     <div
-      className="page-shell relative flex min-h-[calc(100vh-5rem)] flex-col items-center justify-center overflow-hidden px-1 pb-32 pt-8 text-center lg:pb-24"
+      className="page-shell relative flex min-h-[calc(100dvh-5rem)] flex-col items-center justify-center overflow-hidden px-1 pb-32 pt-8 text-center lg:pb-24"
     >
       <div className="relative z-10 flex w-full flex-col items-center">
         <h1
@@ -104,7 +104,7 @@ export default function HomePage({ onNavigate }) {
           <RouteLink
             to="projects"
             onNavigate={onNavigate}
-            className="group inline-flex items-center gap-2 rounded-full px-6 py-3 text-[0.75rem] font-medium uppercase tracking-[0.15em] hover-accent-bg"
+            className="press group inline-flex items-center gap-2 rounded-full px-6 py-3 text-[0.75rem] font-medium uppercase tracking-[0.15em] hover-accent-bg"
             style={{
               backgroundColor: 'var(--color-accent)',
               color: 'var(--color-bg)',
@@ -123,8 +123,10 @@ export default function HomePage({ onNavigate }) {
 
         <motion.div
           {...reveal(0.94, playIntro, 10)}
-          className="mt-7 flex items-center justify-center gap-5"
+          className="mt-7 flex items-center justify-center"
         >
+          {/* Each link is a 44px tap target around a 19px icon; the box edges stand in
+              for the old gap-5 spacing. */}
           {socialLinks.map(({ icon: Icon, href, label }) => (
             <motion.a
               key={label}
@@ -132,7 +134,7 @@ export default function HomePage({ onNavigate }) {
               target="_blank"
               rel="noopener noreferrer"
               aria-label={label}
-              className="hover-accent"
+              className="hover-accent grid size-11 place-items-center rounded-full"
               style={{ color: 'var(--color-text-secondary)' }}
               {...socialMotion}
             >
@@ -144,20 +146,20 @@ export default function HomePage({ onNavigate }) {
             to="contact"
             onNavigate={onNavigate}
             aria-label="Contact me"
-            className="hover-accent"
+            className="hover-accent grid size-11 place-items-center rounded-full"
             style={{ color: 'var(--color-text-secondary)' }}
             {...socialMotion}
           >
             <Mail size={19} strokeWidth={1.5} aria-hidden="true" />
           </MotionRouteLink>
 
-          <span className="h-4 w-px" style={{ backgroundColor: 'var(--color-border)' }} aria-hidden="true" />
+          <span className="mx-2 h-4 w-px" style={{ backgroundColor: 'var(--color-border)' }} aria-hidden="true" />
 
           <motion.a
             href="/Azaan_Resume.pdf"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 text-[0.7rem] font-light uppercase tracking-[0.16em] hover-accent sm:text-xs"
+            className="flex min-h-11 items-center gap-2 rounded-full px-3 text-[0.7rem] font-light uppercase tracking-[0.16em] hover-accent sm:text-xs"
             style={{ color: 'var(--color-text-secondary)' }}
             {...socialMotion}
           >
