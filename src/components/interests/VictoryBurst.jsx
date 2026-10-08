@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { motion } from 'motion/react'
 
 // Palette colours only, so the burst matches the theme in light and dark.
@@ -35,11 +36,23 @@ const PARTICLES = Array.from({ length: 28 }, (_, i) => {
   }
 })
 
-// Confetti from the centre of its positioned parent. Plays once on mount. Callers skip it
-// under reduced motion: MotionConfig would drop the transforms and leave a fading blob.
-export default function VictoryBurst() {
+const DURATION = 1.5
+// When the slowest particle has landed; the burst reports it's done after this.
+const BURST_MS = Math.ceil((DURATION + Math.max(...PARTICLES.map((p) => p.delay))) * 1000)
+
+// Confetti from the centre of its positioned parent. Plays once on mount, then calls
+// `onDone`. Callers skip it under reduced motion (MotionConfig would drop the transforms
+// and leave a fading blob) and render it inside its own <AnimatePresence>: an ancestor
+// `initial={false}`, like App's page wrapper on a direct visit, would otherwise start
+// every particle at its final, invisible keyframe.
+export default function VictoryBurst({ onDone }) {
+  useEffect(() => {
+    const timer = setTimeout(() => onDone?.(), BURST_MS)
+    return () => clearTimeout(timer)
+  }, [onDone])
+
   return (
-    <span className="pointer-events-none absolute left-1/2 top-1/2" aria-hidden="true">
+    <span className="pointer-events-none absolute left-1/2 top-1/2" aria-hidden="true" data-victory-burst>
       {PARTICLES.map((p, i) => (
         <motion.span
           key={i}
@@ -60,7 +73,7 @@ export default function VictoryBurst() {
             scale: [0.4, 1, 0.8],
             opacity: [1, 1, 0],
           }}
-          transition={{ duration: 1.5, delay: p.delay, times: [0, 0.4, 1], ease: ['easeOut', 'easeIn'] }}
+          transition={{ duration: DURATION, delay: p.delay, times: [0, 0.4, 1], ease: ['easeOut', 'easeIn'] }}
         />
       ))}
     </span>

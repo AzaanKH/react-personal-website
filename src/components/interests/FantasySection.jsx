@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from 'react'
+import { useCallback, useEffect, useId, useRef, useState, useSyncExternalStore } from 'react'
 import { AnimatePresence, motion, useInView, useReducedMotion } from 'motion/react'
 import { ChevronDown, Trophy } from 'lucide-react'
 import { useSleeper } from '../../hooks/useSleeper'
@@ -7,9 +7,21 @@ import { matchupResult, playerGameState } from '../../lib/sleeper'
 import Section, { UpdatedAt } from './Section'
 import VictoryBurst from './VictoryBurst'
 
-// "season-week" keys already celebrated during this page load, so the 3-minute poll and
-// returning to the page don't replay it (like HomePage's hasPlayedIntro).
-const celebratedWeeks = new Set()
+// Celebration state per "season-week" for this page load: undefined → 'playing' → 'done'.
+// Kept outside the card (like HomePage's hasPlayedIntro) so returning to the page, the
+// 3-minute poll, or the result briefly disappearing (schedule fetch failing, then
+// recovering) never replays a week. Read through useSyncExternalStore so every render
+// sees the current state, not a value captured at mount.
+const celebrations = new Map()
+const celebrationListeners = new Set()
+const subscribeToCelebrations = (listener) => {
+  celebrationListeners.add(listener)
+  return () => celebrationListeners.delete(listener)
+}
+const setCelebration = (key, status) => {
+  celebrations.set(key, status)
+  celebrationListeners.forEach((listener) => listener())
+}
 
 const ordinal = (n) => {
   const suffix = ['th', 'st', 'nd', 'rd'][(n % 100 >= 11 && n % 100 <= 13) || n % 10 > 3 ? 0 : n % 10]
@@ -18,7 +30,7 @@ const ordinal = (n) => {
 
 const formatPoints = (points) => (points == null ? '—' : points.toFixed(2))
 
-function ScoreRow({ label, points, highlighted, leading, celebrate }) {
+function ScoreRow({ label, points, highlighted, leading, celebrate, onCelebrated }) {
   return (
     <div
       className="flex items-baseline justify-between gap-4 rounded-lg px-4 py-3"
@@ -40,7 +52,8 @@ function ScoreRow({ label, points, highlighted, leading, celebrate }) {
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
       >
         {formatPoints(points)}
-        {celebrate && <VictoryBurst />}
+        {/* Its own presence boundary; see VictoryBurst. */}
+        <AnimatePresence>{celebrate && <VictoryBurst key="burst" onDone={onCelebrated} />}</AnimatePresence>
       </motion.span>
     </div>
   )
@@ -242,17 +255,24 @@ function FantasyCard({ summary }) {
   const iAmLeading = matchup && matchup.myPoints >= (matchup.opponentPoints ?? 0)
   const result = matchupResult(matchup)
 
-  // Celebrate a won week once, when the card is first mostly on screen.
+  // Celebrate a won week once, when the card is first mostly on screen. Once started,
+  // the burst finishes even if the result drops out mid-way. A visitor who leaves the
+  // page mid-burst sees it again on return: it's only 'done' once it has played out.
   const cardRef = useRef(null)
   const inView = useInView(cardRef, { once: true, amount: 0.4 })
   const prefersReducedMotion = useReducedMotion()
   const weekKey = matchup ? `${summary.season}-${matchup.week}` : null
-  const [seenBefore] = useState(() => celebratedWeeks.has(weekKey))
-  const celebrate = result === 'won' && inView && !seenBefore && !prefersReducedMotion
+  const celebration = useSyncExternalStore(subscribeToCelebrations, () => celebrations.get(weekKey))
+  const canCelebrate = result === 'won' && inView && !prefersReducedMotion
+  // Also true in the render before the effect below records 'playing', so the badge
+  // mounts with its stamp.
+  const celebrate = celebration === 'playing' || (canCelebrate && celebration === undefined)
 
   useEffect(() => {
-    if (celebrate) celebratedWeeks.add(weekKey)
-  }, [celebrate, weekKey])
+    if (canCelebrate && celebrations.get(weekKey) === undefined) setCelebration(weekKey, 'playing')
+  }, [canCelebrate, weekKey])
+
+  const finishCelebration = useCallback(() => setCelebration(weekKey, 'done'), [weekKey])
 
   return (
     // overflow-clip keeps the confetti from widening <main>'s scroll area.
@@ -286,12 +306,14 @@ function FantasyCard({ summary }) {
                 Week {matchup.week} {result ? '· Final' : 'matchup'}
               </p>
               {/* Waits for the card to be on screen, so a win's stamp lands with the confetti. */}
-              {result && (result !== 'won' || inView) && (
-                <ResultBadge result={result} stamp={celebrate} />
-              )}
+              <AnimatePresence>
+                {result && (result !== 'won' || inView) && (
+                  <ResultBadge key={result} result={result} stamp={celebrate} />
+                )}
+              </AnimatePresence>
             </div>
             <div className="space-y-2">
-              <ScoreRow label={summary.teamName} points={matchup.myPoints} highlighted leading={iAmLeading} celebrate={celebrate} />
+              <ScoreRow label={summary.teamName} points={matchup.myPoints} highlighted leading={iAmLeading} celebrate={celebrate} onCelebrated={finishCelebration} />
               <ScoreRow label="Opponent" points={matchup.opponentPoints} leading={!iAmLeading} />
             </div>
           </>
