@@ -29,7 +29,7 @@ export default function DarkModeToggle({ theme, setTheme, isHome, isScrolled = f
     <button
       onClick={cycle}
       aria-label={themeLabels[theme] || 'Toggle theme'}
-      className={`fixed right-5 z-50 flex h-10 w-10 items-center justify-center rounded-full cursor-pointer hover-text hover:bg-[var(--color-border-subtle)] ${isHome ? 'top-5' : 'top-20 sm:top-5'} ${fadeOnMobile ? 'max-sm:pointer-events-none max-sm:opacity-0 max-sm:focus-visible:pointer-events-auto max-sm:focus-visible:opacity-100' : ''}`}
+      className={`fixed right-5 z-50 flex size-11 items-center justify-center rounded-full cursor-pointer hover-text hover:bg-[var(--color-border-subtle)] ${isHome ? 'top-5' : 'top-20 sm:top-5'} ${fadeOnMobile ? 'max-sm:pointer-events-none max-sm:opacity-0 max-sm:focus-visible:pointer-events-auto max-sm:focus-visible:opacity-100' : ''}`}
       style={{
         color: 'var(--color-text-secondary)',
         borderRadius: 9999,

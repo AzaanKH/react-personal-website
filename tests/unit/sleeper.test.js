@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { fetchSleeperSummary, playerGameState, summarizeLeague, weekGameStatus } from '../../src/lib/sleeper'
+import { fetchSleeperSummary, matchupResult, playerGameState, summarizeLeague, weekGameStatus } from '../../src/lib/sleeper'
 
 const ME = 'me'
 const roster = (rosterId, ownerId, wins, losses, fpts, fptsDecimal = 0) => ({
@@ -179,5 +179,28 @@ describe('game state', () => {
   it('is unknown without a schedule or a team', () => {
     expect(playerGameState(null, 'DET')).toBeNull()
     expect(playerGameState(status, null)).toBeNull()
+  })
+})
+
+describe('matchupResult', () => {
+  const final = { KC: 'complete', LV: 'complete', DET: 'complete', CAR: 'complete' }
+  const matchup = (myPoints, opponentPoints, gameStatus = final) => ({ myPoints, opponentPoints, gameStatus })
+
+  it('is decided only once every game of the week is complete', () => {
+    expect(matchupResult(matchup(130, 100))).toBe('won')
+    expect(matchupResult(matchup(90, 100))).toBe('lost')
+    expect(matchupResult(matchup(100, 100))).toBe('tied')
+  })
+
+  it('does not call a Thursday lead a win', () => {
+    expect(matchupResult(matchup(130, 100, { ...final, DET: 'in_game' }))).toBeNull()
+    expect(matchupResult(matchup(130, 100, { ...final, CAR: 'pre_game' }))).toBeNull()
+  })
+
+  it('is unknown without a schedule, an opponent, or a matchup', () => {
+    expect(matchupResult(matchup(130, 100, null))).toBeNull()
+    expect(matchupResult(matchup(130, 100, {}))).toBeNull()
+    expect(matchupResult(matchup(130, null))).toBeNull()
+    expect(matchupResult(null)).toBeNull()
   })
 })

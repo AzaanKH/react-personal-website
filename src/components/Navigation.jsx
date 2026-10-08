@@ -160,7 +160,7 @@ export default function Navigation({ activePage, onNavigate }) {
               onNavigate={onNavigate}
               ref={(el) => { linkRefs.current[id] = el }}
               aria-current={activePage === id ? 'page' : undefined}
-              className={`relative z-10 min-w-0 rounded-full px-1 py-2 text-center text-[0.68rem] font-medium uppercase tracking-[0.05em] sm:px-5 sm:py-2.5 sm:text-[0.8rem] sm:tracking-[0.12em] ${activePage !== id ? 'hover-text' : ''}`}
+              className={`hit-area z-10 min-w-0 rounded-full px-1 py-2 text-center text-[0.68rem] font-medium uppercase tracking-[0.05em] sm:px-5 sm:py-2.5 sm:text-[0.8rem] sm:tracking-[0.12em] ${activePage !== id ? 'hover-text' : ''}`}
               style={{
                 color: activePage === id ? 'var(--color-text)' : 'var(--color-text-secondary)',
                 transition: 'color 0.2s ease',

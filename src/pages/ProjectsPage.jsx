@@ -5,7 +5,6 @@ import {
   ArrowUpRight,
   BarChart3,
   ChevronDown,
-  ExternalLink,
   GitBranch,
   Layers,
   ShieldCheck,
@@ -61,10 +60,7 @@ const projects = [
       ['psutil + subprocess', 'Pydantic response schemas', 'AI-readable results'],
     ],
     tech: ['Python', 'FastMCP', 'asyncio', 'Pydantic', 'psutil', 'Docker'],
-    links: [
-      { label: 'Source', href: 'https://github.com/AzaanKH/devenv-mcp', icon: GithubIcon },
-      { label: 'README', href: 'https://github.com/AzaanKH/devenv-mcp#devenv-mcp-server', icon: ExternalLink },
-    ],
+    repo: 'https://github.com/AzaanKH/devenv-mcp',
   },
   {
     // Copy, facts, and status come from the project's portfolio handoff. The screenshots
@@ -134,11 +130,7 @@ const projects = [
       ['Chrome extension', 'Provider adapters', 'Shared TypeScript calculations', 'CLI + offline replay'],
     ],
     tech: ['TypeScript', 'React', 'Vite', 'TanStack Query', 'Zustand', 'Tailwind CSS', 'Effect 4', 'Node.js', 'Chrome Extensions', 'DuckDB', 'Vitest'],
-    links: [
-      { label: 'Source', href: 'https://github.com/AzaanKH/fantasy-draft-assistant', icon: GithubIcon },
-      { label: 'README', href: 'https://github.com/AzaanKH/fantasy-draft-assistant#fantasy-draft-assistant', icon: ExternalLink },
-      { label: 'Local setup', href: 'https://github.com/AzaanKH/fantasy-draft-assistant#get-started', icon: ArrowUpRight },
-    ],
+    repo: 'https://github.com/AzaanKH/fantasy-draft-assistant',
   },
   {
     name: 'NFL Fantasy Picker',
@@ -184,11 +176,7 @@ const projects = [
       ['Flask API', 'React + shadcn UI', 'Prediction cards with confidence ranges'],
     ],
     tech: ['React', 'Python', 'Flask', 'PostgreSQL', 'TimescaleDB', 'XGBoost'],
-    links: [
-      { label: 'Source', href: 'https://github.com/AzaanKH/football', icon: GithubIcon },
-      { label: 'Screenshots', href: 'https://github.com/AzaanKH/football#screenshots', icon: ExternalLink },
-      { label: 'Local demo', href: 'https://github.com/AzaanKH/football#quick-start', icon: ArrowUpRight },
-    ],
+    repo: 'https://github.com/AzaanKH/football',
   },
   {
     name: 'Distributed Paxos Consensus',
@@ -233,7 +221,6 @@ const projects = [
       ['Partition simulator', 'Message bus', 'Consensus log'],
     ],
     tech: ['Java', 'Distributed systems', 'Consensus', 'Fault tolerance'],
-    links: [],
   },
 ]
 
@@ -252,7 +239,7 @@ function MetricStrip({ metrics }) {
         >
           <p
             className="font-semibold leading-none"
-            style={{ color: 'var(--color-text)', fontSize: 'clamp(1.15rem, 2vw, 1.55rem)' }}
+            style={{ color: 'var(--color-text)', fontSize: 'var(--text-metric)' }}
           >
             {metric.value}
           </p>
@@ -487,12 +474,10 @@ function ArchitectureDiagram({ rows }) {
   )
 }
 
-function LinkPill({ link }) {
-  const Icon = link.icon
-
+function RepoLink({ href }) {
   return (
     <a
-      href={link.href}
+      href={href}
       target="_blank"
       rel="noopener noreferrer"
       className="inline-flex h-9 items-center gap-2 px-3 font-mono text-[0.68rem] font-medium uppercase tracking-[0.08em] transition-transform hover:-translate-y-0.5 hover:opacity-85"
@@ -503,8 +488,8 @@ function LinkPill({ link }) {
         borderRadius: 9999,
       }}
     >
-      <Icon size={14} strokeWidth={1.5} />
-      {link.label}
+      <GithubIcon size={14} strokeWidth={1.5} />
+      Source
     </a>
   )
 }
@@ -573,15 +558,6 @@ export default function ProjectsPage() {
                           <BarChart3 size={12} strokeWidth={1.5} />
                           {project.eyebrow}
                         </span>
-                        {project.links.length > 0 && (
-                          <span
-                            className="inline-flex items-center gap-1.5 text-[0.72rem]"
-                            style={{ color: 'var(--color-text-secondary)' }}
-                          >
-                            <ExternalLink size={12} strokeWidth={1.5} />
-                            {project.links.length} proof links
-                          </span>
-                        )}
                       </div>
 
                       <div className="flex items-start justify-between gap-4">
@@ -589,7 +565,7 @@ export default function ProjectsPage() {
                           <h2
                             className="font-display font-semibold tracking-[-0.035em]"
                             style={{
-                              fontSize: 'clamp(1.8rem, 3.5vw, 3rem)',
+                              fontSize: 'var(--text-card-title)',
                               color: 'var(--color-text)',
                             }}
                           >
@@ -598,7 +574,7 @@ export default function ProjectsPage() {
                           <p
                             className="mt-3 max-w-[640px] leading-6"
                             style={{
-                              fontSize: 'clamp(0.9rem, 1.3vw, 1rem)',
+                              fontSize: 'var(--text-body)',
                               color: 'var(--color-text-secondary)',
                             }}
                           >
@@ -635,11 +611,9 @@ export default function ProjectsPage() {
                 </div>
               </button>
 
-              {project.links.length > 0 && (
-                <div className="flex flex-wrap gap-2 px-4 pb-4 sm:px-5 md:px-6">
-                  {project.links.map((link) => (
-                    <LinkPill key={link.label} link={link} />
-                  ))}
+              {project.repo && (
+                <div className="px-4 pb-4 sm:px-5 md:px-6">
+                  <RepoLink href={project.repo} />
                 </div>
               )}
 
@@ -757,7 +731,7 @@ export default function ProjectsPage() {
                                   color: 'var(--color-text-secondary)',
                                   backgroundColor: 'var(--color-surface-elevated)',
                                   border: '1px solid var(--color-border)',
-                                  fontSize: 'clamp(0.84rem, 1.2vw, 0.94rem)',
+                                  fontSize: 'var(--text-body-sm)',
                                   lineHeight: 1.55,
                                 }}
                                 initial={{ opacity: 0, x: -8 }}

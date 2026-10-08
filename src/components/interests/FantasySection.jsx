@@ -1,10 +1,27 @@
-import { useId, useState } from 'react'
-import { AnimatePresence, motion } from 'motion/react'
-import { ChevronDown } from 'lucide-react'
+import { useCallback, useEffect, useId, useRef, useState, useSyncExternalStore } from 'react'
+import { AnimatePresence, motion, useInView, useReducedMotion } from 'motion/react'
+import { ChevronDown, Trophy } from 'lucide-react'
 import { useSleeper } from '../../hooks/useSleeper'
 import { loadNflPlayers } from '../../lib/nflPlayers'
-import { playerGameState } from '../../lib/sleeper'
+import { matchupResult, playerGameState } from '../../lib/sleeper'
 import Section, { UpdatedAt } from './Section'
+import VictoryBurst from './VictoryBurst'
+
+// Celebration state per "season-week" for this page load: undefined → 'playing' → 'done'.
+// Kept outside the card (like HomePage's hasPlayedIntro) so returning to the page, the
+// 3-minute poll, or the result briefly disappearing (schedule fetch failing, then
+// recovering) never replays a week. Read through useSyncExternalStore so every render
+// sees the current state, not a value captured at mount.
+const celebrations = new Map()
+const celebrationListeners = new Set()
+const subscribeToCelebrations = (listener) => {
+  celebrationListeners.add(listener)
+  return () => celebrationListeners.delete(listener)
+}
+const setCelebration = (key, status) => {
+  celebrations.set(key, status)
+  celebrationListeners.forEach((listener) => listener())
+}
 
 const ordinal = (n) => {
   const suffix = ['th', 'st', 'nd', 'rd'][(n % 100 >= 11 && n % 100 <= 13) || n % 10 > 3 ? 0 : n % 10]
@@ -13,7 +30,7 @@ const ordinal = (n) => {
 
 const formatPoints = (points) => (points == null ? '—' : points.toFixed(2))
 
-function ScoreRow({ label, points, highlighted, leading }) {
+function ScoreRow({ label, points, highlighted, leading, celebrate, onCelebrated }) {
   return (
     <div
       className="flex items-baseline justify-between gap-4 rounded-lg px-4 py-3"
@@ -28,12 +45,16 @@ function ScoreRow({ label, points, highlighted, leading }) {
       >
         {label}
       </span>
-      <span
-        className="flex-shrink-0 font-semibold tabular-nums"
+      <motion.span
+        className="relative inline-block flex-shrink-0 origin-right font-semibold tabular-nums"
         style={{ fontSize: '1.5rem', color: leading ? 'var(--color-text)' : 'var(--color-text-secondary)' }}
+        animate={celebrate ? { scale: [1, 1.18, 1] } : undefined}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
       >
         {formatPoints(points)}
-      </span>
+        {/* Its own presence boundary; see VictoryBurst. */}
+        <AnimatePresence>{celebrate && <VictoryBurst key="burst" onDone={onCelebrated} />}</AnimatePresence>
+      </motion.span>
     </div>
   )
 }
@@ -204,20 +225,65 @@ function Lineups({ matchup, teamName }) {
   )
 }
 
+const RESULT_LABELS = { won: 'Won', lost: 'Lost', tied: 'Tied' }
+
+// The week's result once every game is final. A win gets a stamped badge; the confetti
+// is FantasyCard's, since it bursts from the score.
+function ResultBadge({ result, stamp }) {
+  const won = result === 'won'
+  return (
+    <motion.span
+      className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[0.65rem] font-medium uppercase tracking-[0.14em]"
+      style={{
+        color: won ? 'var(--color-accent)' : 'var(--color-text-secondary)',
+        border: `1px solid ${won ? 'color-mix(in srgb, var(--color-accent) 45%, transparent)' : 'var(--color-border)'}`,
+        backgroundColor: won ? 'color-mix(in srgb, var(--color-accent) 10%, transparent)' : 'transparent',
+      }}
+      initial={stamp ? { scale: 1.8, rotate: -12, opacity: 0 } : false}
+      animate={{ scale: 1, rotate: won ? -3 : 0, opacity: 1 }}
+      transition={{ type: 'spring', stiffness: 420, damping: 18, delay: 0.15 }}
+    >
+      {won && <Trophy size={12} strokeWidth={1.8} aria-hidden="true" />}
+      {RESULT_LABELS[result]}
+    </motion.span>
+  )
+}
+
 function FantasyCard({ summary }) {
   const { record, matchup } = summary
   const recordText = `${record.wins}–${record.losses}${record.ties ? `–${record.ties}` : ''}`
   const iAmLeading = matchup && matchup.myPoints >= (matchup.opponentPoints ?? 0)
+  const result = matchupResult(matchup)
+
+  // Celebrate a won week once, when the card is first mostly on screen. Once started,
+  // the burst finishes even if the result drops out mid-way. A visitor who leaves the
+  // page mid-burst sees it again on return: it's only 'done' once it has played out.
+  const cardRef = useRef(null)
+  const inView = useInView(cardRef, { once: true, amount: 0.4 })
+  const prefersReducedMotion = useReducedMotion()
+  const weekKey = matchup ? `${summary.season}-${matchup.week}` : null
+  const celebration = useSyncExternalStore(subscribeToCelebrations, () => celebrations.get(weekKey))
+  const canCelebrate = result === 'won' && inView && !prefersReducedMotion
+  // Also true in the render before the effect below records 'playing', so the badge
+  // mounts with its stamp.
+  const celebrate = celebration === 'playing' || (canCelebrate && celebration === undefined)
+
+  useEffect(() => {
+    if (canCelebrate && celebrations.get(weekKey) === undefined) setCelebration(weekKey, 'playing')
+  }, [canCelebrate, weekKey])
+
+  const finishCelebration = useCallback(() => setCelebration(weekKey, 'done'), [weekKey])
 
   return (
-    <div className="hairline-card grid gap-8 p-6 sm:p-8 md:grid-cols-[1fr_1.1fr]">
+    // overflow-clip keeps the confetti from widening <main>'s scroll area.
+    <div ref={cardRef} className="hairline-card relative grid gap-8 overflow-clip p-6 sm:p-8 md:grid-cols-[1fr_1.1fr]">
       <div>
         <p className="text-sm font-medium" style={{ color: 'var(--color-accent)' }}>
           {summary.teamName}
         </p>
         <p
           className="display-heading mt-3"
-          style={{ fontSize: 'clamp(3.5rem, 9vw, 5.5rem)', color: 'var(--color-text)' }}
+          style={{ fontSize: 'var(--text-feature)', color: 'var(--color-text)' }}
         >
           <span className="sr-only">Record: </span>
           {recordText}
@@ -235,11 +301,19 @@ function FantasyCard({ summary }) {
       <div className="flex flex-col justify-center">
         {matchup ? (
           <>
-            <p className="eyebrow mb-3" style={{ color: 'var(--color-text-secondary)' }}>
-              Week {matchup.week} matchup
-            </p>
+            <div className="mb-3 flex min-h-6 items-center justify-between gap-3">
+              <p className="eyebrow" style={{ color: 'var(--color-text-secondary)' }}>
+                Week {matchup.week} {result ? '· Final' : 'matchup'}
+              </p>
+              {/* Waits for the card to be on screen, so a win's stamp lands with the confetti. */}
+              <AnimatePresence>
+                {result && (result !== 'won' || inView) && (
+                  <ResultBadge key={result} result={result} stamp={celebrate} />
+                )}
+              </AnimatePresence>
+            </div>
             <div className="space-y-2">
-              <ScoreRow label={summary.teamName} points={matchup.myPoints} highlighted leading={iAmLeading} />
+              <ScoreRow label={summary.teamName} points={matchup.myPoints} highlighted leading={iAmLeading} celebrate={celebrate} onCelebrated={finishCelebration} />
               <ScoreRow label="Opponent" points={matchup.opponentPoints} leading={!iAmLeading} />
             </div>
           </>

@@ -25,7 +25,8 @@ function scrollToSection(event, id) {
   event.preventDefault()
   const target = document.getElementById(id)
   if (!target) return
-  target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' })
   target.querySelector('h2')?.setAttribute('tabindex', '-1')
   target.querySelector('h2')?.focus({ preventScroll: true })
 }

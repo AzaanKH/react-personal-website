@@ -13,7 +13,7 @@ export default function Section({ id, number, kicker, title, children, aside }) 
           <h2
             id={`${id}-heading`}
             className="display-heading"
-            style={{ fontSize: 'clamp(2.25rem, 5vw, 3.5rem)', color: 'var(--color-text)' }}
+            style={{ fontSize: 'var(--text-section-title)', color: 'var(--color-text)' }}
           >
             {title}
           </h2>

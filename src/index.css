@@ -4,13 +4,16 @@
 
 @layer base {
   :root {
+    color-scheme: light;
     --color-bg: #f5f0eb;
     --color-surface: #ffffff;
     --color-surface-elevated: #faf8f5;
     --color-text: #1a1a1a;
-    --color-text-secondary: #64748b;
-    --color-accent: #c45d3e;
-    --color-accent-hover: #b04e32;
+    /* Secondary and accent are tuned to clear 4.5:1 on --color-bg (4.77 and 4.66), and
+       the accent clears it again with --color-bg text on top (the primary buttons). */
+    --color-text-secondary: #5e6b80;
+    --color-accent: #b04e32;
+    --color-accent-hover: #9e4529;
     --color-border: #e5e0da;
     --color-border-subtle: rgba(0, 0, 0, 0.06);
     --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
@@ -19,9 +22,21 @@
     --font-display: 'Cormorant Garamond', Georgia, serif;
     --font-body: 'Space Grotesk', sans-serif;
     --font-mono: 'Space Grotesk', sans-serif;
+    /* Type scale. rem + vw (not bare vw) so sizes still follow browser zoom. Most steps
+       grow between ~640px and ~1280px viewports; the page title keeps its old 600–1400px
+       range. Each max is at most 2x its min. The Home name is a one-off (it also fits
+       to height) and stays inline. */
+    --text-page-title: clamp(3.5rem, 0.875rem + 7vw, 7rem);
+    --text-feature: clamp(3.5rem, 1.5rem + 5vw, 5.5rem);
+    --text-section-title: clamp(2.25rem, 0.75rem + 3.75vw, 3.5rem);
+    --text-card-title: clamp(1.8rem, 0.6rem + 3vw, 3rem);
+    --text-metric: clamp(1.15rem, 0.75rem + 1vw, 1.55rem);
+    --text-body: clamp(0.9rem, 0.8rem + 0.25vw, 1rem);
+    --text-body-sm: clamp(0.84rem, 0.74rem + 0.25vw, 0.94rem);
   }
 
   .dark {
+    color-scheme: dark;
     --color-bg: #0f0f0f;
     --color-surface: #1a1a1a;
     --color-surface-elevated: #242424;
@@ -52,6 +67,10 @@
   }
 
   button, input, textarea { font: inherit; }
+  /* No double-tap-to-zoom delay on anything tappable. */
+  a, button, label, input, textarea { touch-action: manipulation; }
+  h1, h2, h3 { text-wrap: balance; }
+  p { text-wrap: pretty; }
   ::selection { color: #fff; background: var(--color-accent); }
   :focus-visible { outline: 2px solid var(--color-accent); outline-offset: 4px; }
   input:focus-visible, textarea:focus-visible { border-color: var(--color-accent) !important; outline: none; }
@@ -76,19 +95,35 @@
     transform: translateY(-200%);
   }
   .skip-link:focus { transform: none; }
+  /* Hover styles only where a real pointer can hover; on touch screens they would stick
+     after a tap. Tailwind's hover: variants get the same gate (tailwind.config.js). */
   .hover-accent { transition: color 0.2s ease; }
-  .hover-accent:hover { color: var(--color-accent) !important; }
   .hover-text { transition: color 0.2s ease; }
-  .hover-text:hover { color: var(--color-text) !important; }
   .hover-accent-bg { transition: background-color 0.2s ease; }
-  .hover-accent-bg:hover { background-color: var(--color-accent-hover) !important; }
+  @media (hover: hover) and (pointer: fine) {
+    .hover-accent:hover { color: var(--color-accent) !important; }
+    .hover-text:hover { color: var(--color-text) !important; }
+    .hover-accent-bg:hover { background-color: var(--color-accent-hover) !important; }
+  }
+  /* Press feedback for primary actions. Uses `scale`, not `transform`, so it composes
+     with any transform already on the element. Primary buttons also carry
+     .hover-accent-bg, whose transition this rule replaces, so it lists both. */
+  .press { transition: scale 0.15s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease; }
+  .press:active:not(:disabled) { scale: 0.97; }
+  /* A 44px tap target around a smaller visual (good-css.com/#hit-area-larger-than-the-visual). */
+  .hit-area { position: relative; }
+  .hit-area::after {
+    content: ''; position: absolute; top: 50%; left: 50%;
+    width: max(100%, 44px); height: max(100%, 44px);
+    transform: translate(-50%, -50%);
+  }
   .grain-overlay {
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.72' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.65'/%3E%3C/svg%3E");
     pointer-events: none;
   }
   .display-heading { font-family: var(--font-display); font-weight: 600; letter-spacing: -0.035em; line-height: 0.94; }
   /* The one size for page titles (h1). Section titles (h2) use their own, smaller size. */
-  .page-title { font-size: clamp(3.5rem, 8vw, 7rem); }
+  .page-title { font-size: var(--text-page-title); }
   /* Kicker: the small label above a heading (components/Kicker.jsx). Optional accent
      number, then a hairline rule, then the label: "01 ──── FANTASY FOOTBALL". */
   .kicker {
@@ -121,8 +156,10 @@
     background: var(--color-border);
     transition: height 0.2s ease;
   }
-  .carousel-track:hover .carousel-rail,
   .carousel-track:active .carousel-rail { height: 4px; }
+  @media (hover: hover) and (pointer: fine) {
+    .carousel-track:hover .carousel-rail { height: 4px; }
+  }
   .carousel-thumb { background: var(--color-accent); border-radius: 9999px; }
 }
 

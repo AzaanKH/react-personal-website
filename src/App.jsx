@@ -73,7 +73,7 @@ export default function App() {
   return (
     <MotionConfig reducedMotion="user">
       <div
-        className="relative h-screen overflow-hidden"
+        className="relative h-dvh overflow-hidden"
         style={{
           backgroundColor: 'var(--color-bg)',
           transition: 'background-color 0.6s ease',
@@ -115,12 +115,14 @@ export default function App() {
           isScrolled={isScrolled}
         />
 
-        {/* Page Content */}
+        {/* Page Content. <main> is the scroller (the shell is h-dvh and clipped), so the
+            gutter is reserved here: short and long pages get the same width, and
+            both-edges keeps content centred under the viewport-centred nav. */}
         <main
           ref={mainRef}
           id="main"
           tabIndex={-1}
-          className="relative h-full overflow-y-auto pt-20 focus:outline-none"
+          className="relative h-full overflow-y-auto pt-20 [scrollbar-gutter:stable_both-edges] focus:outline-none"
         >
           <AnimatePresence mode="wait" initial={false} onExitComplete={() => {
             if (mainRef.current) mainRef.current.scrollTop = 0
