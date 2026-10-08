@@ -43,6 +43,18 @@ export function playerGameState(gameStatus, team) {
   return 'upcoming'
 }
 
+// 'won' | 'lost' | 'tied' once every NFL game of the week is over, else null. Without the
+// (optional) schedule a finished week can't be told apart from a Thursday lead, so that's
+// null too. Head-to-head only: the weekly median game isn't counted.
+export function matchupResult(matchup) {
+  if (!matchup || matchup.opponentPoints == null) return null
+  const statuses = Object.values(matchup.gameStatus ?? {})
+  if (statuses.length === 0 || statuses.some((status) => status !== 'complete')) return null
+  if (matchup.myPoints > matchup.opponentPoints) return 'won'
+  if (matchup.myPoints < matchup.opponentPoints) return 'lost'
+  return 'tied'
+}
+
 const pointsFor = (settings) => (settings?.fpts ?? 0) + (settings?.fpts_decimal ?? 0) / 100
 
 // Sleeper's default standings order: wins, then points for.
