@@ -99,7 +99,7 @@ const projects = [
     metrics: [
       { value: '3', label: 'Provider adapters' },
       { value: '4', label: 'Assistant questions' },
-      { value: 'Local', label: 'App runtime' },
+      { value: 'Live', label: 'Hosted demo' },
     ],
     caseStudy: [
       {
@@ -116,7 +116,7 @@ const projects = [
       },
       {
         label: 'Status',
-        text: 'Local development project. Sleeper draft sync works, as shown in the screenshots; Yahoo and ESPN sync are not yet verified.',
+        text: 'A hosted demo runs the workspace in preview mode with local mock drafts. Live provider sync runs locally: Sleeper works, as shown in the screenshots; Yahoo and ESPN are not yet verified.',
       },
     ],
     highlights: [
@@ -131,6 +131,8 @@ const projects = [
     ],
     tech: ['TypeScript', 'React', 'Vite', 'TanStack Query', 'Zustand', 'Tailwind CSS', 'Effect 4', 'Node.js', 'Chrome Extensions', 'DuckDB', 'Vitest'],
     repo: 'https://github.com/AzaanKH/fantasy-draft-assistant',
+    // Cloudflare Pages build in preview mode: mock drafts only, no provider sync.
+    demo: 'https://fantasy-draft-demo.pages.dev/draft',
   },
   {
     name: 'NFL Fantasy Picker',
@@ -474,23 +476,49 @@ function ArchitectureDiagram({ rows }) {
   )
 }
 
-function RepoLink({ href }) {
+// Links sit outside the card's toggle button (a link can't be nested in a button).
+// The live demo, when there is one, is the filled primary action; source is secondary.
+// The primary button stays opaque and darkens on hover: fading it would drop its text
+// below 4.5:1 in light mode. Its transparent border lets the hover colour fill the edge.
+function ProjectLink({ href, label, primary, children }) {
   return (
     <a
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex h-9 items-center gap-2 px-3 font-mono text-[0.68rem] font-medium uppercase tracking-[0.08em] transition-transform hover:-translate-y-0.5 hover:opacity-85"
+      aria-label={`${label} (opens in a new tab)`}
+      className={`inline-flex h-9 items-center gap-2 px-3.5 font-mono text-[0.68rem] font-medium uppercase tracking-[0.08em] hover:-translate-y-0.5 ${primary ? 'hover-accent-bg' : 'hover:opacity-85'}`}
       style={{
-        color: 'var(--color-text)',
-        backgroundColor: 'var(--color-surface-elevated)',
-        border: '1px solid var(--color-border)',
+        color: primary ? 'var(--color-bg)' : 'var(--color-text)',
+        backgroundColor: primary ? 'var(--color-accent)' : 'var(--color-surface-elevated)',
+        border: `1px solid ${primary ? 'transparent' : 'var(--color-border)'}`,
         borderRadius: 9999,
+        transition: 'transform 0.15s ease, opacity 0.2s ease, background-color 0.2s ease',
       }}
     >
-      <GithubIcon size={14} strokeWidth={1.5} />
-      Source
+      {children}
     </a>
+  )
+}
+
+function ProjectLinks({ project }) {
+  if (!project.demo && !project.repo) return null
+
+  return (
+    <div className="flex flex-wrap items-center gap-2 px-4 pb-4 sm:px-5 md:px-6">
+      {project.demo && (
+        <ProjectLink href={project.demo} label={`${project.name} live demo`} primary>
+          Live demo
+          <ArrowUpRight size={14} strokeWidth={1.75} aria-hidden="true" />
+        </ProjectLink>
+      )}
+      {project.repo && (
+        <ProjectLink href={project.repo} label={`${project.name} source on GitHub`}>
+          <GithubIcon size={14} strokeWidth={1.5} aria-hidden="true" />
+          Source
+        </ProjectLink>
+      )}
+    </div>
   )
 }
 
@@ -611,11 +639,7 @@ export default function ProjectsPage() {
                 </div>
               </button>
 
-              {project.repo && (
-                <div className="px-4 pb-4 sm:px-5 md:px-6">
-                  <RepoLink href={project.repo} />
-                </div>
-              )}
+              <ProjectLinks project={project} />
 
               <AnimatePresence initial={false}>
                 {isExpanded && (
