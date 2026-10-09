@@ -45,8 +45,8 @@ const projects = [
         text: 'A FastMCP server with tools for Docker orchestration, virtual environments, process monitoring, ports, and system health.',
         points: [
           'asyncio.gather fans slow environment discovery out into parallel subprocesses.',
-          'Pydantic response schemas give the assistant structured output on Windows, macOS, and Linux.',
-          'Destructive operations stop for a confirmation prompt before they run.',
+          'Read and query tools return Pydantic models the assistant can parse on Windows, macOS, and Linux; action tools return a short status message.',
+          'Destructive operations ask the user to confirm through MCP elicitation before they run.',
         ],
       },
       {
@@ -54,25 +54,58 @@ const projects = [
         text: 'Virtual environment discovery dropped from 5.1s to 1.2s, and 80+ focused unit tests cover the tool surface.',
       },
     ],
-    architecture: [
-      {
-        label: 'Request path',
-        nodes: [
-          { label: 'AI assistant', detail: 'An MCP client calls a tool by name with typed arguments.' },
-          { label: 'FastMCP server', detail: 'Exposes the 12 tools over the Model Context Protocol.' },
-          { label: 'Typed tool router', detail: 'Validates arguments and routes each call. Destructive tools, like killing a port, wait for confirmation.' },
-          { label: 'Docker / venv / process / health providers', detail: 'Do the actual work. Slow scans fan out with asyncio.gather instead of running one by one.' },
-        ],
-      },
-      {
-        label: 'Response path',
-        nodes: [
-          { label: 'psutil + subprocess', detail: 'Platform abstractions read processes, ports, and machine resources the same way on Windows, macOS, and Linux.' },
-          { label: 'Pydantic response schemas', detail: 'Every tool returns a validated, structured model instead of raw shell output.' },
-          { label: 'AI-readable results', detail: 'The assistant gets consistent fields it can reason over and act on.' },
-        ],
-      },
-    ],
+    // Tool names, signatures, and model fields are from the devenv-mcp source; the
+    // example's venv names, versions, and counts are illustrative.
+    architecture: {
+      scenario: 'the assistant lists your Python environments',
+      lanes: [
+        {
+          label: 'Request path',
+          nodes: [
+            {
+              label: 'AI assistant',
+              detail: 'An MCP client calls a tool by name with typed arguments. Here the assistant wants to know which virtual environments exist before it installs anything.',
+              example: ['devenv_venv_list(', '  working_dir=".",', '  include_global=True,', ')'],
+            },
+            {
+              label: 'FastMCP server',
+              detail: 'Registers each tool from its Python signature and docstring, so the assistant sees a typed schema for every argument and return value.',
+              example: ['tool    devenv_venv_list', 'args    working_dir: str', '        include_global: bool', '        name_pattern: str | None', 'returns list[VenvInfo]'],
+            },
+            {
+              label: 'Typed tool router',
+              detail: 'Checks the arguments against that schema and dispatches the call. Read-only tools run straight away; destructive ones (remove a container, delete a venv, kill a port, clean up) ask the user first through MCP elicitation.',
+              example: ['venv_list → read-only, runs now', '', 'docker_remove_container("api") →', '  ctx.elicit("Are you sure you want to', "    remove container 'api'?\")", '→ runs only if confirm = true'],
+            },
+            {
+              label: 'Docker / venv / process / health providers',
+              detail: 'Do the actual work. venv_list looks in ./venv, ./.venv, and ~/.venvs, then inspects every match at once with asyncio.gather instead of one by one. That fan-out took the scan from 5.1s to 1.2s.',
+              example: ['found 3 venvs', 'await asyncio.gather(', '  _get_venv_info(".venv"),', '  _get_venv_info("~/.venvs/ml"),', '  _get_venv_info("~/.venvs/old-env"),', ')'],
+            },
+          ],
+        },
+        {
+          label: 'Response path',
+          nodes: [
+            {
+              label: 'psutil + subprocess',
+              detail: 'For each venv, its own Python and pip run in parallel subprocesses. Other tools read ports, processes, CPU, memory, and disk through psutil, the same way on Windows, macOS, and Linux.',
+              example: ['$ .venv/bin/python --version', 'Python 3.11.5', '$ .venv/bin/pip list --format=json', '[ … 42 packages ]'],
+            },
+            {
+              label: 'Pydantic response schemas',
+              detail: 'Read and query tools (container lists, logs, stats, venvs, packages, health) return validated Pydantic models. Action tools such as start, stop, remove, and port kill return a short status message instead.',
+              example: ['VenvInfo(', '  name=".venv",', '  python_version="3.11.5",', '  packages_count=42,', '  is_valid=True,', ')'],
+            },
+            {
+              label: 'AI-readable results',
+              detail: 'The assistant gets the same fields every time, so it can reason over them, like noticing a broken venv from is_valid=False rather than parsing shell output.',
+              example: ['→ "You have 3 environments. .venv runs', '   Python 3.11.5 with 42 packages.', '   old-env is broken (is_valid=False)."'],
+            },
+          ],
+        },
+      ],
+    },
     tech: ['Python', 'FastMCP', 'asyncio', 'Pydantic', 'psutil', 'Docker'],
     repo: 'https://github.com/AzaanKH/devenv-mcp',
   },
@@ -84,7 +117,7 @@ const projects = [
     eyebrow: 'Fantasy football tooling',
     description:
       'A local fantasy football draft workspace that tracks picks, compares available players, and explains roster fit and draft timing. Includes a Chrome extension companion for Sleeper, Yahoo, and ESPN draft rooms.',
-    proof: 'The React workspace and terminal CLI share draft calculations, while a local sync server and Chrome extension bring provider picks into the board. Data readiness checks block recommendations when required inputs are missing or stale.',
+    proof: 'The React workspace and terminal CLI share draft calculations, while a local sync server polls Sleeper and Yahoo for picks and the Chrome extension relays ESPN draft observations. Data readiness checks block recommendations when required inputs are missing or stale.',
     screenshot: {
       type: 'image',
       src: '/projects/fantasy-draft-assistant/board-card.webp',
@@ -124,7 +157,7 @@ const projects = [
         label: 'Build',
         text: 'A React draft board and Assistant backed by shared draft calculations, real player data, and a local sync server.',
         points: [
-          'Provider adapters and a Chrome extension bring picks from Sleeper, Yahoo, and ESPN draft rooms into the board.',
+          'The local server polls Sleeper and Yahoo for picks; ESPN picks come from Chrome extension observations of your signed-in draft tab.',
           'Provisional picks with reconciliation keep the board recoverable after a sync outage.',
           'The CLI gives the same advice as the web app and replays exported drafts offline; local mock drafts support practice.',
         ],
@@ -138,26 +171,94 @@ const projects = [
         text: 'A hosted demo runs the workspace in preview mode with local mock drafts. Live provider sync runs locally: Sleeper works, as shown in the screenshots; Yahoo and ESPN are not yet verified.',
       },
     ],
-    architecture: [
-      {
-        label: 'Player data',
-        nodes: [
-          { label: 'Sleeper + FantasyPros data', detail: 'Real player data and rankings that every recommendation is built on.' },
-          { label: 'Refresh + identity scripts', detail: 'Refresh the data and match players across sources. Readiness checks block recommendations when inputs are missing or stale.' },
-          { label: 'Local sync server', detail: 'Holds the draft state and receives picks as they happen.' },
-          { label: 'React workspace', detail: 'Draft board, available players, shortlist, roster, and the Assistant.' },
-        ],
-      },
-      {
-        label: 'Live picks',
-        nodes: [
-          { label: 'Chrome extension', detail: 'Watches the Sleeper, Yahoo, or ESPN draft room and forwards each pick.' },
-          { label: 'Provider adapters', detail: "Translate each provider's picks into one format. Provisional picks reconcile after a sync outage." },
-          { label: 'Shared TypeScript calculations', detail: 'One set of draft math behind both the web app and the CLI, so their advice never disagrees.' },
-          { label: 'CLI + offline replay', detail: 'The same advice in a terminal, and replays of exported drafts offline.' },
-        ],
-      },
-    ],
+    // Connection paths follow the repo README ("Provider support and current limits"):
+    // Sleeper and Yahoo use local server polling; ESPN uses Chrome extension observations.
+    // The example follows the pick 2.06 mock draft in the screenshots.
+    architecture: {
+      scenario: 'your pick at 2.06 in a Sleeper mock draft',
+      lanes: [
+        {
+          label: 'Player data',
+          nodes: [
+            {
+              label: 'Sleeper + FantasyPros inputs',
+              detail: 'Player data from Sleeper and rankings from FantasyPros are the base every recommendation is built on.',
+              example: ['$ pnpm dev:live', 'refreshing Sleeper + FantasyPros inputs…'],
+            },
+            {
+              label: 'Refresh + identity scripts',
+              detail: 'Rebuild player identities so the same player matches across sources, then validate the Core Draft Data.',
+              example: ['rebuild player identities', '  Sleeper "CeeDee Lamb" = FantasyPros "CeeDee Lamb"', 'validate Core Draft Data'],
+            },
+            {
+              label: 'Readiness gate',
+              detail: 'Missing or stale core inputs block live recommendations. Optional signals can drop out without stopping the draft.',
+              example: ['core inputs      fresh ✓', 'optional signal  missing → still drafting', '→ live recommendations unlocked'],
+            },
+          ],
+        },
+        {
+          label: 'Sleeper + Yahoo picks',
+          nodes: [
+            {
+              label: 'Provider draft',
+              detail: "You connect a draft by URL or ID and confirm your slot, scoring, roster settings, and keepers. Picks are still made in the provider's own draft room.",
+              example: ['$ draft connect sleeper:<draft-id> --slot 5', '2.05  Amon-Ra St. Brown', '2.06  My Team · on the clock'],
+            },
+            {
+              label: 'Local server polling',
+              detail: 'For Sleeper and Yahoo, the local server polls the provider for new picks. If the connection stalls, the board flags the delay and you can record provisional picks until it reconnects.',
+              example: ['poll sleeper → 1 new pick (2.05)', '', 'outage during the Sleeper rehearsal:', '  provisional pick 14: Ashton Jeanty', '  reconnect → official pick 14 matches', '→ Confirmed · 1'],
+            },
+            {
+              label: 'Canonical draft snapshot',
+              detail: 'The server keeps one canonical snapshot of the draft in memory, with picks, keepers, settings, and rosters. Every view reads from it.',
+              example: ['snapshot  picks, keepers, settings, rosters', 'last pick 2.05', 'clock     2.06 → My Team'],
+            },
+          ],
+        },
+        {
+          label: 'ESPN picks',
+          nodes: [
+            {
+              label: 'Signed-in ESPN tab',
+              detail: 'ESPN is not polled. The draft is read from your own signed-in tab, which has to stay open, and the observer must start before the page opens its live draft connection.',
+              example: ['(not used in this Sleeper draft)', 'ESPN draft tab · signed in · kept open'],
+            },
+            {
+              label: 'Extension observations',
+              detail: "The Chrome extension sends sanitized draft state to the local server and never forwards account credentials. Its side panel sits beside any provider's draft room.",
+              example: ['observation → draft state only', 'no account credentials forwarded', '> 5 min from server time → rejected'],
+            },
+            {
+              label: 'Paired local server',
+              detail: 'Both local services bind to loopback, and every API request needs the pairing token from pnpm sync:pair.',
+              example: ['$ pnpm sync:pair', '→ paste the token into extension Options', 'requests without the token → refused'],
+            },
+          ],
+        },
+        {
+          label: 'Advice',
+          nodes: [
+            {
+              label: 'Shared TypeScript calculations',
+              detail: 'One set of draft calculations weighs roster fit, tiers, positional depth, and the chance a player lasts to your next pick.',
+              example: ['Best Pick @ 2.06', '  CeeDee Lamb       ↑', '  Justin Jefferson', '→ only one WR left in Tier 2'],
+            },
+            {
+              label: 'React workspace + Assistant',
+              detail: 'The board, Best Pick bar, available players, shortlist, and roster. The Assistant explains a pick, compares options, says whether you can wait, and reviews roster needs.',
+              example: ['Q: Can I wait on a WR until my next pick?', '→ compares next-pick availability', '  and the cost of waiting'],
+            },
+            {
+              label: 'CLI + offline replay',
+              detail: 'The same advice and readiness gates in a terminal. Export a session to replay its picks and run advice offline.',
+              example: ['$ draft recommend --lens best-pick --limit 5', '$ draft export --out session.json', '$ draft replay session.json --pick 24'],
+            },
+          ],
+        },
+      ],
+    },
     tech: ['TypeScript', 'React', 'Vite', 'TanStack Query', 'Zustand', 'Tailwind CSS', 'Effect 4', 'Node.js', 'Chrome Extensions', 'DuckDB', 'Vitest'],
     repo: 'https://github.com/AzaanKH/fantasy-draft-assistant',
     // Cloudflare Pages build in preview mode: mock drafts only, no provider sync.
@@ -201,25 +302,58 @@ const projects = [
         text: 'Pick a week and position, search 800+ players instantly, and compare predictions with confidence intervals and 3-game averages.',
       },
     ],
-    architecture: [
-      {
-        label: 'Training',
-        nodes: [
-          { label: 'Sleeper API / ESPN / scraper', detail: 'Three sources with automatic fallback and rate limiting, so one outage doesn’t stop the pipeline.' },
-          { label: 'Feature pipeline', detail: 'Builds rolling averages, reliability flags, efficiency metrics, and trend indicators.' },
-          { label: 'Postgres + TimescaleDB', detail: '10k+ player-week records in a schema built for rolling-window queries.' },
-          { label: 'XGBoost models', detail: 'One model per position, at 2.9 MAE.' },
-        ],
-      },
-      {
-        label: 'Serving',
-        nodes: [
-          { label: 'Flask API', detail: 'Serves predictions to the frontend.' },
-          { label: 'React + shadcn UI', detail: 'Week and position selection, with instant search over 800+ players.' },
-          { label: 'Prediction cards with confidence ranges', detail: 'Projected points with a confidence interval and the 3-game average side by side.' },
-        ],
-      },
-    ],
+    // Endpoints, scheduler commands, and feature groups come from the football repo
+    // README; the example's players and numbers are illustrative.
+    architecture: {
+      scenario: 'a Week 18 running back start/sit',
+      lanes: [
+        {
+          label: 'Training',
+          nodes: [
+            {
+              label: 'Sleeper API / ESPN / scraper',
+              detail: 'Sleeper and ESPN integrations sync players, stats, matchups, and projections, with a scraper fallback and rate limiting. In the offseason, when Sleeper reports week 0, the stat syncs skip cleanly.',
+              example: ['$ python scheduler.py run-now --sync', 'players · stats · matchups · projections'],
+            },
+            {
+              label: 'Feature pipeline',
+              detail: 'Turns raw weekly stats into model features: rolling averages, reliability flags for thin early-season samples, efficiency, consistency, usage trends, and matchup context.',
+              example: ['$ python run_pipeline.py compute-features 2025 18', 'rolling   points over 3 / 5 / 10 games', 'reliable  games played, full-window flag', 'form      boom rate, bust rate, floor', 'matchup   opponent, home/away, rest days'],
+            },
+            {
+              label: 'Postgres + TimescaleDB',
+              detail: '10k+ player-week records: players, stats, projections, features, and matchup context in a schema built for rolling-window queries.',
+              example: ['GET /available_weeks', '→ weeks with computed features', '  … 2025 · week 18'],
+            },
+            {
+              label: 'XGBoost models',
+              detail: 'Separate models for QBs, RBs, and WRs, trained on temporal splits so future games never leak into training, and checked with walk-forward backtests. 2.9 MAE.',
+              example: ['models  qb · rb · wr', 'split   temporal, walk-forward backtest', 'saved   models/weekly_predictor.pkl'],
+            },
+          ],
+        },
+        {
+          label: 'Serving',
+          nodes: [
+            {
+              label: 'Flask API',
+              detail: 'POST /predict_week takes a position, players, week, and season, and returns predictions with confidence intervals.',
+              example: ['POST /predict_week', '{ "position": "rb",', '  "player_ids": ["4034", "6794"],', '  "week": 18, "season": 2025 }'],
+            },
+            {
+              label: 'React + shadcn UI',
+              detail: 'Pick the week and position, then search and filter 800+ players instantly to build the comparison.',
+              example: ['week 18 · RB', 'search → instant filter, 800+ players', 'add 2 players → compare'],
+            },
+            {
+              label: 'Prediction cards with confidence ranges',
+              detail: 'Each card shows predicted points, the confidence range around them, and the 3-game average, so the start/sit call accounts for uncertainty.',
+              example: ['RB A  14.2 pts  (10.8–17.6)  3-gm 12.9', 'RB B  11.7 pts   (8.1–15.0)  3-gm 13.4', '→ start RB A'],
+            },
+          ],
+        },
+      ],
+    },
     tech: ['React', 'Python', 'Flask', 'PostgreSQL', 'TimescaleDB', 'XGBoost'],
     repo: 'https://github.com/AzaanKH/football',
   },
@@ -256,25 +390,57 @@ const projects = [
         text: 'Agreement held across 12+ simulated nodes under network partitions while sustaining 1000+ protocol messages per second.',
       },
     ],
-    architecture: [
-      {
-        label: 'Consensus round',
-        nodes: [
-          { label: 'Client request', detail: 'A value the cluster needs to agree on.' },
-          { label: 'Proposers', detail: 'Pick a unique proposal number, send Prepare, then Accept once enough promises come back.' },
-          { label: 'Acceptors / quorum', detail: 'Promise to ignore older proposals and accept a value. It is chosen once a majority accepts.' },
-          { label: 'Learners', detail: 'Learn the chosen value once a quorum has accepted it.' },
-        ],
-      },
-      {
-        label: 'Test harness',
-        nodes: [
-          { label: 'Partition simulator', detail: 'Splits the network in two partition modes. Only the side holding a majority can still commit.' },
-          { label: 'Message bus', detail: 'Carries protocol messages between roles at 1000+ per second.' },
-          { label: 'Consensus log', detail: 'Records each chosen value so agreement can be checked across 12+ nodes.' },
-        ],
-      },
-    ],
+    // The example walks one textbook Paxos round on the 7 / 5 split drawn on the card.
+    architecture: {
+      scenario: 'agreeing on one value while the network is split 7 / 5',
+      lanes: [
+        {
+          label: 'Consensus round',
+          nodes: [
+            {
+              label: 'Client request',
+              detail: 'A client asks the cluster to agree on a value. Every node that learns a value must learn the same one.',
+              example: ['propose(value = "X")'],
+            },
+            {
+              label: 'Proposers',
+              detail: 'Pick a unique, increasing proposal number and send Prepare. Once a majority promises, send Accept with the value.',
+              example: ['n = 5', 'Prepare(5) → every reachable acceptor'],
+            },
+            {
+              label: 'Acceptors / quorum',
+              detail: 'Promise to ignore lower-numbered proposals, then accept. A value is chosen once a majority, 7 of 12, accepts it.',
+              example: ['Promise(5) × 7     quorum 7/12 ✓', 'Accept(5, "X")', 'Accepted × 7', '→ "X" is chosen'],
+            },
+            {
+              label: 'Learners',
+              detail: 'Learn the chosen value once a quorum has accepted it.',
+              example: ['learned "X" (n = 5)'],
+            },
+          ],
+        },
+        {
+          label: 'Test harness',
+          nodes: [
+            {
+              label: 'Partition simulator',
+              detail: 'Splits the network in two partition modes. The side holding a majority can still commit; the minority side cannot.',
+              example: ['split  {1…7} | {8…12}', 'minority: Prepare(6) → 5 promises', '→ needs 7, cannot commit'],
+            },
+            {
+              label: 'Message bus',
+              detail: 'Carries protocol messages between roles at 1000+ per second, where messages can arrive out of order or never cross the split.',
+              example: ['1000+ messages / sec', 'Promise(5) from node 3 arrives late', '→ still counted for proposal 5'],
+            },
+            {
+              label: 'Consensus log',
+              detail: 'Records each chosen value so agreement can be checked across 12+ nodes after the run.',
+              example: ['slot 1  "X"  on every node that learned it', '→ no node holds a different value'],
+            },
+          ],
+        },
+      ],
+    },
     tech: ['Java', 'Distributed systems', 'Consensus', 'Fault tolerance'],
   },
 ]
@@ -789,7 +955,7 @@ export default function ProjectsPage() {
                             Select a part, or trace the flow
                           </span>
                         </SectionHeading>
-                        <ArchitectureFlow lanes={project.architecture} name={project.name} />
+                        <ArchitectureFlow flow={project.architecture} name={project.name} />
 
                         <div className="mt-5 flex flex-wrap items-center gap-2 border-t pt-4" style={{ borderColor: 'var(--color-border)' }}>
                           <h4 className="mr-1 font-mono text-[0.6rem] uppercase tracking-[0.14em]" style={{ color: 'var(--color-text-secondary)' }}>
