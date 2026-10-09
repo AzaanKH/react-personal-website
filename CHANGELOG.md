@@ -7,6 +7,7 @@ All notable changes and improvements to this project are documented in this file
 ## [Unreleased] - Interests page
 
 ### Changed
+- Project details: "Case Study" and "Implementation Proof" said the same things twice, so they're now one case study (Problem → Build → Result, plus Status), shown as a timeline with the key build decisions as bullets under Build. The architecture is an interactive diagram: select any part to light the path up to it and read what it does, or "Trace" the whole flow step by step. Data packets stream along the connectors (static under reduced motion), and the layout runs vertically on phones.
 - Project links: projects can have a live demo (a filled "Live demo" button) next to "Source", and each link's accessible name includes the project. The Fantasy Draft Assistant links its hosted preview demo, and its status now says the demo runs mock drafts while provider sync stays local.
 - Removed the terracotta glow that followed the cursor on the Home page.
 - Fantasy Draft Assistant project card (copy, facts, and status from its portfolio handoff). The card shows a readable crop of the draft board around My Team; the expanded notes show the full board and the Assistant comparison at full width, each opening at full size. Image projects support a caption, crop position, and gallery.

@@ -7,9 +7,9 @@ import {
   ChevronDown,
   GitBranch,
   Layers,
-  ShieldCheck,
 } from 'lucide-react'
 import { GithubIcon } from '../components/BrandIcons'
+import ArchitectureFlow from '../components/projects/ArchitectureFlow'
 
 const projects = [
   {
@@ -42,22 +42,36 @@ const projects = [
       },
       {
         label: 'Build',
-        text: 'Designed a FastMCP server with Pydantic schemas, psutil-backed platform abstractions, and asyncio fan-out for slow environment discovery.',
+        text: 'A FastMCP server with tools for Docker orchestration, virtual environments, process monitoring, ports, and system health.',
+        points: [
+          'asyncio.gather fans slow environment discovery out into parallel subprocesses.',
+          'Pydantic response schemas give the assistant structured output on Windows, macOS, and Linux.',
+          'Destructive operations stop for a confirmation prompt before they run.',
+        ],
       },
       {
-        label: 'Proof',
-        text: 'Benchmarked virtual environment discovery from 5.1s to 1.2s and covered the tool surface with 80+ focused unit tests.',
+        label: 'Result',
+        text: 'Virtual environment discovery dropped from 5.1s to 1.2s, and 80+ focused unit tests cover the tool surface.',
       },
     ],
-    highlights: [
-      'Architected MCP server with tools for Docker orchestration, virtual environments, process monitoring, ports, and system health.',
-      'Optimized concurrent operations using asyncio.gather for parallel subprocess execution.',
-      'Designed structured Pydantic response schemas for AI-parseable outputs across Windows, macOS, and Linux.',
-      'Implemented safety patterns using confirmation prompts for destructive operations.',
-    ],
     architecture: [
-      ['AI assistant', 'FastMCP server', 'Typed tool router', 'Docker / venv / process / health providers'],
-      ['psutil + subprocess', 'Pydantic response schemas', 'AI-readable results'],
+      {
+        label: 'Request path',
+        nodes: [
+          { label: 'AI assistant', detail: 'An MCP client calls a tool by name with typed arguments.' },
+          { label: 'FastMCP server', detail: 'Exposes the 12 tools over the Model Context Protocol.' },
+          { label: 'Typed tool router', detail: 'Validates arguments and routes each call. Destructive tools, like killing a port, wait for confirmation.' },
+          { label: 'Docker / venv / process / health providers', detail: 'Do the actual work. Slow scans fan out with asyncio.gather instead of running one by one.' },
+        ],
+      },
+      {
+        label: 'Response path',
+        nodes: [
+          { label: 'psutil + subprocess', detail: 'Platform abstractions read processes, ports, and machine resources the same way on Windows, macOS, and Linux.' },
+          { label: 'Pydantic response schemas', detail: 'Every tool returns a validated, structured model instead of raw shell output.' },
+          { label: 'AI-readable results', detail: 'The assistant gets consistent fields it can reason over and act on.' },
+        ],
+      },
     ],
     tech: ['Python', 'FastMCP', 'asyncio', 'Pydantic', 'psutil', 'Docker'],
     repo: 'https://github.com/AzaanKH/devenv-mcp',
@@ -108,26 +122,41 @@ const projects = [
       },
       {
         label: 'Build',
-        text: 'A React draft board and Assistant backed by shared draft calculations, real player data, and a local sync server. Provider adapters and a Chrome extension track picks; local mock drafts support practice, and provisional picks with reconciliation recover from a sync outage.',
+        text: 'A React draft board and Assistant backed by shared draft calculations, real player data, and a local sync server.',
+        points: [
+          'Provider adapters and a Chrome extension bring picks from Sleeper, Yahoo, and ESPN draft rooms into the board.',
+          'Provisional picks with reconciliation keep the board recoverable after a sync outage.',
+          'The CLI gives the same advice as the web app and replays exported drafts offline; local mock drafts support practice.',
+        ],
       },
       {
-        label: 'Proof',
-        text: 'The workspace shows pick history, available players, a shortlist, and your roster. The Assistant explains recommendations, compares alternatives, analyzes waiting until the next pick, and reviews roster needs.',
+        label: 'Result',
+        text: 'One workspace for pick history, available players, a shortlist, and your roster, plus an Assistant that answers four questions: why this player, compare options, can I wait until my next pick, and what does my roster need.',
       },
       {
         label: 'Status',
         text: 'A hosted demo runs the workspace in preview mode with local mock drafts. Live provider sync runs locally: Sleeper works, as shown in the screenshots; Yahoo and ESPN are not yet verified.',
       },
     ],
-    highlights: [
-      'Four Assistant questions: why this player, compare options, can I wait until my next pick, and what does my roster need.',
-      'Provider adapters for Sleeper, Yahoo, and ESPN draft rooms, with a Chrome extension that brings picks into the board.',
-      'Provisional picks and reconciliation keep the board recoverable after a sync outage.',
-      'The CLI exposes the same advice as the web app and replays exported drafts offline.',
-    ],
     architecture: [
-      ['Sleeper + FantasyPros data', 'Refresh + identity scripts', 'Local sync server', 'React workspace'],
-      ['Chrome extension', 'Provider adapters', 'Shared TypeScript calculations', 'CLI + offline replay'],
+      {
+        label: 'Player data',
+        nodes: [
+          { label: 'Sleeper + FantasyPros data', detail: 'Real player data and rankings that every recommendation is built on.' },
+          { label: 'Refresh + identity scripts', detail: 'Refresh the data and match players across sources. Readiness checks block recommendations when inputs are missing or stale.' },
+          { label: 'Local sync server', detail: 'Holds the draft state and receives picks as they happen.' },
+          { label: 'React workspace', detail: 'Draft board, available players, shortlist, roster, and the Assistant.' },
+        ],
+      },
+      {
+        label: 'Live picks',
+        nodes: [
+          { label: 'Chrome extension', detail: 'Watches the Sleeper, Yahoo, or ESPN draft room and forwards each pick.' },
+          { label: 'Provider adapters', detail: "Translate each provider's picks into one format. Provisional picks reconcile after a sync outage." },
+          { label: 'Shared TypeScript calculations', detail: 'One set of draft math behind both the web app and the CLI, so their advice never disagrees.' },
+          { label: 'CLI + offline replay', detail: 'The same advice in a terminal, and replays of exported drafts offline.' },
+        ],
+      },
     ],
     tech: ['TypeScript', 'React', 'Vite', 'TanStack Query', 'Zustand', 'Tailwind CSS', 'Effect 4', 'Node.js', 'Chrome Extensions', 'DuckDB', 'Vitest'],
     repo: 'https://github.com/AzaanKH/fantasy-draft-assistant',
@@ -160,22 +189,36 @@ const projects = [
       },
       {
         label: 'Build',
-        text: 'Created a pipeline with Sleeper, ESPN, and scraping fallbacks, then trained position-specific XGBoost models on engineered rolling features.',
+        text: 'A multi-source data pipeline feeding position-specific XGBoost models, served through a Flask API to a React interface.',
+        points: [
+          'Sleeper, ESPN, and a scraper sit behind automatic fallback orchestration and rate limiting.',
+          'Models train on rolling averages, reliability flags, efficiency metrics, and trend indicators.',
+          'A Postgres + TimescaleDB schema for weekly stats keeps rolling-window feature queries efficient.',
+        ],
       },
       {
-        label: 'Proof',
-        text: 'The UI returns predictions with confidence intervals, 3-game averages, and instant player filtering over an 800+ player dataset.',
+        label: 'Result',
+        text: 'Pick a week and position, search 800+ players instantly, and compare predictions with confidence intervals and 3-game averages.',
       },
     ],
-    highlights: [
-      'Architected multi-source data pipeline with automatic fallback orchestration and rate limiting.',
-      'Trained position-specific XGBoost models using rolling averages, reliability flags, efficiency metrics, and trend indicators.',
-      'Designed PostgreSQL + TimescaleDB schema for weekly statistics and efficient rolling-window feature queries.',
-      'Shipped a React interface for week/position selection, player search, and prediction comparison.',
-    ],
     architecture: [
-      ['Sleeper API / ESPN / scraper', 'Feature pipeline', 'Postgres + TimescaleDB', 'XGBoost models'],
-      ['Flask API', 'React + shadcn UI', 'Prediction cards with confidence ranges'],
+      {
+        label: 'Training',
+        nodes: [
+          { label: 'Sleeper API / ESPN / scraper', detail: 'Three sources with automatic fallback and rate limiting, so one outage doesn’t stop the pipeline.' },
+          { label: 'Feature pipeline', detail: 'Builds rolling averages, reliability flags, efficiency metrics, and trend indicators.' },
+          { label: 'Postgres + TimescaleDB', detail: '10k+ player-week records in a schema built for rolling-window queries.' },
+          { label: 'XGBoost models', detail: 'One model per position, at 2.9 MAE.' },
+        ],
+      },
+      {
+        label: 'Serving',
+        nodes: [
+          { label: 'Flask API', detail: 'Serves predictions to the frontend.' },
+          { label: 'React + shadcn UI', detail: 'Week and position selection, with instant search over 800+ players.' },
+          { label: 'Prediction cards with confidence ranges', detail: 'Projected points with a confidence interval and the 3-game average side by side.' },
+        ],
+      },
     ],
     tech: ['React', 'Python', 'Flask', 'PostgreSQL', 'TimescaleDB', 'XGBoost'],
     repo: 'https://github.com/AzaanKH/football',
@@ -206,21 +249,31 @@ const projects = [
       },
       {
         label: 'Build',
-        text: 'Implemented Paxos roles, quorum checks, proposal numbering, and message protocols for partition scenarios.',
+        text: 'Proposer, acceptor, and learner roles with proposal numbering, quorum-based acceptance, and fault-tolerant message protocols for partition scenarios.',
       },
       {
-        label: 'Proof',
-        text: 'Validated agreement across 12+ simulated nodes while sustaining 1000+ protocol messages per second.',
+        label: 'Result',
+        text: 'Agreement held across 12+ simulated nodes under network partitions while sustaining 1000+ protocol messages per second.',
       },
     ],
-    highlights: [
-      'Implemented Paxos consensus algorithm ensuring agreement across 12+ nodes under network partitions.',
-      'Built communication protocols handling 1000+ messages per second with fault tolerance.',
-      'Modeled proposer, acceptor, and learner flows with quorum-based acceptance.',
-    ],
     architecture: [
-      ['Client request', 'Proposers', 'Acceptors / quorum', 'Learners'],
-      ['Partition simulator', 'Message bus', 'Consensus log'],
+      {
+        label: 'Consensus round',
+        nodes: [
+          { label: 'Client request', detail: 'A value the cluster needs to agree on.' },
+          { label: 'Proposers', detail: 'Pick a unique proposal number, send Prepare, then Accept once enough promises come back.' },
+          { label: 'Acceptors / quorum', detail: 'Promise to ignore older proposals and accept a value. It is chosen once a majority accepts.' },
+          { label: 'Learners', detail: 'Learn the chosen value once a quorum has accepted it.' },
+        ],
+      },
+      {
+        label: 'Test harness',
+        nodes: [
+          { label: 'Partition simulator', detail: 'Splits the network in two partition modes. Only the side holding a majority can still commit.' },
+          { label: 'Message bus', detail: 'Carries protocol messages between roles at 1000+ per second.' },
+          { label: 'Consensus log', detail: 'Records each chosen value so agreement can be checked across 12+ nodes.' },
+        ],
+      },
     ],
     tech: ['Java', 'Distributed systems', 'Consensus', 'Fault tolerance'],
   },
@@ -441,37 +494,69 @@ function QuorumDiagram({ nodes, quorum, phases }) {
   )
 }
 
-function ArchitectureDiagram({ rows }) {
+// Problem → Build → Result as one story. Build can carry a few key decisions as bullets,
+// so there is a single place for "what was built" and nothing to repeat elsewhere.
+function CaseStudy({ steps }) {
   return (
-    <div className="space-y-3">
-      {rows.map((row, rowIndex) => (
-        <div key={row.join('-')} className="grid gap-2 md:grid-cols-4">
-          {row.map((node, nodeIndex) => (
-            <div key={node} className="flex items-center gap-2">
-              <div
-                className="flex min-h-[58px] flex-1 items-center justify-center px-3 text-center text-[0.74rem] font-medium leading-snug"
-                style={{
-                  color: 'var(--color-text)',
-                  backgroundColor: rowIndex === 0 ? 'var(--color-surface)' : 'var(--color-surface-elevated)',
-                  border: '1px solid var(--color-border)',
-                  borderRadius: 10,
-                }}
-              >
-                {node}
-              </div>
-              {nodeIndex < row.length - 1 && (
-                <ArrowUpRight
-                  className="hidden shrink-0 rotate-45 md:block"
-                  size={14}
-                  strokeWidth={1.5}
-                  style={{ color: 'var(--color-text-secondary)', opacity: 0.55 }}
-                  aria-hidden="true"
-                />
-              )}
-            </div>
-          ))}
-        </div>
+    <ol className="relative">
+      {steps.map((step, index) => (
+        <motion.li
+          key={step.label}
+          className="relative grid gap-1 pb-5 pl-6 last:pb-0 md:grid-cols-[96px_minmax(0,1fr)] md:gap-6 md:pl-0"
+          initial={{ opacity: 0, x: -8 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.05 + index * 0.07, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+        >
+          {index < steps.length - 1 && (
+            <span
+              className="absolute bottom-0 left-[3px] top-4 w-px md:left-[99px]"
+              style={{ backgroundColor: 'var(--color-border)' }}
+              aria-hidden="true"
+            />
+          )}
+          <span
+            className="absolute left-0 top-[0.4rem] h-[7px] w-[7px] rounded-full md:left-[96px]"
+            style={{ backgroundColor: 'var(--color-accent)' }}
+            aria-hidden="true"
+          />
+          <p
+            className="pt-px font-mono text-[0.64rem] uppercase tracking-[0.16em] md:text-right"
+            style={{ color: 'var(--color-accent)' }}
+          >
+            {step.label}
+          </p>
+          <div className="md:pl-6">
+            <p className="max-w-[68ch] text-sm leading-6" style={{ color: 'var(--color-text)' }}>
+              {step.text}
+            </p>
+            {step.points && (
+              <ul className="mt-2 max-w-[68ch] space-y-1.5">
+                {step.points.map((point) => (
+                  <li
+                    key={point}
+                    className="flex items-start gap-2.5 text-sm leading-6"
+                    style={{ color: 'var(--color-text-secondary)' }}
+                  >
+                    <span aria-hidden="true" style={{ color: 'var(--color-accent)' }}>—</span>
+                    <span>{point}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </motion.li>
       ))}
+    </ol>
+  )
+}
+
+function SectionHeading({ icon: Icon, children }) {
+  return (
+    <div className="mb-4 flex items-center gap-2">
+      <Icon size={16} strokeWidth={1.5} style={{ color: 'var(--color-accent)' }} aria-hidden="true" />
+      <h3 className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+        {children}
+      </h3>
     </div>
   )
 }
@@ -686,128 +771,52 @@ export default function ProjectsPage() {
                         </figure>
                       ))}
 
-                      <div className="grid gap-5 lg:grid-cols-[0.95fr_1.05fr]">
-                        <section>
-                          <div className="mb-3 flex items-center gap-2">
-                            <Layers size={16} strokeWidth={1.5} style={{ color: 'var(--color-accent)' }} />
-                            <h3 className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
-                              Case Study
-                            </h3>
-                          </div>
-                          <div className="space-y-3">
-                            {project.caseStudy.map((section) => (
-                              <div
-                                key={section.label}
-                                className="rounded-lg p-4"
-                                style={{
-                                  backgroundColor: 'var(--color-surface-elevated)',
-                                  border: '1px solid var(--color-border)',
-                                }}
-                              >
-                                <p
-                                  className="text-[0.68rem] uppercase tracking-[0.16em]"
-                                  style={{ color: 'var(--color-accent)' }}
-                                >
-                                  {section.label}
-                                </p>
-                                <p
-                                  className="mt-2 text-sm leading-6"
-                                  style={{ color: 'var(--color-text-secondary)' }}
-                                >
-                                  {section.text}
-                                </p>
-                              </div>
-                            ))}
-                          </div>
-                        </section>
+                      <section>
+                        <SectionHeading icon={Layers}>Case study</SectionHeading>
+                        <CaseStudy steps={project.caseStudy} />
+                      </section>
 
-                        <section
-                          className="rounded-lg p-4"
-                          style={{
-                            backgroundColor: 'var(--color-surface-elevated)',
-                            border: '1px solid var(--color-border)',
-                          }}
-                        >
-                          <div className="mb-4 flex items-center gap-2">
-                            <GitBranch size={16} strokeWidth={1.5} style={{ color: 'var(--color-accent)' }} />
-                            <h3 className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
-                              Architecture
-                            </h3>
-                          </div>
-                          <ArchitectureDiagram rows={project.architecture} />
-                        </section>
-                      </div>
+                      <section
+                        className="mt-6 rounded-lg p-4 sm:p-5"
+                        style={{
+                          backgroundColor: 'var(--color-surface-elevated)',
+                          border: '1px solid var(--color-border)',
+                        }}
+                      >
+                        <SectionHeading icon={GitBranch}>
+                          Architecture
+                          <span className="ml-2 font-normal" style={{ color: 'var(--color-text-secondary)' }}>
+                            Select a part, or trace the flow
+                          </span>
+                        </SectionHeading>
+                        <ArchitectureFlow lanes={project.architecture} name={project.name} />
 
-                      <div className="mt-5 grid gap-5 lg:grid-cols-[1fr_0.8fr]">
-                        <section>
-                          <div className="mb-3 flex items-center gap-2">
-                            <ShieldCheck size={16} strokeWidth={1.5} style={{ color: 'var(--color-accent)' }} />
-                            <h3 className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
-                              Implementation Proof
-                            </h3>
-                          </div>
-                          <ul className="grid gap-2">
-                            {project.highlights.map((point, pi) => (
-                              <motion.li
-                                key={point}
-                                className="flex items-start gap-3 rounded-lg p-3"
-                                style={{
-                                  color: 'var(--color-text-secondary)',
-                                  backgroundColor: 'var(--color-surface-elevated)',
-                                  border: '1px solid var(--color-border)',
-                                  fontSize: 'var(--text-body-sm)',
-                                  lineHeight: 1.55,
-                                }}
-                                initial={{ opacity: 0, x: -8 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{
-                                  delay: 0.05 + pi * 0.05,
-                                  duration: 0.3,
-                                  ease: [0.16, 1, 0.3, 1],
-                                }}
-                              >
-                                <span
-                                  className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full"
-                                  style={{ backgroundColor: 'var(--color-accent)' }}
-                                  aria-hidden="true"
-                                />
-                                <span>{point}</span>
-                              </motion.li>
-                            ))}
-                          </ul>
-                        </section>
-
-                        <section>
-                          <div className="mb-3 flex items-center gap-2">
-                            <Layers size={16} strokeWidth={1.5} style={{ color: 'var(--color-accent)' }} />
-                            <h3 className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
-                              Stack
-                            </h3>
-                          </div>
-                          <div className="flex flex-wrap gap-2">
-                            {project.tech.map((t, ti) => (
-                              <motion.span
-                                key={t}
-                                className="rounded-full px-3 py-1.5 text-[0.72rem] font-medium"
-                                style={{
-                                  backgroundColor: 'var(--color-border-subtle)',
-                                  color: 'var(--color-text-secondary)',
-                                  border: '1px solid var(--color-border)',
-                                }}
-                                initial={{ opacity: 0, scale: 0.9 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{
-                                  delay: 0.2 + ti * 0.04,
-                                  duration: 0.25,
-                                  ease: [0.16, 1, 0.3, 1],
-                                }}
-                              >
-                                {t}
-                              </motion.span>
-                            ))}
-                          </div>
-                        </section>
-                      </div>
+                        <div className="mt-5 flex flex-wrap items-center gap-2 border-t pt-4" style={{ borderColor: 'var(--color-border)' }}>
+                          <h4 className="mr-1 font-mono text-[0.6rem] uppercase tracking-[0.14em]" style={{ color: 'var(--color-text-secondary)' }}>
+                            Stack
+                          </h4>
+                          {project.tech.map((t, ti) => (
+                            <motion.span
+                              key={t}
+                              className="rounded-full px-3 py-1.5 text-[0.72rem] font-medium"
+                              style={{
+                                backgroundColor: 'var(--color-border-subtle)',
+                                color: 'var(--color-text-secondary)',
+                                border: '1px solid var(--color-border)',
+                              }}
+                              initial={{ opacity: 0, scale: 0.9 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{
+                                delay: 0.2 + ti * 0.04,
+                                duration: 0.25,
+                                ease: [0.16, 1, 0.3, 1],
+                              }}
+                            >
+                              {t}
+                            </motion.span>
+                          ))}
+                        </div>
+                      </section>
                     </div>
                   </motion.div>
                 )}
