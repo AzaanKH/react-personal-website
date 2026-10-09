@@ -28,10 +28,10 @@ const projects = [
         { command: 'devenv_venv_list', output: 'environment scan: 5.1s → 1.2s (asyncio fan-out)' },
         { command: 'devenv_port_kill 3000', output: 'destructive action: confirmation required', warn: true },
       ],
-      status: ['FastMCP', '12 tools', '80+ tests'],
+      status: ['FastMCP', '20 tools', '80+ tests'],
     },
     metrics: [
-      { value: '12', label: 'MCP tools' },
+      { value: '20', label: 'MCP tools' },
       { value: '4.2x', label: 'faster venv scan' },
       { value: '80+', label: 'unit tests' },
     ],
