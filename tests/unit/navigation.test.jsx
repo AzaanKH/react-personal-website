@@ -17,10 +17,12 @@ describe('navigation', () => {
 
   it('renders real links for every page', () => {
     render(<App />)
-    for (const route of Object.values(routes)) {
-      expect(navLink(route.label)).toHaveAttribute('href', route.path)
+    // jsdom loads no CSS, so Home's name includes the mobile monogram (WCAG label in name).
+    const homeName = 'AK Home'
+    for (const [id, route] of Object.entries(routes)) {
+      expect(navLink(id === 'home' ? homeName : route.label)).toHaveAttribute('href', route.path)
     }
-    expect(navLink('Home')).toHaveAttribute('aria-current', 'page')
+    expect(navLink(homeName)).toHaveAttribute('aria-current', 'page')
   })
 
   it('offers a skip link to the main content', () => {
