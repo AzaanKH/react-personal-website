@@ -61,8 +61,10 @@ export default function HomePage({ onNavigate }) {
     hasPlayedIntro = true
   }, [])
 
-  // Once the intro has settled, the View projects arrow nudges right twice to point at
-  // the next step. First visit only, so it never loops or replays. Started imperatively:
+  // Once the intro has settled, the View projects arrow nudges right in two pairs to point
+  // at the next step. All motion ends by ~4.6s after load, under WCAG 2.2.2's 5s limit for
+  // auto-playing motion without a pause control; keep it that way if you retime this.
+  // First visit only, so it never loops or replays. Started imperatively:
   // App's AnimatePresence initial={false} skips mount animations on a direct visit.
   // useState pins the first render's value; playIntro turns false on later renders.
   const [nudgeArrow] = useState(playIntro)
@@ -73,7 +75,7 @@ export default function HomePage({ onNavigate }) {
     const controls = animateArrow(
       arrowScope.current,
       { x: [0, 5, 0, 5, 0] },
-      { delay: 1.8, duration: 1.1, ease: 'easeInOut' },
+      { delay: 1.8, duration: 1.1, ease: 'easeInOut', repeat: 1, repeatDelay: 0.6 },
     )
     return () => controls.stop()
   }, [nudgeArrow, animateArrow, arrowScope])

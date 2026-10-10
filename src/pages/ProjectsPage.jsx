@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
-import Kicker from '../components/Kicker'
 import {
   ArrowUpRight,
   BarChart3,
@@ -816,7 +815,6 @@ export default function ProjectsPage() {
     <div className="page-shell pt-4 md:pt-8 pb-12">
       <div className="mb-10 flex flex-col gap-4 border-b pb-8 md:mb-12 md:flex-row md:items-end md:justify-between" style={{ borderColor: 'var(--color-border)' }}>
         <div>
-          <Kicker className="mb-4">Selected work</Kicker>
           <h1 className="display-heading page-title" style={{ color: 'var(--color-text)' }}>
             Projects
           </h1>
