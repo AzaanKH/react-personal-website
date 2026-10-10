@@ -1,5 +1,5 @@
-import { useEffect } from 'react'
-import { motion, useReducedMotion } from 'motion/react'
+import { useEffect, useState } from 'react'
+import { motion, useAnimate, useReducedMotion } from 'motion/react'
 import { ArrowRight, Mail, FileText } from 'lucide-react'
 import { GithubIcon, LinkedinIcon } from '../components/BrandIcons'
 import RouteLink from '../components/RouteLink'
@@ -61,6 +61,23 @@ export default function HomePage({ onNavigate }) {
     hasPlayedIntro = true
   }, [])
 
+  // Once the intro has settled, the View projects arrow nudges right twice to point at
+  // the next step. First visit only, so it never loops or replays. Started imperatively:
+  // App's AnimatePresence initial={false} skips mount animations on a direct visit.
+  // useState pins the first render's value; playIntro turns false on later renders.
+  const [nudgeArrow] = useState(playIntro)
+  const [arrowScope, animateArrow] = useAnimate()
+
+  useEffect(() => {
+    if (!nudgeArrow) return undefined
+    const controls = animateArrow(
+      arrowScope.current,
+      { x: [0, 5, 0, 5, 0] },
+      { delay: 1.8, duration: 1.1, ease: 'easeInOut' },
+    )
+    return () => controls.stop()
+  }, [nudgeArrow, animateArrow, arrowScope])
+
   return (
     <div
       className="page-shell relative flex min-h-[calc(100dvh-5rem)] flex-col items-center justify-center overflow-hidden px-1 pb-32 pt-8 text-center lg:pb-24"
@@ -112,12 +129,13 @@ export default function HomePage({ onNavigate }) {
             }}
           >
             View projects
-            <ArrowRight
-              size={15}
-              strokeWidth={1.75}
-              className="transition-transform group-hover:translate-x-0.5"
-              aria-hidden="true"
-            />
+            <span ref={arrowScope} className="inline-flex" aria-hidden="true">
+              <ArrowRight
+                size={15}
+                strokeWidth={1.75}
+                className="transition-transform group-hover:translate-x-0.5"
+              />
+            </span>
           </RouteLink>
         </motion.div>
 
