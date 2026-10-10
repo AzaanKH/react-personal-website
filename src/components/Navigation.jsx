@@ -106,7 +106,7 @@ export default function Navigation({ activePage, onNavigate }) {
     <motion.nav
       ref={navRef}
       aria-label="Main navigation"
-      className="fixed left-1/2 z-50 w-[calc(100vw-1rem)] max-w-[390px] sm:w-auto sm:max-w-none"
+      className="fixed left-1/2 z-50 w-[calc(100vw-1rem)] max-w-[390px] md:w-auto md:max-w-none"
       style={{
         top: 0,
         y: springY,
@@ -127,7 +127,7 @@ export default function Navigation({ activePage, onNavigate }) {
         />
 
         <div
-          className="relative flex w-full items-center justify-between gap-1 rounded-full px-1 py-1.5 backdrop-blur-sm sm:w-auto sm:justify-start sm:px-2 sm:py-2"
+          className="relative flex w-full items-center justify-between gap-1 rounded-full px-1 py-1.5 backdrop-blur-sm md:w-auto md:justify-start md:px-2 md:py-2"
           style={{
             backgroundColor: 'var(--color-surface)',
             border: '1px solid var(--color-border)',
@@ -160,7 +160,7 @@ export default function Navigation({ activePage, onNavigate }) {
               onNavigate={onNavigate}
               ref={(el) => { linkRefs.current[id] = el }}
               aria-current={activePage === id ? 'page' : undefined}
-              className={`hit-area z-10 min-w-0 rounded-full px-1 py-2 text-center text-[0.68rem] font-medium uppercase tracking-[0.05em] sm:px-5 sm:py-2.5 sm:text-[0.8rem] sm:tracking-[0.12em] ${activePage !== id ? 'hover-text' : ''}`}
+              className={`hit-area z-10 min-w-0 rounded-full px-1 py-2 text-center text-[0.68rem] font-medium uppercase tracking-[0.05em] md:px-5 md:py-2.5 md:text-[0.8rem] md:tracking-[0.12em] ${activePage !== id ? 'hover-text' : ''}`}
               style={{
                 color: activePage === id ? 'var(--color-text)' : 'var(--color-text-secondary)',
                 transition: 'color 0.2s ease',

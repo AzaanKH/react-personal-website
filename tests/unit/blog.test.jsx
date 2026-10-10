@@ -66,11 +66,15 @@ describe('blog', () => {
     expect(window.location.pathname).toBe('/blog/newer-post')
   })
 
-  it('shows "not found" for an unknown post', async () => {
-    window.history.replaceState(null, '', '/blog/nope')
-    render(<App />)
+  it.each(['/blog/nope', '/blog/not_found', '/blog/Older-Post', '/blog/a/b'])(
+    'shows "not found" for %s and keeps the URL',
+    async (path) => {
+      window.history.replaceState(null, '', path)
+      render(<App />)
 
-    expect(await screen.findByRole('heading', { level: 1, name: 'Post not found' })).toBeInTheDocument()
-    expect(document.title).toBe(routes.blog.title)
-  })
+      expect(await screen.findByRole('heading', { level: 1, name: 'Post not found' })).toBeInTheDocument()
+      expect(window.location.pathname).toBe(path)
+      expect(document.title).toBe(routes.blog.title)
+    },
+  )
 })

@@ -38,6 +38,31 @@ describe('parsePostMeta', () => {
     expect(() => parsePostMeta(source, 'a.mdx')).toThrow(error)
   })
 
+  const withDate = (date) => post(`title: t\ndescription: d\ndate: ${date}`)
+
+  it.each([
+    ['2026-99-99', 'nonsense month and day'],
+    ['2026-00-10', 'month 00'],
+    ['2026-13-01', 'month 13'],
+    ['2026-01-00', 'day 00'],
+    ['2026-01-32', 'day 32'],
+    ['2026-04-31', '31 days in a 30-day month'],
+    ['2026-02-31', 'Feb 31 (would roll to March 3)'],
+    ['2026-02-29', 'Feb 29 in a common year'],
+    ['2100-02-29', 'Feb 29 in a century year not divisible by 400'],
+  ])('rejects %s (%s)', (date) => {
+    expect(() => parsePostMeta(withDate(date), 'a.mdx')).toThrow(`"date" ${date} is not a real calendar date`)
+  })
+
+  it.each([
+    ['2028-02-29', 'leap year'],
+    ['2000-02-29', 'century leap year (divisible by 400)'],
+    ['2026-12-31', 'last day of the year'],
+    ['2026-01-01', 'first day of the year'],
+  ])('accepts %s (%s)', (date) => {
+    expect(parsePostMeta(withDate(date), 'a.mdx').date).toBe(date)
+  })
+
   it('rejects file names that are not URL slugs', () => {
     expect(() => parsePostMeta(post(valid), 'My Post.mdx')).toThrow(/My Post\.mdx: file name/)
   })

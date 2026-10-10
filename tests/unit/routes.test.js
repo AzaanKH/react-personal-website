@@ -42,8 +42,18 @@ describe('parseLocation', () => {
     expect(parseLocation(path)).toEqual(location)
   })
 
-  it.each(['/blog/Not_A_Slug', '/blog/a/b', '/blogx/a'])('does not treat %s as a post', (path) => {
-    expect(parseLocation(path).slug).toBeNull()
+  // Malformed slugs still route to the blog (and its "Post not found"), never to home.
+  it.each([
+    ['/blog/not_found', 'not_found'],
+    ['/blog/Not-A-Slug', 'Not-A-Slug'],
+    ['/blog/a/b', 'a/b'],
+    ['/blog/a/b/', 'a/b'],
+  ])('routes malformed %s to the blog with slug %s', (path, slug) => {
+    expect(parseLocation(path)).toEqual({ page: 'blog', slug })
+  })
+
+  it.each(['/blogx/a', '/blog-post', '/notblog/a'])('does not treat %s as a post', (path) => {
+    expect(parseLocation(path)).toEqual({ page: 'home', slug: null })
   })
 
   it('round-trips to the canonical path', () => {

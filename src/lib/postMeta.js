@@ -25,6 +25,7 @@ export function parsePostMeta(source, file) {
   }
   // YAML 1.2 (the `yaml` default) keeps 2026-10-09 a string, so no timezone shifts.
   if (typeof data.date !== 'string' || !DATE.test(data.date)) fail('"date" must be YYYY-MM-DD')
+  if (!isCalendarDate(data.date)) fail(`"date" ${data.date} is not a real calendar date`)
   if (data.draft !== undefined && typeof data.draft !== 'boolean') fail('"draft" must be true or false')
 
   return {
@@ -35,6 +36,14 @@ export function parsePostMeta(source, file) {
     draft: data.draft ?? false,
     readingMinutes: readingMinutes(source.slice(match[0].length)),
   }
+}
+
+// Date.UTC rolls overflow forward (2026-02-31 → March 3), so a real date is one that
+// survives the round trip unchanged. This also covers leap years.
+function isCalendarDate(date) {
+  const [year, month, day] = date.split('-').map(Number)
+  const parsed = new Date(Date.UTC(year, month - 1, day))
+  return parsed.getUTCFullYear() === year && parsed.getUTCMonth() === month - 1 && parsed.getUTCDate() === day
 }
 
 // Rough: counts prose words, skipping import/export lines, code fences, and JSX tags.

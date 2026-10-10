@@ -42,12 +42,15 @@ export const routes = {
 export const pageIds = Object.keys(routes)
 
 const normalizePath = (pathname) => (pathname === '/' ? '/' : pathname.replace(/\/+$/, ''))
-const POST_PATH = /^\/blog\/([a-z0-9]+(?:-[a-z0-9]+)*)$/
+const POST_PATH = /^\/blog\/(.+)$/
 
 export const postPath = (slug) => `${routes.blog.path}/${slug}`
 
-// Posts live at /blog/<slug> (the .mdx file name). Whether the slug is a real post is
-// checked by the page (lib/posts.js), since this file also runs in vite.config.js.
+// Posts live at /blog/<slug> (the .mdx file name). Anything under /blog/ is treated as a
+// post request, even a malformed slug like /blog/not_found or /blog/a/b, so it reaches
+// BlogPostPage's "Post not found" (matching netlify.toml's /blog/* rewrite) instead of
+// falling back to home. Whether the slug is a real post is checked by the page
+// (lib/posts.js), since this file also runs in vite.config.js.
 export function getPostSlug(pathname) {
   return POST_PATH.exec(normalizePath(pathname))?.[1] ?? null
 }
