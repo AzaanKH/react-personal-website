@@ -127,7 +127,7 @@ export default function Navigation({ activePage, onNavigate }) {
         />
 
         <div
-          className="relative flex w-full items-center justify-between gap-1 rounded-full px-1 py-1.5 backdrop-blur-sm md:w-auto md:justify-start md:px-2 md:py-2"
+          className="relative flex w-full items-center justify-between gap-1 rounded-full px-3 py-1.5 backdrop-blur-sm md:w-auto md:justify-start md:px-2 md:py-2"
           style={{
             backgroundColor: 'var(--color-surface)',
             border: '1px solid var(--color-border)',
@@ -160,13 +160,19 @@ export default function Navigation({ activePage, onNavigate }) {
               onNavigate={onNavigate}
               ref={(el) => { linkRefs.current[id] = el }}
               aria-current={activePage === id ? 'page' : undefined}
-              className={`hit-area z-10 min-w-0 rounded-full px-1 py-2 text-center text-[0.68rem] font-medium uppercase tracking-[0.05em] md:px-5 md:py-2.5 md:text-[0.8rem] md:tracking-[0.12em] ${activePage !== id ? 'hover-text' : ''}`}
+              className={`hit-area z-10 min-w-0 rounded-full px-1.5 py-2 text-center text-[0.68rem] font-medium uppercase md:px-5 md:py-2.5 md:text-[0.8rem] md:tracking-[0.12em] ${activePage !== id ? 'hover-text' : ''}`}
               style={{
                 color: activePage === id ? 'var(--color-text)' : 'var(--color-text-secondary)',
                 transition: 'color 0.2s ease',
               }}
             >
-              {routes[id].label}
+              {id === 'home' ? (
+                <>
+                  {/* Below md the five labels don't fit comfortably; a monogram frees the room. */}
+                  <span aria-hidden="true" className="font-display text-base italic normal-case leading-none md:hidden">AK</span>
+                  <span className="sr-only md:not-sr-only">{routes[id].label}</span>
+                </>
+              ) : routes[id].label}
             </RouteLink>
           ))}
         </div>
