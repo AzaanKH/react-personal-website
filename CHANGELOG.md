@@ -16,6 +16,7 @@ All notable changes and improvements to this project are documented in this file
 - Consistent pages: one width (`.page-shell`, 1080px), one page-title size, and one label style (`Kicker`) everywhere. Labels now only appear where they add meaning; Interests sections are numbered (01–05) to match their jump links.
 
 ### Added
+- Blog (`/blog`, `/blog/<slug>`) written in MDX: posts are `src/posts/*.mdx` with frontmatter (title, description, date, draft), can import live React components, and each loads as its own chunk. Posts get prerendered social/SEO tags, reading time, and a "Blog" nav item. Includes a draft template post with an interactive spring playground.
 - `/interests` page (replaces `/gaming`, which now 301s to `/interests#gaming`): fantasy football, gaming, movies, shows, and anime.
 - Sleeper card: record, rank, points for, and this week's score, fetched directly from Sleeper in the browser. Only my team is named and the league isn't identified or linked. "Show lineups" expands both starting lineups, with player names from a new day-cached `/api/nfl-players` function. Refreshes every 3 minutes while visible and keeps the last good result.
 - Movies, shows, anime, and favorite games are endless poster carousels: slow auto-scroll that eases to a stop on hover, mouse drag, trackpad/touch scrolling, a hairline scrollbar with a position counter, and "Show all" for the full grid.

@@ -7,18 +7,30 @@ import PageTransition from './components/PageTransition'
 import HomePage from './pages/HomePage'
 import ProjectsPage from './pages/ProjectsPage'
 import InterestsPage from './pages/InterestsPage'
+import BlogPage from './pages/BlogPage'
+import BlogPostPage from './pages/BlogPostPage'
 import ContactPage from './pages/ContactPage'
-import { applyPageMetadata, getPageFromPath, routes } from './lib/routes'
+import { getPost } from './lib/posts'
+import {
+  applyMetadata,
+  applyPageMetadata,
+  getPostMetadata,
+  locationPath,
+  parseLocation,
+} from './lib/routes'
 
 const pages = {
   home: HomePage,
   projects: ProjectsPage,
   interests: InterestsPage,
+  blog: BlogPage,
   contact: ContactPage,
 }
 
 export default function App() {
-  const [activePage, setActivePage] = useState(() => getPageFromPath(window.location.pathname))
+  // { page, slug }: slug is set only on /blog/<slug>.
+  const [route, setRoute] = useState(() => parseLocation(window.location.pathname))
+  const { page: activePage, slug: postSlug } = route
   const { theme, resolvedTheme, setTheme } = useDarkMode()
 
   const mainRef = useRef(null)
@@ -27,7 +39,7 @@ export default function App() {
   // Whether <main> has scrolled away from the top; fades the theme toggle on mobile.
   const [isScrolled, setIsScrolled] = useState(false)
   const isDark = resolvedTheme === 'dark'
-  const PageComponent = pages[activePage]
+  const PageComponent = postSlug ? BlogPostPage : pages[activePage]
 
   useEffect(() => {
     const main = mainRef.current
@@ -39,36 +51,39 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    const currentPage = getPageFromPath(window.location.pathname)
-    const canonicalPath = routes[currentPage].path
+    const current = parseLocation(window.location.pathname)
+    const canonicalPath = locationPath(current)
 
     if (window.location.pathname !== canonicalPath) {
       // Keep the hash: /interests#gaming scrolls to that section.
-      window.history.replaceState({ page: currentPage }, '', canonicalPath + window.location.hash)
+      window.history.replaceState(current, '', canonicalPath + window.location.hash)
     }
   }, [])
 
   useEffect(() => {
-    applyPageMetadata(activePage)
-  }, [activePage])
+    const post = postSlug && getPost(postSlug)
+    if (post) applyMetadata(getPostMetadata(post))
+    else applyPageMetadata(activePage)
+  }, [activePage, postSlug])
 
   useEffect(() => {
     const handlePopState = () => {
       setHasNavigated(true)
-      setActivePage(getPageFromPath(window.location.pathname))
+      setRoute(parseLocation(window.location.pathname))
     }
 
     window.addEventListener('popstate', handlePopState)
     return () => window.removeEventListener('popstate', handlePopState)
   }, [])
 
-  const navigateToPage = useCallback((page) => {
-    if (!pages[page] || page === activePage) return
+  const navigateToPage = useCallback((page, slug = null) => {
+    if (!pages[page] || (page === activePage && slug === postSlug)) return
 
-    window.history.pushState({ page }, '', routes[page].path)
+    const next = { page, slug }
+    window.history.pushState(next, '', locationPath(next))
     setHasNavigated(true)
-    setActivePage(page)
-  }, [activePage])
+    setRoute(next)
+  }, [activePage, postSlug])
 
   return (
     <MotionConfig reducedMotion="user">
@@ -127,8 +142,8 @@ export default function App() {
           <AnimatePresence mode="wait" initial={false} onExitComplete={() => {
             if (mainRef.current) mainRef.current.scrollTop = 0
           }}>
-            <PageTransition key={activePage} focusHeading={hasNavigated}>
-              <PageComponent onNavigate={navigateToPage} />
+            <PageTransition key={postSlug ? `post:${postSlug}` : activePage} focusHeading={hasNavigated}>
+              <PageComponent onNavigate={navigateToPage} slug={postSlug} />
             </PageTransition>
           </AnimatePresence>
         </main>

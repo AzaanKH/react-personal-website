@@ -1,0 +1,63 @@
+---
+title: Writing interactive posts with MDX
+description: A template post showing what works here, from plain markdown to live React components.
+date: 2026-10-09
+draft: true
+---
+
+import SpringPlayground from '@/components/blog/SpringPlayground'
+
+export const springs = [
+  { name: 'Snappy', stiffness: 400, damping: 30 },
+  { name: 'Default nav', stiffness: 200, damping: 24 },
+  { name: 'Wobbly', stiffness: 120, damping: 6 },
+]
+
+This is a **draft**: it shows under `netlify dev` but isn't published. Copy it to start a
+new post, then delete it (or set `draft: false`).
+
+## Markdown works as usual
+
+Paragraphs, *emphasis*, [links](https://mdxjs.com/docs/what-is-mdx/), `inline code`, lists,
+and quotes:
+
+- The file name is the URL: `src/posts/hello-mdx.mdx` → `/blog/hello-mdx`
+- Frontmatter needs `title`, `description`, and `date`; `draft` is optional
+- A single `#` heading renders as a section heading, since the title is the page's `h1`
+
+> GitHub-flavored extras (tables, ~~strikethrough~~, task lists, autolinks) are on too.
+
+| Feature | Syntax |
+| --- | --- |
+| Component | `<SpringPlayground />` |
+| Expression | `{springs.length}` |
+| Callout | `<Callout title="…">` |
+
+```js
+// Code blocks get a styled frame.
+const spring = { type: 'spring', stiffness: 200, damping: 24 }
+```
+
+## Components
+
+Import any React component and drop it in. Try different settings:
+
+<SpringPlayground />
+
+`<Callout>` is available in every post without an import:
+
+<Callout title="Tip">
+  Markdown works inside components too, as long as there's a blank line around it.
+
+  Like **this**.
+</Callout>
+
+## JavaScript expressions
+
+Values exported from the post can be used inline. There are {springs.length} presets here:
+
+<ul>
+  {springs.map((s) => (
+    <li key={s.name}>{s.name}: stiffness {s.stiffness}, damping {s.damping}</li>
+  ))}
+</ul>

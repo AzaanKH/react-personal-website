@@ -28,6 +28,7 @@ npm run add -- movie "Dune: Part Two" 2024   # also show|anime|game; see "Intere
 | Weather | `/.netlify/functions/weather` → Open-Meteo |
 | Fantasy football | Sleeper API, fetched **directly from the browser** (no key, CORS `*`) |
 | Posters | TMDB (movies/shows/anime), Steam CDN, IGDB (non-Steam games). IDs stored in `src/data/interests.json` by `npm run add` |
+| Blog | MDX 3 (`@mdx-js/rollup`, remark-gfm, remark-frontmatter), compiled at build time. See "Blog" |
 | Tests | Vitest 5 + Testing Library + jsdom (`tests/unit`) |
 | Node | 24 (netlify.toml, CI, `.nvmrc`); Vite 8 needs ≥ 22.12 |
 
@@ -40,9 +41,23 @@ npm run add -- movie "Dune: Part Two" 2024   # also show|anime|game; see "Intere
 - Non-JS crawlers: the `prerender-route-heads` plugin in `vite.config.js` emits `dist/<page>.html` (a copy of the built `index.html` with `renderPageHead(html, page)` applied). Netlify serves `/projects` from `projects.html` because a static file shadows the non-forced SPA rewrite; under `netlify dev` the rewrite to `index.html` still applies. `renderPageHead` throws if `index.html` loses one of the tags in `HEAD_TAGS`, which keeps the key attribute first (`<meta name="…" content="…">`).
 - Nav and in-page links use `components/RouteLink.jsx`: a real `<a href>` that does client-side navigation on a plain left click and leaves modifier clicks to the browser.
 - After in-app navigation (not the first load), `PageTransition` focuses the new page's `h1`. **Every page must render exactly one `h1`.** GamingPage uses a stable `sr-only` h1 because its visible heading changes with loading/playing state.
+- App's route state is `{ page, slug }` (`parseLocation`/`locationPath`); `slug` is set for any path under `/blog/`, even a malformed one (`/blog/not_found`, `/blog/a/b`), so it shows "Post not found" rather than falling back to home. `RouteLink to="blog" slug="…"` links a post; `onNavigate(page, slug)`.
 - `/gaming` was folded into `/interests`: `routes.interests.aliases` maps it client-side and `netlify.toml` 301s it to `/interests#gaming`. Keep the two in sync. App keeps `location.hash` when canonicalizing the path.
 - `netlify.toml` lists SPA routes explicitly. **Do not reintroduce a `/*` → `/index.html` rewrite**: under `netlify dev` it rewrites Vite's `/src/*` and `/@vite/*` modules to HTML and the page goes blank. Adding a page means updating `routes.js` and `netlify.toml`.
 - Unknown paths: `public/404.html` in production (Vite's own fallback in dev).
+
+---
+
+## Blog (`pages/BlogPage.jsx`, `pages/BlogPostPage.jsx`, `src/posts/`)
+
+- **Writing a post**: add `src/posts/<slug>.mdx`; the file name is the URL (`/blog/<slug>`, lowercase-kebab-case). Frontmatter `title`, `description`, `date` (YYYY-MM-DD, must be a real calendar date) are required, `draft: true` is optional. `src/lib/postMeta.js` validates them and **fails the build** (or dev reload) on a bad field. `hello-mdx.mdx` is a draft template showing every feature.
+- **Post list** (`vite/blogPosts.js` → `virtual:blog-posts`, consumed by `lib/posts.js`): one entry per post with its frontmatter inlined (plus `readingMinutes`) and a lazy `import()` of the body, one chunk per post, prefetched on hover/focus in the index. **Don't go back to `import.meta.glob`**: a glob imports every file before any draft filter runs, so drafts were emitted as public chunks.
+- **Drafts** show under `netlify dev` and Vitest (with a Draft badge). In a build they're left out of the virtual module, so they're never imported, prerendered, or chunked, and the plugin's `generateBundle` **fails the build** if any chunk still contains a draft (e.g. one imported directly). `tests/unit/blogPostsPlugin.test.js` runs real fixture builds to check both.
+- The dev server reloads the list when a post is added, removed, or its frontmatter changes; body-only edits still hot-update.
+- **Components**: `lib/mdxComponents.js` maps markdown elements (`#` → h2, since the post title is the page's one h1; external links open in a new tab) and provides globals usable without an import (`<Callout title>`; implementations in `components/blog/MdxElements.jsx`). Interactive components (`components/blog/`, e.g. `SpringPlayground`) are imported by the post so they ship in its chunk. Prose styling is `.post-prose` in `index.css` (no typography plugin); header and body share a 42rem column.
+- **SEO**: `prerender-route-heads` also emits `dist/blog/<slug>.html` for every published post (`renderHead(html, getPostMetadata(post))`). `netlify.toml` rewrites `/blog` and `/blog/*` to `index.html`; unknown or malformed slugs render "Post not found" (a soft 404).
+- **Nav breakpoint**: with five items the expanded nav is ~534px wide, so it expands at `md` (768px), not `sm`. At `sm` the theme toggle moves up beside the nav (`DarkModeToggle`), and between 640 and ~680px the expanded nav would overlap it. Re-measure if you add a nav item.
+- **Tests**: `tests/unit/posts.test.jsx` renders every real post and fails on an h1 or a compile error; `blog.test.jsx` mocks `lib/posts` for the routing flow.
 
 ---
 
