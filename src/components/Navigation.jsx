@@ -168,8 +168,10 @@ export default function Navigation({ activePage, onNavigate }) {
             >
               {id === 'home' ? (
                 <>
-                  {/* Below md the five labels don't fit comfortably; a monogram frees the room. */}
-                  <span aria-hidden="true" className="font-display text-base italic normal-case leading-none md:hidden">AK</span>
+                  {/* Below md the five labels don't fit comfortably; a monogram frees the room.
+                      It stays in the accessible name ("AK Home") so voice control can say what's shown;
+                      md:hidden is display:none, which drops it from the name on desktop. */}
+                  <span className="font-display text-base italic normal-case leading-none md:hidden">AK</span>{' '}
                   <span className="sr-only md:not-sr-only">{routes[id].label}</span>
                 </>
               ) : routes[id].label}
