@@ -279,12 +279,19 @@ const projects = [
       src: '/projects/start-sit-compare.webp',
       width: 805,
       height: 650,
-      position: 'top center',
+      // Shown whole on the site's own green, so the verdict and both point totals are
+      // never cropped, whatever shape the frame takes.
+      fit: 'contain',
+      background: '#173a29',
       alt: 'Start/Sit comparing two running backs for week 5 of 2026: Start Kyren Williams, projected 18.7 PPR points, 3.1 more than James Cook at 15.6, each with an 80% range bar.',
       caption: 'Live site · week 5 RB start/sit',
     },
     metrics: [
-      { value: '74%', label: 'RB start/sit accuracy' },
+      {
+        value: '74%',
+        label: 'RB start/sit accuracy',
+        note: 'Held-out 2025 weeks 5–18: pairs of RBs projected for 5+ points whose actual scores differed by 3+ points. Closer calls aren’t counted.',
+      },
       { value: '80%', label: 'Calibrated ranges' },
       { value: 'Live', label: 'Hosted site' },
     ],
@@ -304,7 +311,7 @@ const projects = [
       },
       {
         label: 'Result',
-        text: 'On held-out 2025 weeks 5–18, start/sit accuracy beats a 3-game average at every position: RB 74.3% vs 68.3%, WR 70.9% vs 65.6%, QB 62.2% vs 59.7%.',
+        text: 'On held-out 2025 weeks 5–18, start/sit accuracy beats a 3-game average at every position: RB 74.3% vs 68.3%, WR 70.9% vs 65.6%, QB 62.2% vs 59.7%. It counts pairs of players projected for 5+ points whose actual scores differed by 3+ points, so close calls are excluded.',
       },
     ],
     architecture: {
@@ -449,32 +456,51 @@ const projects = [
   },
 ]
 
+// A metric with a `note` gets an asterisk and a footnote under the strip, for numbers
+// that need their method stated (e.g. which decisions an accuracy figure counts).
 function MetricStrip({ metrics }) {
+  const notes = metrics.filter((metric) => metric.note)
+
   return (
-    <div className="grid grid-cols-3 gap-2">
-      {metrics.map((metric) => (
-        <div
-          key={`${metric.value}-${metric.label}`}
-          className="min-h-[68px] px-3 py-3"
-          style={{
-            backgroundColor: 'var(--color-surface-elevated)',
-            border: '1px solid var(--color-border)',
-            borderRadius: 10,
-          }}
+    <div>
+      <div className="grid grid-cols-3 gap-2">
+        {metrics.map((metric) => (
+          <div
+            key={`${metric.value}-${metric.label}`}
+            className="min-h-[68px] px-3 py-3"
+            style={{
+              backgroundColor: 'var(--color-surface-elevated)',
+              border: '1px solid var(--color-border)',
+              borderRadius: 10,
+            }}
+          >
+            <p
+              className="font-semibold leading-none"
+              style={{ color: 'var(--color-text)', fontSize: 'var(--text-metric)' }}
+            >
+              {metric.value}
+              {metric.note && (
+                <span aria-hidden="true" style={{ color: 'var(--color-accent)' }}>*</span>
+              )}
+            </p>
+            <p
+              className="mt-2 text-[0.68rem] uppercase tracking-[0.12em] leading-tight"
+              style={{ color: 'var(--color-text-secondary)' }}
+            >
+              {metric.label}
+            </p>
+          </div>
+        ))}
+      </div>
+      {notes.map((metric) => (
+        <p
+          key={metric.label}
+          className="mt-2 text-xs leading-5"
+          style={{ color: 'var(--color-text-secondary)' }}
         >
-          <p
-            className="font-semibold leading-none"
-            style={{ color: 'var(--color-text)', fontSize: 'var(--text-metric)' }}
-          >
-            {metric.value}
-          </p>
-          <p
-            className="mt-2 text-[0.68rem] uppercase tracking-[0.12em] leading-tight"
-            style={{ color: 'var(--color-text-secondary)' }}
-          >
-            {metric.label}
-          </p>
-        </div>
+          <span aria-hidden="true" style={{ color: 'var(--color-accent)' }}>* </span>
+          {metric.note}
+        </p>
       ))}
     </div>
   )
@@ -483,10 +509,12 @@ function MetricStrip({ metrics }) {
 function ProofVisual({ screenshot, name }) {
   if (screenshot.type === 'image') {
     return (
+      // The image never sets the card's height: below lg the frame is a fixed 16:10 box,
+      // and from lg it stretches to the text column. Tall crops show their top.
       <div
-        className="relative h-full min-h-[190px] overflow-hidden"
+        className="relative aspect-[16/10] min-h-[190px] overflow-hidden lg:aspect-auto lg:h-full"
         style={{
-          backgroundColor: 'var(--color-surface-elevated)',
+          backgroundColor: screenshot.background ?? 'var(--color-surface-elevated)',
           border: '1px solid var(--color-border)',
           borderRadius: 10,
         }}
@@ -498,7 +526,7 @@ function ProofVisual({ screenshot, name }) {
           height={screenshot.height}
           loading="lazy"
           decoding="async"
-          className="h-full w-full object-cover"
+          className={`absolute inset-0 h-full w-full ${screenshot.fit === 'contain' ? 'object-contain' : 'object-cover'}`}
           style={{ objectPosition: screenshot.position ?? 'center' }}
         />
         <div
