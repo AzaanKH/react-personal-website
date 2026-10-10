@@ -103,7 +103,7 @@ CSS variables in `src/index.css` (`:root` / `.dark`): `--color-bg`, `--color-sur
 **Page conventions** (keep these consistent across pages):
 - Every page wraps its content in `.page-shell` (1080px max, 1.5rem gutters), so the left edge lines up everywhere.
 - Page titles (`h1`) use `display-heading page-title`. Two display voices only: heavy Space Grotesk for the name on Home, Cormorant for every page and section title.
-- Small labels above headings use `components/Kicker.jsx` ("── SELECTED WORK"; with `number` on long pages: "01 ── FANTASY FOOTBALL"). **A kicker must add something the heading doesn't say** (what a playful heading is about, or why the page exists). Don't repeat the nav label or the heading, and don't stack labels (a single-shelf section has no shelf title). Interests numbers come from the `SECTIONS` order and are shared with the jump links.
+- Small labels above headings use `components/Kicker.jsx` ("── LET'S WORK TOGETHER"; with `number` on long pages: "01 ── FANTASY FOOTBALL"). **A kicker must add something the heading doesn't say** (what a playful heading is about, or why the page exists). Don't repeat the nav label or the heading, and don't stack labels (a single-shelf section has no shelf title). Interests numbers come from the `SECTIONS` order and are shared with the jump links.
 
 ---
 
