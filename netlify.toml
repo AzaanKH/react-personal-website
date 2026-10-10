@@ -33,6 +33,18 @@
   status = 200
 
 [[redirects]]
+  from = "/blog"
+  to = "/index.html"
+  status = 200
+
+# Published posts are served from their prerendered dist/blog/<slug>.html (a static file
+# shadows this rewrite). Unknown slugs reach the app, which shows "Post not found".
+[[redirects]]
+  from = "/blog/*"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
   from = "/contact"
   to = "/index.html"
   status = 200

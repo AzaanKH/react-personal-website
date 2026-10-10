@@ -28,6 +28,7 @@ npm run add -- movie "Dune: Part Two" 2024   # also show|anime|game; see "Intere
 | Weather | `/.netlify/functions/weather` → Open-Meteo |
 | Fantasy football | Sleeper API, fetched **directly from the browser** (no key, CORS `*`) |
 | Posters | TMDB (movies/shows/anime), Steam CDN, IGDB (non-Steam games). IDs stored in `src/data/interests.json` by `npm run add` |
+| Blog | MDX 3 (`@mdx-js/rollup`, remark-gfm, remark-frontmatter), compiled at build time. See "Blog" |
 | Tests | Vitest 5 + Testing Library + jsdom (`tests/unit`) |
 | Node | 24 (netlify.toml, CI, `.nvmrc`); Vite 8 needs ≥ 22.12 |
 
@@ -40,9 +41,20 @@ npm run add -- movie "Dune: Part Two" 2024   # also show|anime|game; see "Intere
 - Non-JS crawlers: the `prerender-route-heads` plugin in `vite.config.js` emits `dist/<page>.html` (a copy of the built `index.html` with `renderPageHead(html, page)` applied). Netlify serves `/projects` from `projects.html` because a static file shadows the non-forced SPA rewrite; under `netlify dev` the rewrite to `index.html` still applies. `renderPageHead` throws if `index.html` loses one of the tags in `HEAD_TAGS`, which keeps the key attribute first (`<meta name="…" content="…">`).
 - Nav and in-page links use `components/RouteLink.jsx`: a real `<a href>` that does client-side navigation on a plain left click and leaves modifier clicks to the browser.
 - After in-app navigation (not the first load), `PageTransition` focuses the new page's `h1`. **Every page must render exactly one `h1`.** GamingPage uses a stable `sr-only` h1 because its visible heading changes with loading/playing state.
+- App's route state is `{ page, slug }` (`parseLocation`/`locationPath`); `slug` is set only on `/blog/<slug>`. `RouteLink to="blog" slug="…"` links a post; `onNavigate(page, slug)`.
 - `/gaming` was folded into `/interests`: `routes.interests.aliases` maps it client-side and `netlify.toml` 301s it to `/interests#gaming`. Keep the two in sync. App keeps `location.hash` when canonicalizing the path.
 - `netlify.toml` lists SPA routes explicitly. **Do not reintroduce a `/*` → `/index.html` rewrite**: under `netlify dev` it rewrites Vite's `/src/*` and `/@vite/*` modules to HTML and the page goes blank. Adding a page means updating `routes.js` and `netlify.toml`.
 - Unknown paths: `public/404.html` in production (Vite's own fallback in dev).
+
+---
+
+## Blog (`pages/BlogPage.jsx`, `pages/BlogPostPage.jsx`, `src/posts/`)
+
+- **Writing a post**: add `src/posts/<slug>.mdx`; the file name is the URL (`/blog/<slug>`, lowercase-kebab-case). Frontmatter `title`, `description`, `date` (YYYY-MM-DD) are required, `draft: true` is optional. `src/lib/postMeta.js` validates them and **fails the build** (or dev reload) on a bad field. Drafts show under `netlify dev` (with a Draft badge) but not in production builds. `hello-mdx.mdx` is a draft template showing every feature.
+- **Two imports per post** (`lib/posts.js`): `post.mdx?meta` (eager) is just the frontmatter as JSON plus `readingMinutes`, produced by the `blog-post-meta` plugin in `vite.config.js`; the `.mdx` itself (lazy, `React.lazy`) is the body, one chunk per post, prefetched on hover/focus in the index. The plugin resolves `?meta` to a `\0post-meta:` virtual ID because `@mdx-js/rollup` strips queries before its extension check and would otherwise compile it as MDX; its filter skips `\0` IDs.
+- **Components**: `lib/mdxComponents.js` maps markdown elements (`#` → h2, since the post title is the page's one h1; external links open in a new tab) and provides globals usable without an import (`<Callout title>`; implementations in `components/blog/MdxElements.jsx`). Interactive components (`components/blog/`, e.g. `SpringPlayground`) are imported by the post so they ship in its chunk. Prose styling is `.post-prose` in `index.css` (no typography plugin); header and body share a 42rem column.
+- **SEO**: `prerender-route-heads` also emits `dist/blog/<slug>.html` for every published post (`renderHead(html, getPostMetadata(post))`). `netlify.toml` rewrites `/blog` and `/blog/*` to `index.html`; unknown slugs render "Post not found" (a soft 404).
+- **Tests**: `tests/unit/posts.test.jsx` renders every real post and fails on an h1 or a compile error; `blog.test.jsx` mocks `lib/posts` for the routing flow.
 
 ---
 

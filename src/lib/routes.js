@@ -25,6 +25,12 @@ export const routes = {
     description:
       'Off the clock with Azaan Khalfe: fantasy football on Sleeper, games from Steam and beyond, and favorite movies, shows, and anime.',
   },
+  blog: {
+    path: '/blog',
+    label: 'Blog',
+    title: 'Blog | Azaan Khalfe',
+    description: 'Writing by Azaan Khalfe: interactive posts on web engineering, tools, and the things I build.',
+  },
   contact: {
     path: '/contact',
     label: 'Contact',
@@ -35,12 +41,31 @@ export const routes = {
 
 export const pageIds = Object.keys(routes)
 
+const normalizePath = (pathname) => (pathname === '/' ? '/' : pathname.replace(/\/+$/, ''))
+const POST_PATH = /^\/blog\/([a-z0-9]+(?:-[a-z0-9]+)*)$/
+
+export const postPath = (slug) => `${routes.blog.path}/${slug}`
+
+// Posts live at /blog/<slug> (the .mdx file name). Whether the slug is a real post is
+// checked by the page (lib/posts.js), since this file also runs in vite.config.js.
+export function getPostSlug(pathname) {
+  return POST_PATH.exec(normalizePath(pathname))?.[1] ?? null
+}
+
 export function getPageFromPath(pathname) {
-  const normalizedPath = pathname === '/' ? '/' : pathname.replace(/\/+$/, '')
+  const normalizedPath = normalizePath(pathname)
+  if (getPostSlug(normalizedPath)) return 'blog'
   return (
     pageIds.find((id) => routes[id].path === normalizedPath || routes[id].aliases?.includes(normalizedPath)) ?? 'home'
   )
 }
+
+// The URL state App keeps: a page, plus a post slug on /blog/<slug>.
+export function parseLocation(pathname) {
+  return { page: getPageFromPath(pathname), slug: getPostSlug(pathname) }
+}
+
+export const locationPath = ({ page, slug }) => (slug ? postPath(slug) : routes[page].path)
 
 // Head tags that change per page. index.html must contain each one with the key
 // attribute first (e.g. `<meta name="description" content="...">`): the build
@@ -60,10 +85,18 @@ export function getPageMetadata(page) {
   return { title, description, url: `${SITE_URL}${path}` }
 }
 
+// `post` is a lib/posts.js entry (or the build's parsePostMeta result).
+export function getPostMetadata(post) {
+  return { title: `${post.title} | Azaan Khalfe`, description: post.description, url: `${SITE_URL}${postPath(post.slug)}` }
+}
+
+export function applyPageMetadata(page) {
+  applyMetadata(getPageMetadata(page))
+}
+
 // index.html ships the home page's metadata; this keeps it accurate after
 // client-side navigation (tab title, history entries, share previews from JS crawlers).
-export function applyPageMetadata(page) {
-  const metadata = getPageMetadata(page)
+export function applyMetadata(metadata) {
   document.title = metadata.title
   for (const { tag, key: [keyName, keyValue], attribute, field } of HEAD_TAGS) {
     document.head.querySelector(`${tag}[${keyName}="${keyValue}"]`)?.setAttribute(attribute, metadata[field])
@@ -73,11 +106,14 @@ export function applyPageMetadata(page) {
 const escapeHtml = (value) =>
   value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
-// Build time (see vite.config.js): returns index.html with `page`'s head tags, so
+export function renderPageHead(html, page) {
+  return renderHead(html, getPageMetadata(page))
+}
+
+// Build time (see vite.config.js): returns index.html with these head tags, so
 // crawlers and link unfurlers that don't run JavaScript see the right metadata.
 // Throws if a tag is missing, so an edit to index.html can't silently break this.
-export function renderPageHead(html, page) {
-  const metadata = getPageMetadata(page)
+export function renderHead(html, metadata) {
   const replaceOnce = (pattern, replacement, label) => {
     if (!pattern.test(html)) throw new Error(`renderPageHead: index.html has no ${label}`)
     html = html.replace(pattern, replacement)

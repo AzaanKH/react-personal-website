@@ -127,7 +127,7 @@ export default function Navigation({ activePage, onNavigate }) {
         />
 
         <div
-          className="relative grid w-full grid-cols-4 items-center gap-1 rounded-full px-1 py-1.5 backdrop-blur-sm sm:flex sm:w-auto sm:px-2 sm:py-2"
+          className="relative flex w-full items-center justify-between gap-1 rounded-full px-1 py-1.5 backdrop-blur-sm sm:w-auto sm:justify-start sm:px-2 sm:py-2"
           style={{
             backgroundColor: 'var(--color-surface)',
             border: '1px solid var(--color-border)',

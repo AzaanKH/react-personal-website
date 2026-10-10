@@ -1,7 +1,16 @@
 import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
-import { applyPageMetadata, getPageFromPath, renderPageHead, routes } from '../../src/lib/routes'
+import {
+  applyPageMetadata,
+  getPageFromPath,
+  getPostMetadata,
+  locationPath,
+  parseLocation,
+  renderHead,
+  renderPageHead,
+  routes,
+} from '../../src/lib/routes'
 
 describe('getPageFromPath', () => {
   it.each([
@@ -11,12 +20,35 @@ describe('getPageFromPath', () => {
     ['/interests//', 'interests'],
     ['/gaming', 'interests'],
     ['/contact', 'contact'],
+    ['/blog', 'blog'],
+    ['/blog/my-post', 'blog'],
+    ['/blog/my-post/', 'blog'],
   ])('maps %s to %s', (path, page) => {
     expect(getPageFromPath(path)).toBe(page)
   })
 
   it('falls back to home for unknown paths', () => {
     expect(getPageFromPath('/does-not-exist')).toBe('home')
+  })
+})
+
+describe('parseLocation', () => {
+  it.each([
+    ['/blog', { page: 'blog', slug: null }],
+    ['/blog/my-post', { page: 'blog', slug: 'my-post' }],
+    ['/blog/my-post/', { page: 'blog', slug: 'my-post' }],
+    ['/projects', { page: 'projects', slug: null }],
+  ])('parses %s', (path, location) => {
+    expect(parseLocation(path)).toEqual(location)
+  })
+
+  it.each(['/blog/Not_A_Slug', '/blog/a/b', '/blogx/a'])('does not treat %s as a post', (path) => {
+    expect(parseLocation(path).slug).toBeNull()
+  })
+
+  it('round-trips to the canonical path', () => {
+    expect(locationPath(parseLocation('/blog/my-post/'))).toBe('/blog/my-post')
+    expect(locationPath(parseLocation('/gaming'))).toBe('/interests')
   })
 })
 
@@ -68,7 +100,7 @@ describe('renderPageHead', () => {
     }
   }
 
-  it.each(['projects', 'interests', 'contact'])('prerenders every %s head tag from the real index.html', (page) => {
+  it.each(['projects', 'interests', 'blog', 'contact'])('prerenders every %s head tag from the real index.html', (page) => {
     const { title, description } = routes[page]
     const url = `https://azaankhalfe.netlify.app${routes[page].path}`
 
@@ -98,6 +130,14 @@ describe('renderPageHead', () => {
     } finally {
       routes.projects.title = original
     }
+  })
+
+  it('prerenders a post with its own title, description, and URL', () => {
+    const post = { slug: 'my-post', title: 'My post', description: 'About it' }
+    const head = headOf(renderHead(indexHtml, getPostMetadata(post)))
+    expect(head.title).toBe('My post | Azaan Khalfe')
+    expect(head.ogDescription).toBe('About it')
+    expect(head.canonical).toBe('https://azaankhalfe.netlify.app/blog/my-post')
   })
 
   it('fails the build if index.html loses a tag', () => {
