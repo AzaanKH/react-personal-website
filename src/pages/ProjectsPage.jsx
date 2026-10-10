@@ -111,8 +111,9 @@ const projects = [
   },
   {
     // Copy, facts, and status come from the project's portfolio handoff. The screenshots
-    // are from a Sleeper mock draft (pick 2.06); the card uses a crop of the board so
-    // player names stay readable at card size.
+    // are from a Sleeper mock draft (pick 2.06); the card uses a crop of the Assistant's
+    // Best Pick panel, the product's actual answer, whose big numbers stay readable at
+    // card size.
     name: 'Fantasy Draft Assistant',
     eyebrow: 'Fantasy football tooling',
     description:
@@ -120,12 +121,12 @@ const projects = [
     proof: 'The React workspace and terminal CLI share draft calculations, while a local sync server polls Sleeper and Yahoo for picks and the Chrome extension relays ESPN draft observations. Data readiness checks block recommendations when required inputs are missing or stale.',
     screenshot: {
       type: 'image',
-      src: '/projects/fantasy-draft-assistant/board-card.webp',
-      width: 1000,
-      height: 808,
+      src: '/projects/fantasy-draft-assistant/best-pick-card.webp',
+      width: 680,
+      height: 900,
       position: 'top center',
-      alt: 'Fantasy football draft board around My Team: Puka Nacua taken at 1.05, Amon-Ra St. Brown at 2.05, and My Team on the clock at pick 2.06.',
-      caption: 'Sleeper mock draft · pick 2.06',
+      alt: 'Assistant at pick 2.06 recommending CeeDee Lamb: 18.3 points of waiting cost to pick 3.05 and +88 above replacement, with a side-by-side comparison against Justin Jefferson.',
+      caption: 'Best Pick · Sleeper mock draft · pick 2.06',
     },
     gallery: [
       {
@@ -265,23 +266,34 @@ const projects = [
     demo: 'https://fantasy-draft-demo.pages.dev/draft',
   },
   {
-    name: 'NFL Fantasy Picker',
+    // Copy, model details, and evaluation numbers come from the football repo README.
+    // The screenshot is the live site's week 5 RB comparison; the architecture
+    // example follows it.
+    name: 'Start/Sit Predictor',
     eyebrow: 'ML product system',
     description:
-      'Machine learning-powered fantasy football recommendations using XGBoost predictions with multi-source data pipelines.',
-    proof: 'A full local app: React search interface, Flask prediction API, TimescaleDB/Postgres feature store, and position-specific XGBoost models.',
+      "A fantasy football start/sit site: pick the players you're deciding between and see each one's projected PPR points with a calibrated 80% range.",
+    proof: 'A local Python pipeline (Sleeper and ESPN data, Postgres features, position-specific models) is checked against baselines, then exported as static JSON to a hosted site, so no API or database runs in production.',
     screenshot: {
       type: 'image',
-      // Resized from the repo's 3024px website_homepage.jpeg (176 KB -> 11 KB).
-      src: '/projects/fantasy-football-home.webp',
-      width: 1200,
-      height: 383,
-      alt: 'Fantasy football predictor homepage screenshot',
+      src: '/projects/start-sit-compare.webp',
+      width: 805,
+      height: 650,
+      // Shown whole on the site's own green, so the verdict and both point totals are
+      // never cropped, whatever shape the frame takes.
+      fit: 'contain',
+      background: '#173a29',
+      alt: 'Start/Sit comparing two running backs for week 5 of 2026: Start Kyren Williams, projected 18.7 PPR points, 3.1 more than James Cook at 15.6, each with an 80% range bar.',
+      caption: 'Live site · week 5 RB start/sit',
     },
     metrics: [
-      { value: '2.9', label: 'MAE model error' },
-      { value: '10k+', label: 'player-week records' },
-      { value: '800+', label: 'searchable players' },
+      {
+        value: '74%',
+        label: 'RB start/sit accuracy',
+        note: 'Held-out 2025 weeks 5–18: pairs of RBs projected for 5+ points whose actual scores differed by 3+ points. Closer calls aren’t counted.',
+      },
+      { value: '80%', label: 'Calibrated ranges' },
+      { value: 'Live', label: 'Hosted site' },
     ],
     caseStudy: [
       {
@@ -290,72 +302,71 @@ const projects = [
       },
       {
         label: 'Build',
-        text: 'A multi-source data pipeline feeding position-specific XGBoost models, served through a Flask API to a React interface.',
+        text: "Each prediction is anchored on Sleeper's weekly PPR projection, given a calibrated 80% range, and published as static JSON to a comparison site.",
         points: [
-          'Sleeper, ESPN, and a scraper sit behind automatic fallback orchestration and rate limiting.',
-          'Models train on rolling averages, reliability flags, efficiency metrics, and trend indicators.',
-          'A Postgres + TimescaleDB schema for weekly stats keeps rolling-window feature queries efficient.',
+          'A learned correction is kept only when it lowers error without hurting start/sit accuracy; players without a projection fall back to an XGBoost model on engineered features.',
+          '10th and 90th percentile models are conformally calibrated (CQR), so the range covers about 80% of outcomes.',
+          'Python, Postgres, and the model stay local. Cloudflare Pages rebuilds from a published snapshot, and missing or invalid data fails the build instead of shipping.',
         ],
       },
       {
         label: 'Result',
-        text: 'Pick a week and position, search 800+ players instantly, and compare predictions with confidence intervals and 3-game averages.',
+        text: 'On held-out 2025 weeks 5–18, start/sit accuracy beats a 3-game average at every position: RB 74.3% vs 68.3%, WR 70.9% vs 65.6%, QB 62.2% vs 59.7%. It counts pairs of players projected for 5+ points whose actual scores differed by 3+ points, so close calls are excluded.',
       },
     ],
-    // Endpoints, scheduler commands, and feature groups come from the football repo
-    // README; the example's players and numbers are illustrative.
     architecture: {
-      scenario: 'a Week 18 running back start/sit',
+      scenario: 'a week 5 running back start/sit',
       lanes: [
         {
-          label: 'Training',
+          label: 'Local, weekly',
           nodes: [
             {
-              label: 'Sleeper API / ESPN / scraper',
-              detail: 'Sleeper and ESPN integrations sync players, stats, matchups, and projections, with a scraper fallback and rate limiting. In the offseason, when Sleeper reports week 0, the stat syncs skip cleanly.',
-              example: ['$ python scheduler.py run-now --sync', 'players · stats · matchups · projections'],
+              label: 'Sleeper + ESPN sync',
+              detail: "Reads the current season and week from Sleeper, then syncs only what's missing: the schedule, stats for finished weeks, and Sleeper's projections. In the offseason the stat syncs skip cleanly.",
+              example: ['$ python setup_season.py --dry-run', 'schedule · stats · projections', '$ python setup_season.py'],
             },
             {
-              label: 'Feature pipeline',
-              detail: 'Turns raw weekly stats into model features: rolling averages, reliability flags for thin early-season samples, efficiency, consistency, usage trends, and matchup context.',
-              example: ['$ python run_pipeline.py compute-features 2025 18', 'rolling   points over 3 / 5 / 10 games', 'reliable  games played, full-window flag', 'form      boom rate, bust rate, floor', 'matchup   opponent, home/away, rest days'],
+              label: 'Postgres feature pipeline',
+              detail: 'Turns weekly stats into features: rolling averages, reliability flags for thin early-season samples, efficiency, consistency, usage trends, and matchup context. Only games a player actually played count.',
+              example: ['rolling   points over 3 / 5 / 10 games', 'reliable  games played, prior-season blend', 'form      boom rate, bust rate, floor', 'matchup   opponent defense, snap share, rest'],
             },
             {
-              label: 'Postgres + TimescaleDB',
-              detail: '10k+ player-week records: players, stats, projections, features, and matchup context in a schema built for rolling-window queries.',
-              example: ['GET /available_weeks', '→ weeks with computed features', '  … 2025 · week 18'],
+              label: 'Weekly predictor',
+              detail: "The point estimate is Sleeper's projection, plus a shallow correction only where it measurably helps. Quantile models give the 80% range, calibrated on the latest weeks. Temporal splits only.",
+              example: ['point   Sleeper projection (+ correction)', 'range   p10 / p90, conformal (CQR)', 'no projection → XGBoost fallback'],
             },
             {
-              label: 'XGBoost models',
-              detail: 'Separate models for QBs, RBs, and WRs, trained on temporal splits so future games never leak into training, and checked with walk-forward backtests. 2.9 MAE.',
-              example: ['models  qb · rb · wr', 'split   temporal, walk-forward backtest', 'saved   models/weekly_predictor.pkl'],
+              label: 'Evaluation vs baselines',
+              detail: 'Every modeling choice is checked against a 3-game average and the previous standalone model on held-out weeks, by error, start/sit accuracy, and range coverage.',
+              example: ['$ python evaluation.py rb', 'RB  3-game avg  5.35 MAE  68.3%', 'RB  current     4.69 MAE  74.3%', '80% range coverage  77.8%'],
             },
           ],
         },
         {
-          label: 'Serving',
+          label: 'Published',
           nodes: [
             {
-              label: 'Flask API',
-              detail: 'POST /predict_week takes a position, players, week, and season, and returns predictions with confidence intervals.',
-              example: ['POST /predict_week', '{ "position": "rb",', '  "player_ids": ["4034", "6794"],', '  "week": 18, "season": 2025 }'],
+              label: 'Static JSON snapshot',
+              detail: 'Predictions are exported to JSON, 200 sampled requests are verified against the local predictor, and the snapshot is uploaded as a GitHub Release asset.',
+              example: ['$ ./scripts/publish-data.ps1', 'export → verify 200 samples', '→ predictions.json.gz (release asset)'],
             },
             {
-              label: 'React + shadcn UI',
-              detail: 'Pick the week and position, then search and filter 800+ players instantly to build the comparison.',
-              example: ['week 18 · RB', 'search → instant filter, 800+ players', 'add 2 players → compare'],
+              label: 'Cloudflare Pages build',
+              detail: 'Each build downloads the snapshot and validates every manifest file. If anything is missing or invalid, the build fails and the current deployment stays live. No hosted API or database.',
+              example: ['$ npm run build:site', 'download snapshot · validate manifest', '→ football-start-sit.pages.dev'],
             },
             {
-              label: 'Prediction cards with confidence ranges',
-              detail: 'Each card shows predicted points, the confidence range around them, and the 3-game average, so the start/sit call accounts for uncertainty.',
-              example: ['RB A  14.2 pts  (10.8–17.6)  3-gm 12.9', 'RB B  11.7 pts   (8.1–15.0)  3-gm 13.4', '→ start RB A'],
+              label: 'Start/Sit comparison',
+              detail: 'Pick a season, week, and position, add the players you are deciding between, and get a verdict with projected PPR points and the range each lands in 8 times out of 10.',
+              example: ['week 5 · RB', 'Kyren Williams  18.7', 'James Cook      15.6', '→ Start Kyren Williams (+3.1)'],
             },
           ],
         },
       ],
     },
-    tech: ['React', 'Python', 'Flask', 'PostgreSQL', 'TimescaleDB', 'XGBoost'],
+    tech: ['React', 'shadcn/ui', 'Python', 'Flask', 'PostgreSQL', 'TimescaleDB', 'XGBoost', 'Cloudflare Pages'],
     repo: 'https://github.com/AzaanKH/football',
+    demo: 'https://football-start-sit.pages.dev',
   },
   {
     name: 'Distributed Paxos Consensus',
@@ -445,32 +456,51 @@ const projects = [
   },
 ]
 
+// A metric with a `note` gets an asterisk and a footnote under the strip, for numbers
+// that need their method stated (e.g. which decisions an accuracy figure counts).
 function MetricStrip({ metrics }) {
+  const notes = metrics.filter((metric) => metric.note)
+
   return (
-    <div className="grid grid-cols-3 gap-2">
-      {metrics.map((metric) => (
-        <div
-          key={`${metric.value}-${metric.label}`}
-          className="min-h-[68px] px-3 py-3"
-          style={{
-            backgroundColor: 'var(--color-surface-elevated)',
-            border: '1px solid var(--color-border)',
-            borderRadius: 10,
-          }}
+    <div>
+      <div className="grid grid-cols-3 gap-2">
+        {metrics.map((metric) => (
+          <div
+            key={`${metric.value}-${metric.label}`}
+            className="min-h-[68px] px-3 py-3"
+            style={{
+              backgroundColor: 'var(--color-surface-elevated)',
+              border: '1px solid var(--color-border)',
+              borderRadius: 10,
+            }}
+          >
+            <p
+              className="font-semibold leading-none"
+              style={{ color: 'var(--color-text)', fontSize: 'var(--text-metric)' }}
+            >
+              {metric.value}
+              {metric.note && (
+                <span aria-hidden="true" style={{ color: 'var(--color-accent)' }}>*</span>
+              )}
+            </p>
+            <p
+              className="mt-2 text-[0.68rem] uppercase tracking-[0.12em] leading-tight"
+              style={{ color: 'var(--color-text-secondary)' }}
+            >
+              {metric.label}
+            </p>
+          </div>
+        ))}
+      </div>
+      {notes.map((metric) => (
+        <p
+          key={metric.label}
+          className="mt-2 text-xs leading-5"
+          style={{ color: 'var(--color-text-secondary)' }}
         >
-          <p
-            className="font-semibold leading-none"
-            style={{ color: 'var(--color-text)', fontSize: 'var(--text-metric)' }}
-          >
-            {metric.value}
-          </p>
-          <p
-            className="mt-2 text-[0.68rem] uppercase tracking-[0.12em] leading-tight"
-            style={{ color: 'var(--color-text-secondary)' }}
-          >
-            {metric.label}
-          </p>
-        </div>
+          <span aria-hidden="true" style={{ color: 'var(--color-accent)' }}>* </span>
+          {metric.note}
+        </p>
       ))}
     </div>
   )
@@ -479,10 +509,12 @@ function MetricStrip({ metrics }) {
 function ProofVisual({ screenshot, name }) {
   if (screenshot.type === 'image') {
     return (
+      // The image never sets the card's height: below lg the frame is a fixed 16:10 box,
+      // and from lg it stretches to the text column. Tall crops show their top.
       <div
-        className="relative h-full min-h-[190px] overflow-hidden"
+        className="relative aspect-[16/10] min-h-[190px] overflow-hidden lg:aspect-auto lg:h-full"
         style={{
-          backgroundColor: 'var(--color-surface-elevated)',
+          backgroundColor: screenshot.background ?? 'var(--color-surface-elevated)',
           border: '1px solid var(--color-border)',
           borderRadius: 10,
         }}
@@ -494,7 +526,7 @@ function ProofVisual({ screenshot, name }) {
           height={screenshot.height}
           loading="lazy"
           decoding="async"
-          className="h-full w-full object-cover"
+          className={`absolute inset-0 h-full w-full ${screenshot.fit === 'contain' ? 'object-contain' : 'object-cover'}`}
           style={{ objectPosition: screenshot.position ?? 'center' }}
         />
         <div
@@ -905,37 +937,41 @@ export default function ProjectsPage() {
                       className="border-t px-4 py-5 sm:px-5 md:px-6 md:py-6"
                       style={{ borderColor: 'var(--color-border)' }}
                     >
-                      {/* Full card width, and each image opens at full size: app screenshots
-                          are only readable when they aren't shrunk much. */}
-                      {project.gallery?.map((image) => (
-                        <figure key={image.src} className="mb-6">
-                          <a
-                            href={image.src}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="group block overflow-hidden"
-                            style={{ border: '1px solid var(--color-border)', borderRadius: 10 }}
-                          >
-                            <img
-                              src={image.src}
-                              alt={image.alt}
-                              width={image.width}
-                              height={image.height}
-                              loading="lazy"
-                              decoding="async"
-                              className="h-auto w-full transition-transform duration-500 group-hover:scale-[1.01]"
-                            />
-                            <span className="sr-only"> (opens full size in a new tab)</span>
-                          </a>
-                          <figcaption
-                            className="mt-2 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 text-xs leading-5"
-                            style={{ color: 'var(--color-text-secondary)' }}
-                          >
-                            <span>{image.caption}</span>
-                            <span className="uppercase tracking-[0.12em]" aria-hidden="true">Click to enlarge</span>
-                          </figcaption>
-                        </figure>
-                      ))}
+                      {/* Two up from sm, so the screenshots don't push the case study a screen
+                          down; each opens at full size, where app text is readable. */}
+                      {project.gallery && (
+                        <div className="mb-6 grid gap-4 sm:grid-cols-2">
+                          {project.gallery.map((image) => (
+                            <figure key={image.src}>
+                              <a
+                                href={image.src}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="group block overflow-hidden"
+                                style={{ border: '1px solid var(--color-border)', borderRadius: 10 }}
+                              >
+                                <img
+                                  src={image.src}
+                                  alt={image.alt}
+                                  width={image.width}
+                                  height={image.height}
+                                  loading="lazy"
+                                  decoding="async"
+                                  className="h-auto w-full transition-transform duration-500 group-hover:scale-[1.02]"
+                                />
+                                <span className="sr-only"> (opens full size in a new tab)</span>
+                              </a>
+                              <figcaption
+                                className="mt-2 text-xs leading-5"
+                                style={{ color: 'var(--color-text-secondary)' }}
+                              >
+                                {image.caption}
+                                <span className="ml-2 uppercase tracking-[0.12em]" aria-hidden="true">· Click to enlarge</span>
+                              </figcaption>
+                            </figure>
+                          ))}
+                        </div>
+                      )}
 
                       <section>
                         <SectionHeading icon={Layers}>Case study</SectionHeading>

@@ -14,7 +14,7 @@ export const routes = {
     label: 'Projects',
     title: 'Projects | Azaan Khalfe',
     description:
-      'Case studies from Azaan Khalfe: an MCP server for local dev environments, a fantasy football draft assistant, an XGBoost fantasy football predictor, and a Paxos consensus simulation.',
+      'Case studies from Azaan Khalfe: an MCP server for local dev environments, a fantasy football draft assistant, a fantasy football start/sit predictor, and a Paxos consensus simulation.',
   },
   interests: {
     path: '/interests',
