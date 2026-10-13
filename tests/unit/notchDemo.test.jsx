@@ -23,7 +23,7 @@ describe('NotchRouter demo', () => {
 
   it('cycles while on screen and stops when paused, without toggling the card', () => {
     render(<ProjectsPage />)
-    expect(caption('Agent update · Working')).toBeInTheDocument()
+    expect(caption('Codex hook · Working')).toBeInTheDocument()
 
     advance()
     expect(caption('Permission request · Needs review')).toBeInTheDocument()

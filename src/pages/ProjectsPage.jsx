@@ -69,7 +69,7 @@ const projects = [
             {
               label: 'notchctl',
               detail: 'The bundled CLI. Any agent, script, or Shortcut can send an activity with a stable ID and update it as the work changes state.',
-              example: ['$ notchctl send --id checkout-42 \\', '    --source "Claude Code" \\', '    --title "Review checkout changes" \\', '    --state needs_approval'],
+              example: ['$ notchctl send --id checkout-42 \\', '    --source "Codex" \\', '    --title "Review checkout changes" \\', '    --state needs_approval'],
             },
             {
               label: 'Private socket + token',
@@ -89,7 +89,7 @@ const projects = [
             {
               label: 'Compact surface',
               detail: 'Shows one signal at a time. An agent that needs you takes priority over downloads, the focus timer, and music, and the panel springs open from the notch.',
-              example: ['Claude Code · Needs review', 'Review checkout changes'],
+              example: ['Codex · Needs review', 'Review checkout changes'],
             },
             {
               label: 'Expanded panel',
