@@ -26,7 +26,7 @@ describe('NotchRouter demo', () => {
     expect(caption('Codex hook · Working')).toBeInTheDocument()
 
     advance()
-    expect(caption('Permission request · Needs review')).toBeInTheDocument()
+    expect(caption('Hover · peek with shortcuts')).toBeInTheDocument()
 
     const pause = screen.getByRole('button', { name: 'Pause animation' })
     expect(pause.closest('button[aria-expanded]')).toBeNull()
@@ -35,10 +35,12 @@ describe('NotchRouter demo', () => {
 
     advance()
     advance()
-    expect(caption('Permission request · Needs review')).toBeInTheDocument()
+    expect(caption('Hover · peek with shortcuts')).toBeInTheDocument()
 
+    // The peek holds longer (3.4 s) than a collapsed state, and resuming restarts its timer.
     fireEvent.click(screen.getByRole('button', { name: 'Play animation' }))
     advance()
-    expect(caption('Turn finished · Completed')).toBeInTheDocument()
+    advance()
+    expect(caption('Permission request · Needs review')).toBeInTheDocument()
   })
 })
