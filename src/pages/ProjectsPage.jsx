@@ -6,6 +6,8 @@ import {
   ChevronDown,
   GitBranch,
   Layers,
+  Pause,
+  Play,
 } from 'lucide-react'
 import { GithubIcon } from '../components/BrandIcons'
 import ArchitectureFlow from '../components/projects/ArchitectureFlow'
@@ -40,7 +42,7 @@ const projects = [
         points: [
           'One spring drives the window, outline, and content together, and content blurs as it swaps, so the panel grows out of the notch instead of popping in.',
           'notchctl and Codex hooks post to a private Unix socket that needs a per-user token; requests are size, time, and connection capped, and legacy TCP is off by default.',
-          'Music samples the artwork for an ambient tint; clipboard, files, downloads, and system metrics stay off until you enable them.',
+          'Music samples the artwork for an ambient tint. Music, clipboard history, downloads, notifications, and system metrics stay off until you enable them, and the file shelf only bookmarks files you drop or choose.',
         ],
       },
       {
@@ -67,7 +69,7 @@ const projects = [
             {
               label: 'notchctl',
               detail: 'The bundled CLI. Any agent, script, or Shortcut can send an activity with a stable ID and update it as the work changes state.',
-              example: ['$ notchctl send --id checkout-42 \\', '    --source "T3 Code" \\', '    --state needs_approval'],
+              example: ['$ notchctl send --id checkout-42 \\', '    --source "T3 Code" \\', '    --title "Review checkout changes" \\', '    --state needs_approval'],
             },
             {
               label: 'Private socket + token',
@@ -81,7 +83,7 @@ const projects = [
           nodes: [
             {
               label: 'Activity store',
-              detail: 'Keeps the history and liveness of every activity. Anything without an update for five minutes is marked Disconnected; identical heartbeats refresh liveness without adding history.',
+              detail: 'Keeps the history and liveness of every activity. Unfinished activities without an update for five minutes are marked Disconnected, while finished ones keep their result; identical heartbeats refresh liveness without adding history.',
               example: ['checkout-42  needs_approval', 'last update  12 s ago', 'no update for 5 min → Disconnected'],
             },
             {
@@ -595,8 +597,8 @@ function MetricStrip({ metrics }) {
   )
 }
 
-function ProofVisual({ screenshot, name }) {
-  if (screenshot.type === 'notch') return <NotchDemo caption={screenshot.caption} />
+function ProofVisual({ screenshot, name, paused }) {
+  if (screenshot.type === 'notch') return <NotchDemo caption={screenshot.caption} paused={paused} />
 
   if (screenshot.type === 'image') {
     return (
@@ -875,8 +877,31 @@ function ProjectLink({ href, label, primary, children }) {
   )
 }
 
-function ProjectLinks({ project }) {
-  if (!project.demo && !project.repo) return null
+// An auto-cycling visual needs a pause control (WCAG 2.2.2). It sits here rather than on
+// the visual because the visual is inside the card's toggle button.
+function AnimationToggle({ paused, onToggle }) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      className="inline-flex h-9 items-center gap-2 px-3.5 font-mono text-[0.68rem] font-medium uppercase tracking-[0.08em] hover:opacity-85"
+      style={{
+        color: 'var(--color-text-secondary)',
+        backgroundColor: 'transparent',
+        border: '1px solid var(--color-border)',
+        borderRadius: 9999,
+        transition: 'opacity 0.2s ease',
+      }}
+    >
+      {paused ? <Play size={13} strokeWidth={1.75} aria-hidden="true" /> : <Pause size={13} strokeWidth={1.75} aria-hidden="true" />}
+      {paused ? 'Play animation' : 'Pause animation'}
+    </button>
+  )
+}
+
+function ProjectLinks({ project, animationPaused, onToggleAnimation }) {
+  const animated = project.screenshot.type === 'notch'
+  if (!project.demo && !project.repo && !animated) return null
 
   return (
     <div className="flex flex-wrap items-center gap-2 px-4 pb-4 sm:px-5 md:px-6">
@@ -892,12 +917,16 @@ function ProjectLinks({ project }) {
           Source
         </ProjectLink>
       )}
+      {animated && (
+        <AnimationToggle paused={animationPaused} onToggle={onToggleAnimation} />
+      )}
     </div>
   )
 }
 
 export default function ProjectsPage() {
   const [expandedIndex, setExpandedIndex] = useState(null)
+  const [animationPaused, setAnimationPaused] = useState(false)
 
   const toggle = (i) => {
     setExpandedIndex(expandedIndex === i ? null : i)
@@ -1008,11 +1037,15 @@ export default function ProjectsPage() {
                     </p>
                   </div>
 
-                  <ProofVisual screenshot={project.screenshot} name={project.name} />
+                  <ProofVisual screenshot={project.screenshot} name={project.name} paused={animationPaused} />
                 </div>
               </button>
 
-              <ProjectLinks project={project} />
+              <ProjectLinks
+                project={project}
+                animationPaused={animationPaused}
+                onToggleAnimation={() => setAnimationPaused(!animationPaused)}
+              />
 
               <AnimatePresence initial={false}>
                 {isExpanded && (

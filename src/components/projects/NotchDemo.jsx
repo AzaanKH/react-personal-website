@@ -21,7 +21,7 @@ function Row({ children }) {
   return <div className="flex h-[30px] items-center justify-between gap-3 px-3.5">{children}</div>
 }
 
-function NotchContent({ state }) {
+function NotchContent({ state, active }) {
   switch (state.key) {
     case 'running':
     case 'approval':
@@ -70,8 +70,8 @@ function NotchContent({ state }) {
                 key={bar}
                 className="w-[2px] rounded-full"
                 style={{ backgroundColor: state.tint }}
-                animate={{ height: ['30%', '100%', '45%', '80%', '30%'] }}
-                transition={{ duration: 1.1, repeat: Infinity, delay: bar * 0.15, ease: 'easeInOut' }}
+                animate={{ height: active ? ['30%', '100%', '45%', '80%', '30%'] : '55%' }}
+                transition={active ? { duration: 1.1, repeat: Infinity, delay: bar * 0.15, ease: 'easeInOut' } : { duration: 0.2 }}
               />
             ))}
           </span>
@@ -93,14 +93,15 @@ function NotchContent({ state }) {
   }
 }
 
-// Cycles through the compact states while the card is on screen. Reduced motion
+// Cycles through the compact states while the card is on screen and not paused (the
+// pause control lives outside the card's toggle button, in ProjectsPage). Reduced motion
 // shows the "needs review" state, the one the app exists for, and holds it.
-export default function NotchDemo({ caption }) {
+export default function NotchDemo({ caption, paused }) {
   const ref = useRef(null)
   const inView = useInView(ref, { amount: 0.4 })
   const prefersReducedMotion = useReducedMotion()
   const [step, setStep] = useState(1)
-  const cycling = inView && !prefersReducedMotion
+  const cycling = inView && !prefersReducedMotion && !paused
   const state = prefersReducedMotion ? STATES[2] : STATES[step]
 
   useEffect(() => {
@@ -114,7 +115,7 @@ export default function NotchDemo({ caption }) {
       ref={ref}
       role="img"
       aria-label="Animation of the NotchRouter panel growing out of a MacBook notch to show an AI agent working, then asking for review, then finishing, followed by the music and focus timer surfaces."
-      className="relative aspect-[16/10] min-h-[190px] overflow-hidden lg:aspect-auto lg:h-full"
+      className="relative aspect-[16/10] min-h-[190px] w-full min-w-0 overflow-hidden lg:aspect-auto lg:h-full"
       style={{
         background: 'radial-gradient(120% 90% at 30% 110%, #3b2a5c 0%, #1b2440 45%, #0b0f1a 100%)',
         border: '1px solid var(--color-border)',
@@ -154,7 +155,7 @@ export default function NotchDemo({ caption }) {
               exit={{ opacity: 0, y: -6, filter: 'blur(4px)' }}
               transition={{ duration: 0.25 }}
             >
-              <NotchContent state={state} />
+              <NotchContent state={state} active={cycling} />
             </motion.div>
           </AnimatePresence>
         </motion.div>
