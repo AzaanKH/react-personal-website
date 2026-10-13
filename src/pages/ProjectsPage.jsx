@@ -6,11 +6,103 @@ import {
   ChevronDown,
   GitBranch,
   Layers,
+  Pause,
+  Play,
 } from 'lucide-react'
 import { GithubIcon } from '../components/BrandIcons'
 import ArchitectureFlow from '../components/projects/ArchitectureFlow'
+import NotchDemo from '../components/projects/NotchDemo'
 
 const projects = [
+  {
+    // Copy and facts come from the mac-dynamic-notch README and source. The card's visual
+    // is a drawn re-creation of the compact surface (NotchDemo), not a screen recording.
+    name: 'NotchRouter',
+    eyebrow: 'macOS app · AI activity',
+    description:
+      'A native macOS notch panel that shows what your AI agents are doing: working, waiting for your review, or done. It also holds a focus timer, a file shelf, music controls, clipboard history, and system status.',
+    proof: 'Agents report through a local CLI and a token-authenticated private Unix socket; Codex and T3 Code lifecycle hooks map straight onto activity states. Every integration is opt-in, and 155 Swift tests cover the API, security boundaries, and notch geometry.',
+    screenshot: {
+      type: 'notch',
+      caption: 'Compact surface',
+    },
+    metrics: [
+      { value: '6', label: 'Panel sections' },
+      { value: '7', label: 'Activity states' },
+      { value: '155', label: 'Swift tests' },
+    ],
+    caseStudy: [
+      {
+        label: 'Problem',
+        text: "Coding agents run in terminals and background windows, so it's easy to miss the moment one stops to ask for approval, finishes, or loses its connection.",
+      },
+      {
+        label: 'Build',
+        text: 'A Swift 6 AppKit panel with SwiftUI views that sits over the notch (or the top of an external display) and follows Spaces and full-screen apps.',
+        points: [
+          'One spring drives the window, outline, and content together, and content blurs as it swaps, so the panel grows out of the notch instead of popping in.',
+          'notchctl and Codex hooks post to a private Unix socket that needs a per-user token; requests are size, time, and connection capped, and legacy TCP is off by default.',
+          'Music samples the artwork for an ambient tint. Music, clipboard history, downloads, notifications, and system metrics stay off until you enable them, and the file shelf only bookmarks files you drop or choose.',
+        ],
+      },
+      {
+        label: 'Result',
+        text: 'The compact surface shows one live signal at a time and puts an agent that needs you first. Hover to peek, click to open six sections, or press Option-N.',
+      },
+      {
+        label: 'Status',
+        text: 'Builds from source as a universal app. A tag-driven release pipeline (Developer ID, notarization, Sparkle updates) is set up, but no public release has shipped yet.',
+      },
+    ],
+    // Commands, states, and paths are from the README; the example follows one Codex turn.
+    architecture: {
+      scenario: 'a Codex turn that needs your approval',
+      lanes: [
+        {
+          label: 'Agent to notch',
+          nodes: [
+            {
+              label: 'Codex / T3 Code hooks',
+              detail: 'Installed with notchctl install-codex-hooks. Each lifecycle event maps onto an activity state, and if the app is closed the hook still exits cleanly so it never interrupts the agent.',
+              example: ['UserPromptSubmit  → running', 'PermissionRequest → needs_approval', 'PostToolUse       → running (heartbeat)', 'Stop              → succeeded'],
+            },
+            {
+              label: 'notchctl',
+              detail: 'The bundled CLI. Any agent, script, or Shortcut can send an activity with a stable ID and update it as the work changes state.',
+              example: ['$ notchctl send --id checkout-42 \\', '    --source "T3 Code" \\', '    --title "Review checkout changes" \\', '    --state needs_approval'],
+            },
+            {
+              label: 'Private socket + token',
+              detail: 'Requests go to a Unix socket in a directory only your account can read, with a bearer token. Bodies are capped at 64 KiB, requests at 10 seconds, and connections at 64. Rotating the token drops open connections.',
+              example: ['POST /v1/activities', 'Authorization: Bearer <token>', '→ 64 KiB · 10 s · 64 connections max'],
+            },
+          ],
+        },
+        {
+          label: 'Notch',
+          nodes: [
+            {
+              label: 'Activity store',
+              detail: 'Keeps the history and liveness of every activity. Unfinished activities without an update for five minutes are marked Disconnected, while finished ones keep their result; identical heartbeats refresh liveness without adding history.',
+              example: ['checkout-42  needs_approval', 'last update  12 s ago', 'no update for 5 min → Disconnected'],
+            },
+            {
+              label: 'Compact surface',
+              detail: 'Shows one signal at a time. An agent that needs you takes priority over downloads, the focus timer, and music, and the panel springs open from the notch.',
+              example: ['T3 Code · Needs review', 'Review checkout changes'],
+            },
+            {
+              label: 'Expanded panel',
+              detail: 'Six sections: Activity, Focus, Files, Music, Clipboard, and System. Approval opens the action URL in the source app; NotchRouter never approves work on its behalf.',
+              example: ['1 Activity  2 Focus  3 Files', '4 Music     5 Clipboard  6 System', 'Open → action_url in the source app'],
+            },
+          ],
+        },
+      ],
+    },
+    tech: ['Swift 6', 'SwiftUI', 'AppKit', 'Swift Testing', 'Unix sockets', 'Native messaging', 'Sparkle'],
+    repo: 'https://github.com/AzaanKH/mac-dynamic-notch',
+  },
   {
     name: 'DevEnv MCP Server',
     eyebrow: 'AI infrastructure tooling',
@@ -505,7 +597,9 @@ function MetricStrip({ metrics }) {
   )
 }
 
-function ProofVisual({ screenshot, name }) {
+function ProofVisual({ screenshot, name, paused }) {
+  if (screenshot.type === 'notch') return <NotchDemo caption={screenshot.caption} paused={paused} />
+
   if (screenshot.type === 'image') {
     return (
       // The image never sets the card's height: below lg the frame is a fixed 16:10 box,
@@ -783,8 +877,31 @@ function ProjectLink({ href, label, primary, children }) {
   )
 }
 
-function ProjectLinks({ project }) {
-  if (!project.demo && !project.repo) return null
+// An auto-cycling visual needs a pause control (WCAG 2.2.2). It sits here rather than on
+// the visual because the visual is inside the card's toggle button.
+function AnimationToggle({ paused, onToggle }) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      className="inline-flex h-9 items-center gap-2 px-3.5 font-mono text-[0.68rem] font-medium uppercase tracking-[0.08em] hover:opacity-85"
+      style={{
+        color: 'var(--color-text-secondary)',
+        backgroundColor: 'transparent',
+        border: '1px solid var(--color-border)',
+        borderRadius: 9999,
+        transition: 'opacity 0.2s ease',
+      }}
+    >
+      {paused ? <Play size={13} strokeWidth={1.75} aria-hidden="true" /> : <Pause size={13} strokeWidth={1.75} aria-hidden="true" />}
+      {paused ? 'Play animation' : 'Pause animation'}
+    </button>
+  )
+}
+
+function ProjectLinks({ project, animationPaused, onToggleAnimation }) {
+  const animated = project.screenshot.type === 'notch'
+  if (!project.demo && !project.repo && !animated) return null
 
   return (
     <div className="flex flex-wrap items-center gap-2 px-4 pb-4 sm:px-5 md:px-6">
@@ -800,12 +917,16 @@ function ProjectLinks({ project }) {
           Source
         </ProjectLink>
       )}
+      {animated && (
+        <AnimationToggle paused={animationPaused} onToggle={onToggleAnimation} />
+      )}
     </div>
   )
 }
 
 export default function ProjectsPage() {
   const [expandedIndex, setExpandedIndex] = useState(null)
+  const [animationPaused, setAnimationPaused] = useState(false)
 
   const toggle = (i) => {
     setExpandedIndex(expandedIndex === i ? null : i)
@@ -916,11 +1037,15 @@ export default function ProjectsPage() {
                     </p>
                   </div>
 
-                  <ProofVisual screenshot={project.screenshot} name={project.name} />
+                  <ProofVisual screenshot={project.screenshot} name={project.name} paused={animationPaused} />
                 </div>
               </button>
 
-              <ProjectLinks project={project} />
+              <ProjectLinks
+                project={project}
+                animationPaused={animationPaused}
+                onToggleAnimation={() => setAnimationPaused(!animationPaused)}
+              />
 
               <AnimatePresence initial={false}>
                 {isExpanded && (

@@ -25,9 +25,18 @@ class ResizeObserverStub {
   disconnect() {}
 }
 
+// Never reports an intersection, so in-view animations (useInView) stay idle.
+class IntersectionObserverStub {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+  takeRecords() { return [] }
+}
+
 beforeEach(() => {
   installMatchMedia(false)
   globalThis.ResizeObserver = ResizeObserverStub
+  globalThis.IntersectionObserver = IntersectionObserverStub
   localStorage.clear()
   sessionStorage.clear()
   document.documentElement.classList.remove('dark')
