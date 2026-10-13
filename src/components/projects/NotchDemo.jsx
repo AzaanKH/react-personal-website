@@ -107,14 +107,14 @@ function SectionShortcuts({ sections, power }) {
       {sections.map(({ label, icon: Icon }) => (
         <span
           key={label}
-          className="flex h-[26px] flex-1 items-center justify-center gap-1 rounded-[7px] bg-white/[0.09] text-[10px] font-semibold text-white/85"
+          className="flex h-8 flex-1 items-center justify-center gap-1 rounded-[7px] bg-white/[0.08] text-[10px] font-semibold text-white/80"
         >
           <Icon size={10} strokeWidth={2} />
           {label}
         </span>
       ))}
       {power && (
-        <span className="flex h-[26px] w-8 items-center justify-center rounded-[7px] bg-white/[0.09] text-red-400">
+        <span className="flex h-8 w-8 items-center justify-center rounded-[7px] bg-red-500/[0.08] text-red-400">
           <Power size={10} strokeWidth={2.5} />
         </span>
       )}
@@ -167,7 +167,7 @@ function NotchContent({ state, active }) {
         <div className="space-y-[5px] pb-[7px]">
           <ActivityRow icon={Sparkles} tint={CYAN} label="Working" title="Review checkout changes" />
           <div className="px-3">
-            <SectionShortcuts sections={ACTIVITY_SHORTCUTS} />
+            <SectionShortcuts sections={ACTIVITY_SHORTCUTS} power />
           </div>
         </div>
       )
@@ -262,8 +262,10 @@ function Surface({ state, active }) {
         transition={SURFACE_SPRING}
       >
         {/* Content is laid out at its final width and blurs as it swaps, like
-            NotchMorphTransition, so it never reflows while the outline springs. */}
-        <AnimatePresence mode="popLayout" initial={false}>
+            NotchMorphTransition, so it never reflows while the outline springs. Both
+            copies are already absolute, so the default (sync) mode keeps them centred;
+            popLayout would re-pin the exiting copy and drop the centring margin. */}
+        <AnimatePresence initial={false}>
           <motion.div
             key={state.key}
             className="absolute left-1/2 top-0"

@@ -21,7 +21,7 @@ const projects = [
     eyebrow: 'macOS app · AI activity',
     description:
       'A native macOS notch panel that shows what your AI agents are doing: working, waiting for your review, or done. It also holds a focus timer, a file shelf, music controls, clipboard history, and system status.',
-    proof: 'Agents report through a local CLI and a token-authenticated private Unix socket; Codex and T3 Code lifecycle hooks map straight onto activity states. Every integration is opt-in, and 155 Swift tests cover the API, security boundaries, and notch geometry.',
+    proof: 'Agents report through a local CLI and a token-authenticated private Unix socket; Codex lifecycle hooks map straight onto activity states. Every integration is opt-in, and 155 Swift tests cover the API, security boundaries, and notch geometry.',
     screenshot: {
       type: 'notch',
       caption: 'Compact surface',
@@ -62,7 +62,7 @@ const projects = [
           label: 'Agent to notch',
           nodes: [
             {
-              label: 'Codex / T3 Code hooks',
+              label: 'Codex hooks',
               detail: 'Installed with notchctl install-codex-hooks. Each lifecycle event maps onto an activity state, and if the app is closed the hook still exits cleanly so it never interrupts the agent.',
               example: ['UserPromptSubmit  → running', 'PermissionRequest → needs_approval', 'PostToolUse       → running (heartbeat)', 'Stop              → succeeded'],
             },
