@@ -10,7 +10,7 @@ const STEP_MS = 2800
 
 const STATES = [
   { key: 'idle', caption: 'Resting on the notch', width: 150, height: 30 },
-  { key: 'running', caption: 'Codex hook · Working', width: 340, height: 58, tint: '#22d3ee' },
+  { key: 'running', caption: 'Agent update · Working', width: 340, height: 58, tint: '#22d3ee' },
   { key: 'approval', caption: 'Permission request · Needs review', width: 340, height: 58, tint: '#fb923c' },
   { key: 'done', caption: 'Turn finished · Completed', width: 280, height: 30, tint: '#4ade80' },
   { key: 'music', caption: 'Music · tinted from the artwork', width: 220, height: 30, tint: '#f472b6' },
@@ -30,7 +30,7 @@ function NotchContent({ state, active }) {
           <Row>
             <span className="flex items-center gap-1.5 text-white/70">
               {state.key === 'running' ? <Sparkles size={11} color={state.tint} /> : <Hand size={11} color={state.tint} />}
-              T3 Code
+              Claude Code
             </span>
             <span style={{ color: state.tint }}>{state.key === 'running' ? 'Working' : 'Needs review'}</span>
           </Row>
@@ -51,7 +51,7 @@ function NotchContent({ state, active }) {
     case 'done':
       return (
         <Row>
-          <span className="text-white/70">T3 Code</span>
+          <span className="text-white/70">Claude Code</span>
           <span className="flex items-center gap-1" style={{ color: state.tint }}>
             <Check size={11} /> Completed
           </span>
