@@ -1,0 +1,132 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="fdv light" viewBox="0 0 1200 740" width="1200" height="740" role="img" aria-labelledby="t d"><title id="t">Thirteen recurring mistake classes</title><desc id="d">Horizontal stacked bars. For each class, the count of distinct fix commits, accepted review findings and failed CI runs.</desc>
+<style>
+svg.fdv{--bg:#fcfcfb;--panel:#f3f2ee;--ink:#0b0b0b;--ink2:#52514e;--muted:#6f6d68;--grid:#e1e0d9;--axis:#c3c2b7;
+--line:#8a8882;--s1:#2a78d6;--s1w:rgba(42,120,214,.12);--s2:#eb6834;--s2w:rgba(235,104,52,.12);--s3:#1baf7a;--s3w:rgba(27,175,122,.14);
+--good:#0b7d0b;--goodw:rgba(12,163,12,.12);--bad:#c43333;--badw:rgba(208,59,59,.11);--warn:#9a6a00;--warnw:rgba(250,178,25,.18);
+--box:#ffffff;--border:rgba(11,11,11,.16)}
+@media (prefers-color-scheme: dark){svg.fdv:not(.light){--bg:#1a1a19;--panel:#232321;--ink:#f0efec;--ink2:#c3c2b7;--muted:#9a9890;--grid:#2c2c2a;--axis:#383835;
+--line:#7d7b74;--s1:#3987e5;--s1w:rgba(57,135,229,.18);--s2:#d95926;--s2w:rgba(217,89,38,.2);--s3:#199e70;--s3w:rgba(25,158,112,.2);
+--good:#3fbf3f;--goodw:rgba(12,163,12,.2);--bad:#ef6b6b;--badw:rgba(208,59,59,.22);--warn:#fab219;--warnw:rgba(250,178,25,.16);
+--box:#262624;--border:rgba(255,255,255,.14)}}
+svg.fdv.dark{--bg:#1a1a19;--panel:#232321;--ink:#f0efec;--ink2:#c3c2b7;--muted:#9a9890;--grid:#2c2c2a;--axis:#383835;
+--line:#7d7b74;--s1:#3987e5;--s1w:rgba(57,135,229,.18);--s2:#d95926;--s2w:rgba(217,89,38,.2);--s3:#199e70;--s3w:rgba(25,158,112,.2);
+--good:#3fbf3f;--goodw:rgba(12,163,12,.2);--bad:#ef6b6b;--badw:rgba(208,59,59,.22);--warn:#fab219;--warnw:rgba(250,178,25,.16);
+--box:#262624;--border:rgba(255,255,255,.14)}
+svg.fdv text{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--ink)}
+svg.fdv .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+svg.fdv .bg{fill:var(--bg)}
+svg.fdv .panel{fill:var(--panel)}
+svg.fdv .box{fill:var(--box);stroke:var(--border);stroke-width:1}
+svg.fdv .ink2{fill:var(--ink2)}
+svg.fdv .muted{fill:var(--muted)}
+svg.fdv .h1{font-size:22px;font-weight:650}
+svg.fdv .h2{font-size:16px;font-weight:650}
+svg.fdv .b{font-size:14px}
+svg.fdv .s{font-size:12.5px}
+svg.fdv .xs{font-size:11.5px}
+svg.fdv .bold{font-weight:650}
+svg.fdv .grid{stroke:var(--grid);stroke-width:1}
+svg.fdv .axis{stroke:var(--axis);stroke-width:1}
+svg.fdv .edge{stroke:var(--line);stroke-width:1.5;fill:none}
+svg.fdv .edge-s1{stroke:var(--s1);stroke-width:2;fill:none}
+svg.fdv .arrowhead{fill:var(--line)}
+svg.fdv .arrowhead-s1{fill:var(--s1)}
+svg.fdv .f-s1{fill:var(--s1)} svg.fdv .f-s2{fill:var(--s2)} svg.fdv .f-s3{fill:var(--s3)}
+svg.fdv .w-s1{fill:var(--s1w);stroke:var(--s1);stroke-width:1.5}
+svg.fdv .w-s2{fill:var(--s2w);stroke:var(--s2);stroke-width:1.5}
+svg.fdv .w-s3{fill:var(--s3w);stroke:var(--s3);stroke-width:1.5}
+svg.fdv .w-good{fill:var(--goodw);stroke:var(--good);stroke-width:1.2}
+svg.fdv .w-bad{fill:var(--badw);stroke:var(--bad);stroke-width:1.2}
+svg.fdv .w-warn{fill:var(--warnw);stroke:var(--warn);stroke-width:1.2}
+svg.fdv .t-good{fill:var(--good);font-weight:700} svg.fdv .t-bad{fill:var(--bad);font-weight:700} svg.fdv .t-warn{fill:var(--warn);font-weight:700}
+svg.fdv .l-s1{stroke:var(--s1);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+svg.fdv .l-muted{stroke:var(--muted);stroke-width:2;fill:none;stroke-linecap:round}
+svg.fdv .l-bad{stroke:var(--bad);stroke-width:1.5;fill:none}
+svg.fdv .ring{stroke:var(--bg);stroke-width:2}
+svg.fdv .hit:hover{opacity:.75}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="arrowhead"/></marker>
+<marker id="ah1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="arrowhead-s1"/></marker>
+</defs>
+<rect class="bg" x="0" y="0" width="1200" height="740"/>
+<text class="h1" x="32.0" y="44.0" text-anchor="start" >13 recurring mistake classes</text>
+<text class="b ink2" x="32.0" y="70.0" text-anchor="start" >Fix commits plus accepted review findings per class, in the plan&#x27;s rank order. 254 commits and 71 PRs mined.</text>
+<rect class="f-s1" x="32.0" y="92.0" width="14.0" height="14.0" rx="3"></rect>
+<text class="s ink2" x="54.0" y="104.0" text-anchor="start" >Fix commits (git history)</text>
+<rect class="f-s2" x="282.0" y="92.0" width="14.0" height="14.0" rx="3"></rect>
+<text class="s ink2" x="304.0" y="104.0" text-anchor="start" >Accepted review findings (PRs)</text>
+<rect class="f-s3" x="532.0" y="92.0" width="14.0" height="14.0" rx="3"></rect>
+<text class="s ink2" x="554.0" y="104.0" text-anchor="start" >Failed CI runs</text>
+<line class="grid" x1="380.0" y1="136.0" x2="380.0" y2="664.0"/>
+<text class="xs muted" x="380.0" y="682.0" text-anchor="middle" >0</text>
+<line class="grid" x1="535.6" y1="136.0" x2="535.6" y2="664.0"/>
+<text class="xs muted" x="535.6" y="682.0" text-anchor="middle" >10</text>
+<line class="grid" x1="691.1" y1="136.0" x2="691.1" y2="664.0"/>
+<text class="xs muted" x="691.1" y="682.0" text-anchor="middle" >20</text>
+<line class="grid" x1="846.7" y1="136.0" x2="846.7" y2="664.0"/>
+<text class="xs muted" x="846.7" y="682.0" text-anchor="middle" >30</text>
+<line class="grid" x1="1002.2" y1="136.0" x2="1002.2" y2="664.0"/>
+<text class="xs muted" x="1002.2" y="682.0" text-anchor="middle" >40</text>
+<text class="s muted" x="32.0" y="165.0" text-anchor="start" >1</text>
+<text class="b" x="60.0" y="165.0" text-anchor="start" >Draft order re-derived per caller</text>
+<rect class="f-s1 hit" x="380.0" y="150.0" width="91.3" height="22.0" rx="0"><title>Class 1: 6 fix commits</title></rect>
+<path class="f-s2 hit" d="M473.3 150h244.9a4 4 0 0 1 4 4v14a4 4 0 0 1-4 4h-244.9z"><title>Class 1: 16 accepted review findings</title></path>
+<text class="s bold" x="730.2" y="166.0" text-anchor="start" >22  ·  3 live bugs on main</text>
+<text class="s muted" x="32.0" y="205.0" text-anchor="start" >2</text>
+<text class="b" x="60.0" y="205.0" text-anchor="start" >External data trusted through casts</text>
+<rect class="f-s1 hit" x="380.0" y="190.0" width="153.6" height="22.0" rx="0"><title>Class 2: 10 fix commits</title></rect>
+<path class="f-s2 hit" d="M535.6 190h493.8a4 4 0 0 1 4 4v14a4 4 0 0 1-4 4h-493.8z"><title>Class 2: 32 accepted review findings</title></path>
+<text class="s ink2" x="1041.3" y="206.0" text-anchor="start" >42</text>
+<text class="s muted" x="32.0" y="245.0" text-anchor="start" >3</text>
+<text class="b" x="60.0" y="245.0" text-anchor="start" >Session state with several owners</text>
+<rect class="f-s1 hit" x="380.0" y="230.0" width="169.1" height="22.0" rx="0"><title>Class 3: 11 fix commits</title></rect>
+<path class="f-s2 hit" d="M551.1 230h89.3a4 4 0 0 1 4 4v14a4 4 0 0 1-4 4h-89.3z"><title>Class 3: 6 accepted review findings</title></path>
+<text class="s ink2" x="652.4" y="246.0" text-anchor="start" >17</text>
+<text class="s muted" x="32.0" y="285.0" text-anchor="start" >4</text>
+<text class="b" x="60.0" y="285.0" text-anchor="start" >I/O lifecycle re-implemented per package</text>
+<rect class="f-s1 hit" x="380.0" y="270.0" width="324.7" height="22.0" rx="0"><title>Class 4: 21 fix commits</title></rect>
+<path class="f-s2 hit" d="M706.7 270h322.7a4 4 0 0 1 4 4v14a4 4 0 0 1-4 4h-322.7z"><title>Class 4: 21 accepted review findings</title></path>
+<text class="s ink2" x="1041.3" y="286.0" text-anchor="start" >42</text>
+<text class="s muted" x="32.0" y="325.0" text-anchor="start" >5</text>
+<text class="b" x="60.0" y="325.0" text-anchor="start" >Facts in prose drift from code</text>
+<path class="f-s2 hit" d="M380.0 310h338.2a4 4 0 0 1 4 4v14a4 4 0 0 1-4 4h-338.2z"><title>Class 5: 22 accepted review findings</title></path>
+<text class="s ink2" x="730.2" y="326.0" text-anchor="start" >22</text>
+<text class="s muted" x="32.0" y="365.0" text-anchor="start" >6</text>
+<text class="b" x="60.0" y="365.0" text-anchor="start" >Domain constants and rules duplicated</text>
+<rect class="f-s1 hit" x="380.0" y="350.0" width="138.0" height="22.0" rx="0"><title>Class 6: 9 fix commits</title></rect>
+<path class="f-s2 hit" d="M520.0 350h524.9a4 4 0 0 1 4 4v14a4 4 0 0 1-4 4h-524.9z"><title>Class 6: 34 accepted review findings</title></path>
+<text class="s ink2" x="1056.9" y="366.0" text-anchor="start" >43</text>
+<text class="s muted" x="32.0" y="405.0" text-anchor="start" >7</text>
+<text class="b" x="60.0" y="405.0" text-anchor="start" >Derived answers recomputed per component</text>
+<path class="f-s1 hit" d="M380.0 390h151.6a4 4 0 0 1 4 4v14a4 4 0 0 1-4 4h-151.6z"><title>Class 7: 10 fix commits</title></path>
+<text class="s ink2" x="543.6" y="406.0" text-anchor="start" >10</text>
+<text class="s muted" x="32.0" y="445.0" text-anchor="start" >8</text>
+<text class="b" x="60.0" y="445.0" text-anchor="start" >Review fixes lost on restacks</text>
+<rect class="f-s1 hit" x="380.0" y="430.0" width="106.9" height="22.0" rx="0"><title>Class 8: 7 fix commits</title></rect>
+<path class="f-s2 hit" d="M488.9 430h42.7a4 4 0 0 1 4 4v14a4 4 0 0 1-4 4h-42.7z"><title>Class 8: 3 accepted review findings</title></path>
+<text class="s ink2" x="543.6" y="446.0" text-anchor="start" >10</text>
+<text class="s muted" x="32.0" y="485.0" text-anchor="start" >9</text>
+<text class="b" x="60.0" y="485.0" text-anchor="start" >UI layout and design drift</text>
+<rect class="f-s1 hit" x="380.0" y="470.0" width="122.4" height="22.0" rx="0"><title>Class 9: 8 fix commits</title></rect>
+<path class="f-s2 hit" d="M504.4 470h58.2a4 4 0 0 1 4 4v14a4 4 0 0 1-4 4h-58.2z"><title>Class 9: 4 accepted review findings</title></path>
+<text class="s ink2" x="574.7" y="486.0" text-anchor="start" >12</text>
+<text class="s muted" x="32.0" y="525.0" text-anchor="start" >10</text>
+<text class="b" x="60.0" y="525.0" text-anchor="start" >Gates that silently skip code</text>
+<rect class="f-s1 hit" x="380.0" y="510.0" width="91.3" height="22.0" rx="0"><title>Class 10: 6 fix commits</title></rect>
+<path class="f-s3 hit" d="M473.3 510h198.2a4 4 0 0 1 4 4v14a4 4 0 0 1-4 4h-198.2z"><title>Class 10: 13 failed CI runs</title></path>
+<text class="s ink2" x="683.6" y="526.0" text-anchor="start" >19</text>
+<text class="s muted" x="32.0" y="565.0" text-anchor="start" >11</text>
+<text class="b" x="60.0" y="565.0" text-anchor="start" >Private or licensed data committed</text>
+<rect class="f-s1 hit" x="380.0" y="550.0" width="75.8" height="22.0" rx="0"><title>Class 11: 5 fix commits</title></rect>
+<path class="f-s2 hit" d="M457.8 550h182.7a4 4 0 0 1 4 4v14a4 4 0 0 1-4 4h-182.7z"><title>Class 11: 12 accepted review findings</title></path>
+<text class="s ink2" x="652.4" y="566.0" text-anchor="start" >17</text>
+<text class="s muted" x="32.0" y="605.0" text-anchor="start" >12</text>
+<text class="b" x="60.0" y="605.0" text-anchor="start" >Recommendation recompute churn</text>
+<path class="f-s2 hit" d="M380.0 590h42.7a4 4 0 0 1 4 4v14a4 4 0 0 1-4 4h-42.7z"><title>Class 12: 3 accepted review findings</title></path>
+<text class="s ink2" x="434.7" y="606.0" text-anchor="start" >3</text>
+<text class="s muted" x="32.0" y="645.0" text-anchor="start" >13</text>
+<text class="b" x="60.0" y="645.0" text-anchor="start" >Missing return types, test hygiene</text>
+<path class="f-s2 hit" d="M380.0 630h182.7a4 4 0 0 1 4 4v14a4 4 0 0 1-4 4h-182.7z"><title>Class 13: 12 accepted review findings</title></path>
+<text class="s ink2" x="574.7" y="646.0" text-anchor="start" >12</text>
+<text class="xs muted" x="32.0" y="722.0" text-anchor="start" >Transcript mentions (Claude, Codex and T3 threads) are counted separately in classes.md and are not stacked here. Class 2 combines 20 decoder and 12 fail-open findings.</text></svg>

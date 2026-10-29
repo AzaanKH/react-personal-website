@@ -1,0 +1,124 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="fdv light" viewBox="0 0 1200 640" width="1200" height="640" role="img" aria-labelledby="t d"><title id="t">Unit dependency graph</title><desc id="d">Plan units as nodes, with arrows for dependencies. Independent units are highlighted.</desc>
+<style>
+svg.fdv{--bg:#fcfcfb;--panel:#f3f2ee;--ink:#0b0b0b;--ink2:#52514e;--muted:#6f6d68;--grid:#e1e0d9;--axis:#c3c2b7;
+--line:#8a8882;--s1:#2a78d6;--s1w:rgba(42,120,214,.12);--s2:#eb6834;--s2w:rgba(235,104,52,.12);--s3:#1baf7a;--s3w:rgba(27,175,122,.14);
+--good:#0b7d0b;--goodw:rgba(12,163,12,.12);--bad:#c43333;--badw:rgba(208,59,59,.11);--warn:#9a6a00;--warnw:rgba(250,178,25,.18);
+--box:#ffffff;--border:rgba(11,11,11,.16)}
+@media (prefers-color-scheme: dark){svg.fdv:not(.light){--bg:#1a1a19;--panel:#232321;--ink:#f0efec;--ink2:#c3c2b7;--muted:#9a9890;--grid:#2c2c2a;--axis:#383835;
+--line:#7d7b74;--s1:#3987e5;--s1w:rgba(57,135,229,.18);--s2:#d95926;--s2w:rgba(217,89,38,.2);--s3:#199e70;--s3w:rgba(25,158,112,.2);
+--good:#3fbf3f;--goodw:rgba(12,163,12,.2);--bad:#ef6b6b;--badw:rgba(208,59,59,.22);--warn:#fab219;--warnw:rgba(250,178,25,.16);
+--box:#262624;--border:rgba(255,255,255,.14)}}
+svg.fdv.dark{--bg:#1a1a19;--panel:#232321;--ink:#f0efec;--ink2:#c3c2b7;--muted:#9a9890;--grid:#2c2c2a;--axis:#383835;
+--line:#7d7b74;--s1:#3987e5;--s1w:rgba(57,135,229,.18);--s2:#d95926;--s2w:rgba(217,89,38,.2);--s3:#199e70;--s3w:rgba(25,158,112,.2);
+--good:#3fbf3f;--goodw:rgba(12,163,12,.2);--bad:#ef6b6b;--badw:rgba(208,59,59,.22);--warn:#fab219;--warnw:rgba(250,178,25,.16);
+--box:#262624;--border:rgba(255,255,255,.14)}
+svg.fdv text{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--ink)}
+svg.fdv .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+svg.fdv .bg{fill:var(--bg)}
+svg.fdv .panel{fill:var(--panel)}
+svg.fdv .box{fill:var(--box);stroke:var(--border);stroke-width:1}
+svg.fdv .ink2{fill:var(--ink2)}
+svg.fdv .muted{fill:var(--muted)}
+svg.fdv .h1{font-size:22px;font-weight:650}
+svg.fdv .h2{font-size:16px;font-weight:650}
+svg.fdv .b{font-size:14px}
+svg.fdv .s{font-size:12.5px}
+svg.fdv .xs{font-size:11.5px}
+svg.fdv .bold{font-weight:650}
+svg.fdv .grid{stroke:var(--grid);stroke-width:1}
+svg.fdv .axis{stroke:var(--axis);stroke-width:1}
+svg.fdv .edge{stroke:var(--line);stroke-width:1.5;fill:none}
+svg.fdv .edge-s1{stroke:var(--s1);stroke-width:2;fill:none}
+svg.fdv .arrowhead{fill:var(--line)}
+svg.fdv .arrowhead-s1{fill:var(--s1)}
+svg.fdv .f-s1{fill:var(--s1)} svg.fdv .f-s2{fill:var(--s2)} svg.fdv .f-s3{fill:var(--s3)}
+svg.fdv .w-s1{fill:var(--s1w);stroke:var(--s1);stroke-width:1.5}
+svg.fdv .w-s2{fill:var(--s2w);stroke:var(--s2);stroke-width:1.5}
+svg.fdv .w-s3{fill:var(--s3w);stroke:var(--s3);stroke-width:1.5}
+svg.fdv .w-good{fill:var(--goodw);stroke:var(--good);stroke-width:1.2}
+svg.fdv .w-bad{fill:var(--badw);stroke:var(--bad);stroke-width:1.2}
+svg.fdv .w-warn{fill:var(--warnw);stroke:var(--warn);stroke-width:1.2}
+svg.fdv .t-good{fill:var(--good);font-weight:700} svg.fdv .t-bad{fill:var(--bad);font-weight:700} svg.fdv .t-warn{fill:var(--warn);font-weight:700}
+svg.fdv .l-s1{stroke:var(--s1);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+svg.fdv .l-muted{stroke:var(--muted);stroke-width:2;fill:none;stroke-linecap:round}
+svg.fdv .l-bad{stroke:var(--bad);stroke-width:1.5;fill:none}
+svg.fdv .ring{stroke:var(--bg);stroke-width:2}
+svg.fdv .hit:hover{opacity:.75}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="arrowhead"/></marker>
+<marker id="ah1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="arrowhead-s1"/></marker>
+</defs>
+<rect class="bg" x="0" y="0" width="1200" height="640"/>
+<text class="h1" x="32.0" y="44.0" text-anchor="start" >Six units had no dependencies. The rest formed a chain.</text>
+<text class="b ink2" x="32.0" y="70.0" text-anchor="start" >Plan section 5. Arrows point from a unit to the units that depend on it. Transitive edges are omitted.</text>
+<path class="edge" d="M230.0 410C245.0 410 245.0 330 257.0 330" marker-end="url(#ah)"/>
+<path class="edge" d="M230.0 410C245.0 410 245.0 450 257.0 450" marker-end="url(#ah)"/>
+<path class="edge" d="M230.0 490C245.0 490 245.0 450 257.0 450" marker-end="url(#ah)"/>
+<path class="edge" d="M460.0 450C475.0 450 475.0 450 487.0 450" marker-end="url(#ah)"/>
+<path class="edge" d="M690.0 450C705.0 450 705.0 450 717.0 450" marker-end="url(#ah)"/>
+<path class="edge" d="M690.0 450C705.0 450 705.0 545 717.0 545" marker-end="url(#ah)"/>
+<path class="edge" d="M920.0 450C935.0 450 935.0 450 947.0 450" marker-end="url(#ah)"/>
+<path class="edge" d="M230.0 490C245.0 490 245.0 540 257.0 540" marker-end="url(#ah)"/>
+<path class="edge" d="M460.0 330C475.0 330 475.0 300 487.0 300" marker-end="url(#ah)"/>
+<path class="edge" d="M460.0 450C475.0 450 475.0 300 487.0 300" marker-end="url(#ah)"/>
+<path class="edge" d="M690.0 300C705.0 300 705.0 250 717.0 250" marker-end="url(#ah)"/>
+<path class="edge" d="M230.0 170C475.0 170 475.0 250 717.0 250" marker-end="url(#ah)"/>
+<path class="edge" d="M920.0 250C935.0 250 935.0 250 947.0 250" marker-end="url(#ah)"/>
+<path class="edge" d="M920.0 450C935.0 450 935.0 545 947.0 545" marker-end="url(#ah)"/>
+<rect class="w-s3" x="30.0" y="145.0" width="200.0" height="50.0" rx="8"><title>Unit 0 · extension spike not landed</title></rect>
+<text class="s bold" x="130.0" y="167.0" text-anchor="middle" >0 · extension spike</text>
+<text class="xs ink2" x="130.0" y="185.0" text-anchor="middle" >not landed</text>
+<rect class="w-s3" x="30.0" y="225.0" width="200.0" height="50.0" rx="8"><title>Unit 1 · one rec. architecture #76</title></rect>
+<text class="s bold" x="130.0" y="247.0" text-anchor="middle" >1 · one rec. architecture</text>
+<text class="xs ink2" x="130.0" y="265.0" text-anchor="middle" >#76</text>
+<rect class="w-s3" x="30.0" y="305.0" width="200.0" height="50.0" rx="8"><title>Unit 2 · dead write paths #77</title></rect>
+<text class="s bold" x="130.0" y="327.0" text-anchor="middle" >2 · dead write paths</text>
+<text class="xs ink2" x="130.0" y="345.0" text-anchor="middle" >#77</text>
+<rect class="w-s3" x="30.0" y="385.0" width="200.0" height="50.0" rx="8"><title>Unit 3 · draft order #78</title></rect>
+<text class="s bold" x="130.0" y="407.0" text-anchor="middle" >3 · draft order</text>
+<text class="xs ink2" x="130.0" y="425.0" text-anchor="middle" >#78</text>
+<rect class="w-s3" x="30.0" y="465.0" width="200.0" height="50.0" rx="8"><title>Unit 4 · one gate config #80</title></rect>
+<text class="s bold" x="130.0" y="487.0" text-anchor="middle" >4 · one gate config</text>
+<text class="xs ink2" x="130.0" y="505.0" text-anchor="middle" >#80</text>
+<rect class="w-s3" x="30.0" y="545.0" width="200.0" height="50.0" rx="8"><title>Unit 15 · tokens, skeletons #112–#114</title></rect>
+<text class="s bold" x="130.0" y="567.0" text-anchor="middle" >15 · tokens, skeletons</text>
+<text class="xs ink2" x="130.0" y="585.0" text-anchor="middle" >#112–#114</text>
+<rect class="box" x="260.0" y="305.0" width="200.0" height="50.0" rx="8"><title>Unit 4b · shadow deriveDraft #79</title></rect>
+<text class="s bold" x="360.0" y="327.0" text-anchor="middle" >4b · shadow deriveDraft</text>
+<text class="xs ink2" x="360.0" y="345.0" text-anchor="middle" >#79</text>
+<rect class="box" x="260.0" y="425.0" width="200.0" height="50.0" rx="8"><title>Unit 5a/5b · domain to shared #81, #82</title></rect>
+<text class="s bold" x="360.0" y="447.0" text-anchor="middle" >5a/5b · domain to shared</text>
+<text class="xs ink2" x="360.0" y="465.0" text-anchor="middle" >#81, #82</text>
+<rect class="box" x="260.0" y="515.0" width="200.0" height="50.0" rx="8"><title>Unit 9 · process runner #91</title></rect>
+<text class="s bold" x="360.0" y="537.0" text-anchor="middle" >9 · process runner</text>
+<text class="xs ink2" x="360.0" y="555.0" text-anchor="middle" >#91</text>
+<rect class="box" x="490.0" y="425.0" width="200.0" height="50.0" rx="8"><title>Unit 6 · subpaths, 4 waves #83–#86</title></rect>
+<text class="s bold" x="590.0" y="447.0" text-anchor="middle" >6 · subpaths, 4 waves</text>
+<text class="xs ink2" x="590.0" y="465.0" text-anchor="middle" >#83–#86</text>
+<rect class="box" x="490.0" y="275.0" width="200.0" height="50.0" rx="8"><title>Unit 10 · derived DraftView #94–#97</title></rect>
+<text class="s bold" x="590.0" y="297.0" text-anchor="middle" >10 · derived DraftView</text>
+<text class="xs ink2" x="590.0" y="315.0" text-anchor="middle" >#94–#97</text>
+<rect class="box" x="720.0" y="425.0" width="200.0" height="50.0" rx="8"><title>Unit 7 · boundary decoders #87–#89</title></rect>
+<text class="s bold" x="820.0" y="447.0" text-anchor="middle" >7 · boundary decoders</text>
+<text class="xs ink2" x="820.0" y="465.0" text-anchor="middle" >#87–#89</text>
+<rect class="box" x="720.0" y="520.0" width="200.0" height="50.0" rx="8"><title>Unit 13 · league, units, Clock #106–#108</title></rect>
+<text class="s bold" x="820.0" y="542.0" text-anchor="middle" >13 · league, units, Clock</text>
+<text class="xs ink2" x="820.0" y="560.0" text-anchor="middle" >#106–#108</text>
+<rect class="box" x="720.0" y="225.0" width="200.0" height="50.0" rx="8"><title>Unit 11 · commands + IndexedDB #98–#104</title></rect>
+<text class="s bold" x="820.0" y="247.0" text-anchor="middle" >11 · commands + IndexedDB</text>
+<text class="xs ink2" x="820.0" y="265.0" text-anchor="middle" >#98–#104</text>
+<rect class="box" x="950.0" y="425.0" width="200.0" height="50.0" rx="8"><title>Unit 8 · HTTP runner #90</title></rect>
+<text class="s bold" x="1050.0" y="447.0" text-anchor="middle" >8 · HTTP runner</text>
+<text class="xs ink2" x="1050.0" y="465.0" text-anchor="middle" >#90</text>
+<rect class="box" x="950.0" y="520.0" width="200.0" height="50.0" rx="8"><title>Unit 14 · generated docs, gates #109–#111</title></rect>
+<text class="s bold" x="1050.0" y="542.0" text-anchor="middle" >14 · generated docs, gates</text>
+<text class="xs ink2" x="1050.0" y="560.0" text-anchor="middle" >#109–#111</text>
+<rect class="box" x="950.0" y="225.0" width="200.0" height="50.0" rx="8"><title>Unit 12 · slot + provider owner #105</title></rect>
+<text class="s bold" x="1050.0" y="247.0" text-anchor="middle" >12 · slot + provider owner</text>
+<text class="xs ink2" x="1050.0" y="265.0" text-anchor="middle" >#105</text>
+<rect class="w-s3" x="32.0" y="92.0" width="16.0" height="16.0" rx="4"></rect>
+<text class="s ink2" x="56.0" y="105.0" text-anchor="start" >No dependencies</text>
+<rect class="box" x="300.0" y="92.0" width="16.0" height="16.0" rx="4"></rect>
+<text class="s ink2" x="324.0" y="105.0" text-anchor="start" >Depends on an earlier unit</text>
+<text class="xs muted" x="32.0" y="622.0" text-anchor="start" >Even the independent units shipped in one linear stack of PRs, so each PR landed on top of the previous one. Later PRs #115–#119 added UI decisions, the season rule and the IndexedDB flip.</text></svg>

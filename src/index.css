@@ -205,6 +205,61 @@
   }
   .post-callout > * + * { margin-top: 0.6em; }
   .post-callout-title { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-accent); }
+
+  /* Figures (components/blog/Figure.jsx). Themed pairs show one variant by the .dark class. */
+  html.dark .post-themed-light, html:not(.dark) .post-themed-dark { display: none; }
+  .post-prose > .post-figure { margin-top: 2em; margin-bottom: 0.75em; }
+  .post-figure-wide { margin-inline: calc((100% - min(60rem, 100vw - 3rem)) / 2); }
+  .post-zoomable { position: relative; width: fit-content; max-width: 100%; margin-inline: auto; }
+  .post-figure-img { display: block; width: 100%; height: auto; background: var(--color-surface); }
+  .post-zoom-hit { position: absolute; inset: 0; cursor: zoom-in; }
+  .post-zoom-button {
+    position: absolute; top: 0.5rem; right: 0.5rem; display: grid; place-items: center;
+    width: 2rem; height: 2rem; border-radius: 9999px; color: var(--color-text);
+    background: color-mix(in srgb, var(--color-surface) 88%, transparent); border: 1px solid var(--color-border);
+    opacity: 0.85;
+  }
+  .post-zoom-button:hover, .post-zoom-button:focus-visible { opacity: 1; color: var(--color-accent); }
+  .post-figcaption { margin-top: 0.75rem; text-align: center; font-size: 0.85em; line-height: 1.55; color: var(--color-text-secondary); }
+  .post-before-after { display: grid; gap: 1rem; }
+  @media (min-width: 40rem) { .post-before-after:not(.is-stacked) { grid-template-columns: 1fr 1fr; align-items: start; } }
+  .post-before-after-label { margin-bottom: 0.5rem; font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-text-secondary); }
+  .post-before-after-panel:last-child .post-before-after-label { color: var(--color-accent); }
+  .post-before-after .post-zoomable { margin-inline: 0; }
+
+  /* Full-size view. The image keeps its real CSS size and the dialog scrolls, so a
+     1200px diagram can be panned on a phone instead of shrunk. */
+  .post-lightbox {
+    width: 100vw; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 0;
+    border: 0; background: color-mix(in srgb, var(--color-bg) 94%, transparent); color: var(--color-text);
+    overflow: auto; overscroll-behavior: contain; cursor: zoom-out;
+  }
+  .post-lightbox::backdrop { background: transparent; }
+  .post-lightbox-body { display: flex; min-height: 100%; width: max-content; min-width: 100%; padding: 3.5rem 1rem 1rem; box-sizing: border-box; }
+  .post-lightbox-body img { margin: auto; border-radius: 0.5rem; border: 1px solid var(--color-border); }
+  .post-lightbox-close {
+    position: fixed; top: 0.75rem; right: 0.75rem; z-index: 1; display: grid; place-items: center;
+    width: 2.5rem; height: 2.5rem; border-radius: 9999px; color: var(--color-text);
+    background: var(--color-surface); border: 1px solid var(--color-border);
+  }
+  html:has(.post-lightbox[open]) { overflow: hidden; }
+
+  /* Headline numbers (components/blog/Stats.jsx). */
+  .post-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+  .post-stat:last-child:nth-child(odd) { grid-column: 1 / -1; }
+  /* Three per row; a row of two (items 4 and 5 of 5) splits the width evenly. */
+  @media (min-width: 40rem) {
+    .post-stats { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+    .post-stat { grid-column: span 2; }
+    .post-stat:nth-child(4):nth-last-child(2), .post-stat:nth-child(5):nth-last-child(1) { grid-column: span 3; }
+  }
+  .post-stat {
+    display: flex; flex-direction: column; gap: 0.3rem; padding: 0.9rem 1rem; border-radius: 0.875rem;
+    background: var(--color-surface); border: 1px solid var(--color-border);
+  }
+  .post-stat-value { order: -1; font-family: var(--font-display); font-size: clamp(1.75rem, 1.4rem + 1vw, 2.1rem); font-weight: 600; line-height: 1; letter-spacing: -0.02em; color: var(--color-accent); font-variant-numeric: lining-nums tabular-nums; }
+  .post-stat-label { font-weight: 600; line-height: 1.3; }
+  .post-stat-detail { font-size: 0.8em; line-height: 1.45; color: var(--color-text-secondary); }
 }
 
 /* Projects page drawn panels (ProjectsPage.jsx). */

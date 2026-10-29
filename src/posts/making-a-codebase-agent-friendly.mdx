@@ -1,0 +1,579 @@
+---
+title: "Making a codebase agent-friendly with a team of agents"
+description: "How I used a team of coding agents to find 13 recurring mistake classes in my fantasy draft tool, and closed each one with structure across 43 stacked PRs."
+date: 2026-10-28
+---
+
+import { Figure, BeforeAfter } from '@/components/blog/Figure'
+import { Stats, Stat } from '@/components/blog/Stats'
+import { diagrams, screens } from '@/assets/blog/making-a-codebase-agent-friendly'
+
+Using poteto-mode to make my [Fantasy Draft Assistant](https://github.com/AzaanKH/fantasy-draft-assistant) repo more agent friendly.
+I was interested in the workflow that allows poteto to ship so much and be so productive. Setting it up was pretty easy: just download the repo and run `setup-pstack`. It asks some questions about the environment, and after they are answered pstack is set up.
+
+So some information on my [Fantasy Draft Assistant](https://github.com/AzaanKH/fantasy-draft-assistant), it helped me draft my fantasy football team on Sleeper and ESPN for the 2026-2027 NFL season. To connect to Sleeper, just paste a link to the draft and the position you are drafting from here:
+
+<Figure {...screens.connectSleeper} alt="The Live draft sync dialog over the draft board. Rules for this draft is set to Quick mock with default league rules, Draft provider is set to Sleeper, a Sleeper draft URL or ID field holds a sleeper.com draft link, and a Continue button sits below it." />
+
+To connect to ESPN and Yahoo you must use the draft extension.
+
+So the tool has a web app, a Chrome extension that is a side panel, a sync server, CLI and scripts to collect data for rankings. Most of it was written by coding agents, with me reviewing. There were issues that kept happening, so I decided to rebuild the codebase to break it up and bring correctness to the whole repo.
+
+By October 2026 the agents kept making the same mistakes. A fix would land, and two PRs later a different agent would reintroduce the bug from a different file. The code looked right from the file the agent had open. It was wrong for the repo.
+
+So I spent eight days rebuilding the codebase around one rule: a change that looks right from one file should be right for the whole repo, because the wrong version no longer compiles or lints. A team of agents did the work. This post covers how we found the problems, what changed, how the agents were organized, and what it cost.
+
+The short version:
+
+<Stats>
+  <Stat value="13" label="recurring mistake classes">Mined from 254 commits, 71 PRs and a few hundred agent transcripts.</Stat>
+  <Stat value="9" label="prototypes">Before any plan was approved, and one spike that reversed the plan.</Stat>
+  <Stat value="43" label="merged PRs">#76 to #120, landed on main between October 18 and October 26.</Stat>
+  <Stat value="3" label="live linear-draft bugs fixed">Plus a multi-tab save bug that lost 3,893 of 9,000 acknowledged changes under a stress test.</Stat>
+  <Stat value="1,017 → 2,302" label="passing tests" />
+</Stats>
+
+## The problem was repetition, not any single bug
+
+Agents can find out what code to use and what to do, however I discovered that draft order math lived in the mock draft engine, and the server, extension and CLI each had their own copy. Session state lived in each tab's store, in localStorage, in the React Query cache and on the server. There were four HTTP clients. Scoring was implemented three times. There was so much repeated work in the code, and knowing this I wanted to move to one single clean place where the helpers and abstractions live. This would make it so that there won't be any repetition in the repo.
+
+I had been fixing this with instructions. `AGENTS.md` grew rules like "read the body inside the same tryPromise" and "build shared first". Agents read the rules, mostly. The bugs came back anyway.
+
+## How we found the issues
+
+Before just going in to change everything, I wanted to see exactly what goes wrong, and I used five evidence miners and three code explorers in parallel:
+
+- One read the git history, 254 commits.
+- One read the PR reviews: 71 PRs with 194 review findings and 28 CI failures.
+- Three read my own messages in past agent sessions: 25 Claude Code chats, 276 Codex sessions and 28 T3 threads read in depth.
+- Three explorers mapped how state, calculations and tooling actually worked.
+
+<Figure wide {...diagrams.mistakeClasses} alt="Horizontal stacked bar chart of 13 mistake classes. Each bar splits into fix commits and accepted review findings, plus failed CI runs for class 10. Class 6, duplicated domain constants, is longest at 43. Class 1, draft order re-derived per caller, has 22 and three live bugs on main." />
+
+This shows the evidence of the mistakes in all the classes and just shows how work is being repeated.
+
+## Prototype first, then plan
+
+So with poteto-mode, to figure out what to do, it makes small throwaway prototypes to test what is possible. Each prototype ends with a verdict that is VERIFIED, NOT VERIFIED or INCONCLUSIVE.
+
+<Figure wide {...diagrams.prototypeVerdicts} alt="Grid of prototype verdicts. P1 draft-order type change: verified, 17 sites flagged and 3 live bugs. P2 package extraction: verified, verify-time cost inconclusive. P3 lint replay: verified for four rules, not verified for sessionMode. P5 performance: derive verified, dedup gain not verified. P7 schema decoders: cost verified, parity not verified. P8 source condition: verified. P9 multi-tab persistence on a toy reducer: Web Lock verified, per-tab logs and IndexedDB not verified. Unit 0 in the installed extension: Web Lock not verified, IndexedDB verified with 9,000 of 9,000 commands kept." />
+
+The NOT VERIFIED results were the most useful ones. They also show how the prototypes can improve the codebase, and what the impact is. Here are some examples:
+
+**A lint rule cannot catch a missing check.** P3 replayed four candidate lint rules against the files as they were just before real past bug fixes. The rules for JSON casts, bare `fetch`, the snake-draft default and cross-package imports all fired on the buggy lines. A rule on `sessionMode` branches fired too, but on the wrong lines. The bug that `e362fc9` fixed was a `canDraft` check that was never written, and you cannot lint for an absence. That class needed an architecture change instead: one `canDraft` answer that every component reads.
+
+**The obvious performance fix was worthless.** The recommendation board recomputes per position, so de-duplicating the shared scoring work looked like an easy win. P5 measured it at 0.01% to 0.90%, with identical outputs across 253 comparisons. The real cost was survival and lineup optimization, 20.7 ms at pick 100. That went on a separate list.
+
+**The hand guards were looser than their own types.** P7 swapped three hand-written guards for Effect Schema decoders and compared them on the same inputs. Exact parity failed. In 6 of 7 differences the old guard accepted data that its own TypeScript type forbids. That is exactly the drift you get when a type and its guard are written separately.
+
+**The toy test picked the wrong storage design.** P9 compared three multi-tab persistence designs on a toy reducer: per-tab logs, an IndexedDB transaction, and a Web Lock around one localStorage key. Across 37,800 stress commands, per-tab logs reversed 9 accepted decisions and lost an accepted pick. The Web Lock design had zero violations and the shortest code, so the plan chose it.
+
+Then unit 0 ran the same harness inside the installed Chrome extension's side panel, against a real web app tab. The Web Lock design lost acknowledged commands in every granted-permission run, up to 170 of 3,000, including accepted picks. IndexedDB with re-reads on focus and visibility kept all 9,000. Plan Amendment 1 reversed the decision the same day. If we had skipped the spike, the multi-tab rewrite would have shipped the wrong design.
+
+### Sequencing the work
+
+When implementing, poteto-mode breaks the work into units and phases, with each phase getting a review to see its impact. If a phase causes bugs or issues, it works on those issues until it is ready to merge. So the plan split the work into units of at most 99 changed files each, ordered to test the riskiest unknown first and to delete code before adding it. Five landing units (1, 2, 3, 4 and 15) had no dependencies, and neither did the unit 0 spike, which never landed. The rest formed a chain.
+
+<Figure wide {...diagrams.unitDependencies} alt="Dependency graph of plan units. Units 0, 1, 2, 3, 4 and 15 have no dependencies. Unit 3 feeds 4b and 5. Unit 4 feeds 5 and 9. Unit 5 feeds 6. Unit 6 feeds 7 and 13. Unit 7 feeds 8 and 14. Units 4b and 5 feed 10. Units 10 and 0 feed 11. Unit 11 feeds 12." />
+
+Two choices in the order mattered most. The draft-order unit went third, because it fixed live bugs and every later unit used it. And unit 4b landed a test-only shadow of the new derived draft state right after it. Unit 4b replayed every existing store scenario through both the old and the new path before any production code switched over.
+
+## The core idea: close each mistake class with structure
+
+The plan ranked enforcement levels, highest first:
+
+1. **Architecture.** There is one place the thing can happen.
+2. **Type.** The wrong version does not compile.
+3. **Lint or CI, with an error that names the fix.** The wrong version fails the gate, and the message tells the agent what to do instead.
+4. **Test.**
+5. **Docs.**
+
+Each class got the highest level that worked, and docs were the last resort. The lint messages matter more than they look. An agent that hits `no-restricted-syntax` learns nothing. An agent that hits this message knows what to type next:
+
+```js
+{
+	selector: "LogicalExpression[operator=/^(\\?\\?|\\|\\|)$/][right.value='snake']",
+	message: 'No snake fallback. Use createSlotSequence with a required DraftFormat from @fantasy-draft/shared/draft, implemented in shared/src/draft-order.ts.',
+},
+```
+
+New lint rules started with a baseline file. Existing violations went into `eslint-baseline.json`, and CI fails only when a count rises. P3 measured 108 existing sites across the first four rules, so an error-level rule on day one was not an option.
+
+Most of the refactor follows one pattern. Find the thing that several modules each do for themselves, give it one owner, delete the copies, and make the copy impossible to write again.
+
+### One draft order owner
+
+So there is a mock draft, where a user doesn't need to connect to an outside source to draft. Before, the snake-only helper sat in the mock draft engine, next to the type-aware one:
+
+```ts
+// web-app/src/lib/mock-draft-engine.ts at 8f1d26a
+export function getTeamIndexForPick(pickNumber: number, totalTeams: number): number {
+	const roundNumber = Math.ceil(pickNumber / totalTeams);
+	const pickInRound = ((pickNumber - 1) % totalTeams) + 1;
+	return roundNumber % 2 === 1
+		? pickInRound - 1
+		: totalTeams - pickInRound;
+}
+```
+
+`ProvisionalPickDialog` called the snake-only one. In a linear draft, even round picks showed the wrong team and could not be saved. `DraftDecisionBar` and `SidePanelPage` computed "picks until your turn" with snake order too. P1 found all three by making `draftType` required and deleting the snake helper. The compiler flagged 17 production sites, and three of them were live bugs.
+
+<Figure wide {...diagrams.ownDraftOrder} alt="Before and after diagram for draft order. Before: six callers, including the mock engine, three UI components, the Yahoo and ESPN adapters, and the CLI, each with its own pick math. After: every caller uses createSlotSequence from shared/src/draft-order.ts with a required type." />
+
+After #78, one function builds the order, and the type has no default:
+
+```ts
+// shared/src/draft-order.ts on main
+export interface DraftFormat {
+	readonly type: DraftType;
+	readonly teams: number;
+	readonly rounds: number;
+}
+
+export interface SlotSequence {
+	readonly id: string;
+	readonly slots: readonly SlotRef[];
+	at(pick: number): SlotRef;
+	forTeamRound(teamIndex: number, round: number): SlotRef;
+	nextForTeam(teamIndex: number, fromPick: number, occupied?: ReadonlySet<number>): SlotRef | null;
+	picksUntilTurn(teamIndex: number, fromPick: number): number | null;
+}
+```
+
+The verifier for #78 compared 12,825 slots and 262,827 team-turn checks against the old helpers and found zero mismatches for snake and type-aware linear drafts. The lint rule above keeps a new `?? 'snake'` from coming back.
+
+### One command path
+
+Draft commands used to go straight into writable module singleton stores. Any file could import a store and mutate it. This should be centralized, where one place owns the commands and everything sends its commands there. #99 created one workspace at the browser composition root. UI, sync, CPU, queue and connection callers send typed commands to it, and the singleton APIs are gone.
+
+UI code now reaches storage through one function. When IndexedDB is on (#117), the same call goes through the durable path:
+
+```ts
+// web-app/src/workspace/ui-dispatch.ts on main
+export function dispatchWorkspace(workspace: Workspace, ...command: VoidWorkspaceCommand): void {
+	if (STORAGE_ACTIVATION_ENABLED && workspace.sendDurable) {
+		void workspace.sendDurable(command).catch(() => undefined);
+	} else workspace.send(...command);
+}
+```
+
+<Figure wide {...diagrams.ownCommands} alt="Before and after diagram for commands. Before: UI callbacks, sync callbacks, CPU mock picks, queue actions and connection binding each write their own store. After: all five send commands through workspace.send." />
+
+### A derived DraftView instead of stored fields
+
+The old store held `draftedPlayerIds`, `teamRosters`, `myRoster` and `currentPick` as stored fields, and a hand-written rebuild ran after every change:
+
+```ts
+// web-app/src/stores/draft/state.ts at 8f1d26a (excerpt)
+export function rebuildAfterProvisionalChange(state: Pick<DraftState, 'config' | 'currentPick' | 'draftedPlayerIds' | /* … */>): void {
+	state.draftHistory.sort((left, right) => left.pickNumber - right.pickNumber);
+	// …
+	state.draftedPlayerIds = new Set([
+		...state.draftHistory.map((pick) => pick.playerId),
+		...effectiveKeepers.map((keeper) => keeper.playerId),
+	]);
+	rebuildCanonicalRosters(state);
+	state.currentPick = getNextCanonicalOpenPick(/* … */);
+}
+```
+
+There were five or more of these rebuild blocks. Miss one, and a field goes stale.
+
+Now `deriveDraft` computes the whole view from source facts, and nothing derived is stored:
+
+```ts
+// shared/src/derive-draft.ts on main
+export interface DerivedDraft {
+	readonly draftedPlayerIds: ReadonlySet<string>;
+	readonly teamRosters: readonly Roster[];
+	readonly myRoster: Roster;
+	readonly currentPick: number;
+	readonly isMyTurn: boolean;
+	readonly available: readonly Player[];
+	readonly canDraft: boolean;
+	readonly canRecord: boolean;
+	// …
+}
+
+export function deriveDraft(source: DraftSource, format: DraftFormat, players: readonly Player[] = []): DerivedDraft
+```
+
+<Figure wide {...diagrams.ownDraftView} alt="Before and after diagram for derived state. Before: draftedPlayerIds, teamRosters, myRoster, currentPick and isMyTurn are stored and rebuilt by hand. After: the board, player pool, permissions and recommendations all read from deriveDraft." />
+
+This was the riskiest switch, so it went in four steps (#94 to #97). The shadow replay found 109 cursor and turn differences first: the old store could hold cursor 1 or cursor 96 for identical facts. So #94 added the missing progress facts before any reader switched. By #95 the shadow matched 111 scenarios and 1,151 states with zero differences. A full derive, including the 600-player pool and permissions, costs 0.221 ms at 139 picks.
+
+`canDraft` on the derived view is also the fix for the class P3 could not lint. There is one answer to "can I draft this player?", and components read it.
+
+### One persistence layer
+
+This was the biggest unit and the one that went wrong the most.
+
+Before, each tab and the side panel did a compare-then-write to the same localStorage key, with a single-slot journal for unconfirmed saves. #98 built a real app browser harness and measured the old path: with two tabs under contention, 3,893 of 9,000 acknowledged effects were missing after reload. With the installed extension, 3,589 were missing. That bug was on main.
+
+<Figure wide {...diagrams.ownPersistence} alt="Before and after diagram for persistence. Before: two tab stores and the extension side panel each compare-then-write localStorage, plus a single-slot journal and the React Query cache. After: tabs and the side panel commit through one IndexedDB readwrite transaction, and old v1 tabs honor a tombstone and stop writing." />
+
+After the unit 0 spike, the design is an IndexedDB readwrite transaction with strict durability. Each command reads the latest record, applies the reducer and writes, all in one transaction. Other tabs re-read on a BroadcastChannel message, on focus and on visibility change. There is no Web Lock in the final design. The spike ruled it out.
+
+The whole contract fits in one function. It checks the migration fence, reads, applies, decodes and writes, all inside one readwrite transaction:
+
+```ts
+// web-app/src/workspace/indexed-db.ts on main (excerpt)
+update: (identity, apply) => transaction(['sessions', 'metadata'], 'readwrite', (tx, done, abort) => {
+	const store = tx.objectStore('sessions');
+	const fence = tx.objectStore('metadata').get(ACTIVATION_RECORD);
+	fence.onsuccess = () => {
+		if (writersStopped(fence.result)) { abort(new DraftWritersStoppedError()); return; }
+		const get = store.get(sessionKey(identity));
+		get.onsuccess = () => {
+			try {
+				const previous = readSession(get.result);
+				const next = apply(previous);
+				const session = decode(next.session);
+				// … identity check …
+				if (JSON.stringify(session) !== JSON.stringify(previous)) store.put(session, sessionKey(identity));
+				done({ session, result: next.result });
+			} catch (error) { abort(error); }
+		};
+	};
+}),
+```
+
+Shipping it took six PRs:
+
+- #102 made old v1 writers honor a migration tombstone. When the tombstone exists, an old tab stops writing and shows the existing reload flow. Its data stays.
+- #103 added the IndexedDB store and the v1 importer, switched off.
+- #104 added the activation path behind a build switch that defaulted to off, plus a rollback export to v1 bytes.
+- #117 turned IndexedDB on by default. `VITE_STORAGE_ACTIVATION=v1 pnpm build` still produces the rollback build.
+- #118 and #119 closed review follow-ups: a slow-storage notice, and conflict tests with activation on.
+
+An earlier change taught us a rule the hard way. The first head of #95 bumped the session record version. Older tabs, including the deployed main, rejected the record, reset history and wrote it back, which erased manual picks. The verifier blocked it. Amendment 7 now requires every persisted change to be additive, and the PR must prove that real old modules from main load and rewrite the new bytes without loss.
+
+### One HTTP runner and one process runner
+
+There were four HTTP clients and three spawn-and-kill implementations. Retry-After handling was redone three times. A process-cleanup fix was reversed. The lessons lived in `AGENTS.md` as prose.
+
+Before, the extension's snapshot client did its own body cancel, JSON parse and timeout:
+
+```ts
+// extension/src/background/sync-snapshot-client.ts at 8f1d26a (excerpt)
+const response = await fetchImplementation(url, { ...init, signal });
+if (!response.ok) {
+	// Cancel the unread body; the timeout cannot abort it once this rejects.
+	void response.body?.cancel().catch(() => undefined);
+	throw new Error(`Snapshot request failed: ${String(response.status)}`);
+}
+const parsed: unknown = await response.json();
+```
+
+After #90, it calls the shared runner, and a decoder and a timeout are required arguments:
+
+```ts
+// extension/src/background/sync-snapshot-client.ts on main (excerpt)
+return await http.json(url, parsed => {
+	try { return decodeDraftSyncSnapshot(parsed); }
+	catch (cause) { throw new Error('Sync server returned an invalid draft snapshot', { cause }); }
+}, { timeoutMs: requestTimeoutMs, retries: 0, retryAfter: true }, {
+	fetch: fetchImplementation, init: { ...init, signal },
+});
+```
+
+<Figure wide {...diagrams.ownIoRunners} alt="Before and after diagram for I/O. Before: four packages each have their own HTTP client and two have their own spawn and kill. After: HTTP callers use http.json and http.events from shared/http, and process callers use Processes.run from shared/node." />
+
+#91 did the same for child processes with `Processes` in `shared/node`. Lint rejects bare `fetch` outside `shared/src/http` and `child_process` outside `shared/node`. The message names the runner to use.
+
+### One owner for slot and provider identity
+
+"Which draft slot is mine" lived in several places: the connection store, the draft store config, the URL, extension storage, and an effect that copied one into another. A stale connection could overwrite a later user choice on reload.
+
+<Figure wide {...diagrams.ownSlotProvider} alt="Before and after diagram for slot identity. Before: the connection store, draft store config, an effect mirror, the draft URL and extension storage each hold a slot value. After: workspace draft state is the only writer, and the URL, extension and provider values are hints." />
+
+After #105, workspace draft state is the only owner. The URL, the extension and the provider are hints, applied through workspace commands with an explicit precedence. The saved slot and a later user choice win, and a foreign draft URL position is ignored.
+
+The URL rule is one line. A link to a different draft than the saved one brings no slot with it:
+
+```ts
+// web-app/src/workspace/connection-hints.ts on main (excerpt)
+const url = getDraftSyncConnectionFromSearch(search);
+if (!url) return stored;
+const sameDraft = stored?.provider === url.provider && stored.draftId === url.draftId;
+return {
+	...url,
+	draftPosition: stored && !sameDraft ? null : url.draftPosition ?? (sameDraft ? stored.draftPosition : null),
+	// …
+};
+```
+
+### One home for positions, FLEX and scoring
+
+FLEX was hard-coded as RB, WR and TE in two places, which is wrong for superflex leagues. Scoring was implemented three times. Position lists appeared as literals in about 20 files.
+
+```ts
+// web-app/src/lib/mock-draft-engine.ts at 8f1d26a
+const FLEX_POSITIONS: readonly Position[] = ['RB', 'WR', 'TE'];
+```
+
+```ts
+// shared/src/league/positions.ts on main
+/** Whether the league's FLEX slots accept this position. Superflex leagues accept QBs. */
+export function isFlexEligible(requirements: FlexEligibility, position: Position): boolean {
+	return requirements.FLEX.eligiblePositions.includes(position);
+}
+```
+
+<Figure wide {...diagrams.ownLeague} alt="Before and after diagram for league rules. Before: FLEX hard-coded in two places, three scoring copies and position lists in about 20 files. After: shared/league owns positions, FLEX groups and scoring, and shared/units brands probabilities, percents, ranks and VOR." />
+
+#106 moved positions, FLEX eligibility and scoring into `shared/league` and fixed the bug: in a superflex league a QB now fills FLEX. #107 added branded types for probabilities, percents, ranks and VOR, so passing a percent where a probability goes no longer compiles. A lint rule rejects new position-list literals and names the group to use instead.
+
+### One Clock
+
+Shared domain code read the system time through ten separate `Date.now()` defaults. Worse, three different year rules decided "which season is it": local time, UTC, and the NFL rule where January and February count as the prior season. They disagreed on US New Year's Eve evening.
+
+```ts
+// shared/src/units/clock.ts on main
+/** The time source. Domain code takes a Clock or a `now` value instead of reading Date itself. */
+export interface Clock {
+	readonly now: () => number;
+}
+
+export const systemClock: Clock = { now: () => Date.now() };
+```
+
+<Figure wide {...diagrams.ownClock} alt="Before and after diagram for time. Before: ten Date.now() defaults and three different season rules. After: domain code takes a Clock, and currentSeason(clock) applies one UTC NFL season rule." />
+
+#108 added the `Clock` and a lint rule that rejects `Date.now()` in `shared/src`. Which season rule to keep was a product decision, so it came to me. I picked the NFL rule in UTC, and #116 applied it everywhere.
+
+### Boundary decoders instead of casts
+
+There were 44 hand-written guards, 265 guard calls and 83 casts on parsed data. TypeScript allows `as T` by design, so nothing stopped the next one.
+
+```ts
+// cli/src/archive.ts at 8f1d26a (excerpt)
+	new Set(snapshot.picks.map(pick => pick.playerId)).size !== snapshot.picks.length) throw new Error('Inconsistent picks');
+	return value as unknown as SessionArchive;
+```
+
+<Figure wide {...diagrams.ownDecoders} alt="Before and after diagram for external data. Before: 44 hand guards, 83 casts, 6 guards that accept data their type forbids, unknown positions defaulting to RB, and two fetchers for one resource. After: Effect Schema decoders in shared/catalog at each I/O owner, and plain predicates in UI entries." />
+
+#87 to #89 decode each data file, sync snapshot and stored session with an Effect Schema at the module that does the I/O, and derive the types from the schemas. I chose the strictness: a bad core data file fails as a whole and blocks readiness, while optional data drops bad rows with a visible warning.
+
+Two follow-up rules came out of verification, not the plan. Effect stays at the boundary, because importing it in leaf modules cost about 140 ms per test worker. And UI entries stay Effect-free, because the side panel was redecoding data the background had already decoded, which cost 38 KB of gzip. A build check now fails if an Effect module appears in a UI bundle.
+
+### Exact subpaths instead of a root barrel
+
+`shared/src/index.ts` was a 273-line, hand-kept list of exports. Every branch edited it, it had 19 commits, and restacks silently dropped lines from it. 189 files imported from the package root.
+
+<Figure wide {...diagrams.ownSubpaths} alt="Before and after diagram for imports. Before: a 273-line barrel, 213 root imports in 189 files, and restacks that drop barrel lines. After: imports name an exact subpath such as /draft, /league, /units, /catalog, /sync, /http or /node." />
+
+#83 to #86 moved every import onto an exact subpath in four waves and removed the root export. Importing the root is now a lint error that lists which subpath owns what:
+
+```js
+// scripts/agent-lint-rules.mjs on main
+root: 'The shared root is closed. Choose @fantasy-draft/shared/league for players, positions, scoring and rosters; /draft for draft order and recommendations; /catalog for data and readiness; /sync for providers and draft URLs; /units for limits; /node for local process configuration; /http for HTTP requests.',
+```
+
+## The agent workflow
+
+<Figure wide {...diagrams.agentTopology} alt="Topology diagram. The operator approves and lands. The root orchestrator writes briefs, verdicts and the decision log, and is the only writer of the stack topology. It sends briefs to unit owners, PRs to read-only verifiers, and run authorizations to GPT browser runners." />
+
+### Roles
+
+- **Me, the operator.** I approved the plan, answered product questions (decoder strictness, the season rule, where private data lives, the IndexedDB rollout), and landed the stack.
+- **The root orchestrator.** One Claude session. It wrote each unit's brief with a base SHA, launched owners, posted one verdict comment per PR, restacked branches, and logged every decision to `decisions.tsv`. It was the only agent allowed to change the stack's shape.
+- **Unit owners.** Codex `gpt-6.1-sol` on high reasoning effort, one worktree and one branch each. Owners could force-push only their own branch and never merge or retarget. Opus owners took the UI units and stepped in when Codex hit its usage limit. Every owner ended with one self-contained report and the word `STACK-READY`, or what blocked it.
+- **Verifiers.** Sonnet, read-only, doing code, diff and byte checks. Later, Codex became the default reviewer and Sonnet did only each unit's final review.
+- **Browser runners.** Every browser task ran on Codex GPT models: Playwright stress matrices, smoke tests, pixel comparisons and the UI walkthrough later in this post.
+
+Planning used the same split. Two architects, Opus and GPT, each designed the target architecture twice, and a GPT cross-judge scored the candidates 20/25 against 11/25. The plan took the winning candidate as its base and grafted in ideas from the other, each tied to a prototype receipt. I also used `gpt-6.1-sol` for verification, checking the code impact, and eventually added the [sol-loop skill](https://github.com/t3dotgg/tstack/blob/main/skills/sol-loop/SKILL.md) from tstack. I always use Sol to verify changes, and this skill is a great way to also get pushback and get the most out of the review.
+
+### Stacked PRs and the landing order
+
+Every unit was one link in a single PR stack: #76 on main, #77 on #76, and so on. Each PR stayed under 100 changed files and stayed reviewable on its own diff. The cost is that every change near the bottom means restacking everything above it.
+
+<Figure wide {...diagrams.prTimeline} alt="Timeline of 45 PRs from #76 to #120. Owners opened PRs steadily from October 18 to October 26. #76 to #103 merged together on October 23, and #104 to #120 merged together on October 26. Fifteen Codex usage-limit stops are marked along the bottom." />
+
+I landed #76 to #103 on October 23. On the evening of October 25, Pacific time, I asked the root to merge #104 to #120. Those merges are dated October 26 in UTC. Two PRs, #92 and #101, were copies of fixes aimed at main, and later stack PRs made them unnecessary.
+
+### Tiered testing
+
+The persistence units ran the full browser stress matrix again and again, 9,000 commands per scenario. It drained usage fast. On October 22 I changed the policy to escalate only when a cheaper tier gives a reason to.
+
+<Figure wide {...diagrams.testingTiers} alt="Pyramid with three tiers. Tier 1, deterministic unit tests in jsdom and fake-indexeddb, runs on every commit in seconds. Tier 2, one GPT browser smoke per persistence PR, runs 300 commands per actor plus 20 conflicts and 20 moves. Tier 3, the full 9,000-command matrix, runs only if a lower tier fails, the write path changes, or before a production flip." />
+
+<Callout title="The rule that made this work">
+
+Every stress failure is first turned into a Tier 1 test that fails before the fix. After that, the expensive tier only has to confirm.
+
+</Callout>
+
+Tier 3 still paid for itself on the flip. On #117 it caught a real bug. After a reload, startup code wrote stale local league settings (12 teams, 15 rounds) over the saved ones (20 teams, 20 rounds) before the workspace bound. The final Sonnet review caught a second one. If the first activation failed to open the database, the retry button could never succeed, and it showed a misleading error. Both were fixed test-first. Tier 3 then kept 9,000 of 9,000 commands in both scenarios, with a paired timing difference of −0.03%.
+
+### Usage and cost
+
+I ran out of quota a lot. The decision log records 15 times an owner stopped on a Codex usage limit or capacity error. The early evidence miners all hit a Claude session limit at once and had to wait for the reset.
+
+Here is what I learned about cost, mostly about the root agent:
+
+- **Every wake re-reads the root's whole context.** Bot comments from CodeRabbit and Cloudflare, duplicate notifications and owner progress messages each woke the root for nothing. One retired root thread had 1,503 items when it was retired. At that size every wake was expensive.
+- **Owners report once.** I changed the owner brief so owners send one final report and message the root earlier only for a decision. No progress check-ins.
+- **Wait for CI in a background job, not a PR watch.**
+- **Send large reads to a subagent.** Anything over about 5k tokens goes to a subagent that returns a short verdict.
+- **Rotate the root when its thread is too long, not when a phase ends.** I retired two root threads for usage. Both should have been retired well before they reached 1,200 items. A fresh root picked up from `HANDOFF.md` without losing state.
+- **One review round by default,** and browser work on GPT, not Claude.
+
+### What went wrong
+
+**Usage limits.** When Codex ran out mid unit, the root waited for the reset and resumed the same owner thread, so the owner kept its context. Sometimes T3 resumed the owner automatically, so the root learned to check before sending a resume and starting a duplicate run. When an owner stopped right after opening its PR, the root verified the PR with an independent verifier instead of starting a new owner.
+
+**Restacks.** Fixes near the bottom of the stack meant rebasing every PR above. Two stacks (docs and gates, and tokens and skeletons) both grew from #108 and edited the same lint files, so the second needed a rebase and a baseline format conversion.
+
+**CI audit failures.** Two dependency advisories (Vite and Vitest) appeared mid stack. Every stack PR from before the bumps fails CI's audit step if rerun. The fix was a bump PR on main plus a copy at the top of the stack (#93, #100). Once, CI audit socket timeouts needed two reruns before #101 and #102 went green.
+
+**A flaky host.** One Tier 3 run on the flip PR failed at 18% battery. The log showed the laptop had gone to idle sleep for 29 seconds. The rerun used AC power and `caffeinate`.
+
+**The landing itself.** The root merged the second batch top-down with merges pinned to verified SHAs. GitHub refused every second PR, because merging a child into its parent changed the parent's head. Consolidation PR #120 carried the verified tip into #104's branch, and the tree on main matched the verified head. For next time: re-read each parent's head right before merging, or land the stack through one PR.
+
+## Results
+
+<Figure wide {...diagrams.bundleBudget} alt="Line chart of web JavaScript gzip size by PR. It starts at 284,280 bytes before the decoder units, rises to about 316,000, and ends at 314,457 bytes at #115, below the 393,216-byte budget." />
+
+<Figure wide {...diagrams.testCount} alt="Line chart of passing tests. It starts at 1,017 on origin/main and rises to 2,302 at #119." />
+
+| Measure | Before | After | Source |
+|---|---|---|---|
+| Merged PRs | | 43, from #76 to #120 (one is the consolidation PR) | GitHub |
+| Elapsed time | Plan framed Oct 18, 02:42 UTC | Stack merged Oct 26, 03:12 UTC | decisions.tsv, GitHub |
+| Diff, 8f1d26a to 6be1b14 | | 603 files, +35,624 and −11,252 lines | `git diff --shortstat` |
+| Passing tests | 1,017 | 2,302 | baseline log, #119 |
+| Web JS gzip | 284,280 B before unit 7 | 314,457 B at #115, budget 393,216 B | PR bodies |
+| `pnpm verify` | about 41 s (median of 3) | 73.41 s at #119 (one run) | baseline, #119 |
+| Imports from the shared root | 213 in 189 files | 0 outside the contract test | `git grep` |
+| Live bugs fixed | | 3 linear-draft UI bugs, the multi-tab save loss, superflex FLEX | #78, #98–#117, #106 |
+
+Two of those numbers need a note.
+
+The repo grew. The refactor deleted 11,252 lines but added 35,624. About 13,700 of the added lines are in test files, counting by path (`*.test.*`, `*.spec.*`, test folders and fixtures). 5,386 are the browser persistence harness in `scripts/persistence`. The production paths got smaller and more owned. The proof around them got much bigger.
+
+Verify got slower, and the timing is noisy. Most PRs measured paired base and head runs, and most per-PR deltas were within run variation. Unit 7's decoders added a real +20.5%, which I accepted with a written explanation: most of it was 233 new tests and four new package contracts. The final 73 s is one run on a loaded laptop, against a 41 s baseline taken on a quiet one.
+
+## A GPT screenshot walkthrough of the UI
+
+After the stack landed, I had a Codex GPT agent walk the app the way a user would and take 70 screenshots across three widths: desktop at 1440×900, compact at 420×900 and mobile at 390×844. It used demo data, started a mock draft, made a pick, opened every tab and dialog, and induced a data failure on purpose. It found no console errors. It found several things a type checker never will.
+
+**First run starts with a storage migration screen.** On a fresh browser, the first thing a new user sees is "Draft storage setup", with "Original v1 records (0)", a checkbox about closing other tabs, and a button that says "Activate IndexedDB". The copy talks about v1 records and a migration marker. That is correct for an existing user. For a new user with zero records, it is a wall of internals before the app.
+
+<Figure {...screens.desktop01FirstLoad} alt="The first-run Draft storage setup screen at 1440 pixels wide. It shows Original v1 records (0), a Close other draft tabs and side panels box with a checkbox, a cyan Activate IndexedDB button and a Cancel activation button." />
+
+**The Suggestions sidebar breaks at desktop width.** In the right-hand panel, the Suggestions tab lays out three cards side by side in a column too narrow for them. Player names clip to one letter, and the "Ask why" link draws on top of the Queue button. The walkthrough's screenshot caught this, but its written report did not call it out. Reading the screenshots, not just the summary, is what found it.
+
+<Figure {...screens.desktop18Suggestions} alt="The draft workspace at 1440 pixels wide. In the lower right panel, the Suggestions tab shows three cramped cards whose player names are cut to a single letter, and whose Ask why and Queue buttons overlap." />
+
+On mobile the same cards stack and read fine, but the tab label shortens to "Sugg" and its count is cut off. Only the first card has "Ask why".
+
+<Figure {...screens.mobile17Suggestions} alt="The Suggestions tab at 390 pixels wide. The tab label reads Sugg. Three stacked cards show players with Queue buttons, and only the first card has an Ask why link." />
+
+The walkthrough also found smaller issues:
+
+- At narrow widths, the initial board shows teams 1 to 3 while the user's default slot is 5.
+- The player table pushes Value, availability and queue controls off screen at 390 px.
+- Selecting Light leaves the whole draft board dark.
+- Best Player mode still says "The policy confirmed this player as Best Pick."
+- The recovery copy for missing data includes terminal commands like `pnpm data:identity`.
+- Opening `/sidepanel` directly shows only a raw `StorageSharingError`, with no retry control.
+
+<Figure {...screens.mobile20PlayerPool} alt="The player table at 390 pixels wide during a mock draft. Only the Draft button, rank and player columns fit. Amon-Ra St. Brown is cut off at the right edge, the position filters run past the screen, and the Value, availability and queue columns are out of view." />
+
+<Figure {...screens.compact02Workspace} alt="The draft workspace at 420 pixels wide before a mock starts. The board's Current view shows only Team 1, Team 2 and Team 3, and the tool tabs below shorten Suggestions to Suggest." />
+
+<Figure {...screens.compact21Sidepanel} alt="The /sidepanel route at 420 pixels wide, showing only the text: Unable to load the draft app. StorageSharingError: Storage sharing has not been checked. Open the web app to retry." />
+
+Several of these are side effects of the refactor. The storage screen and the side panel error both come from the IndexedDB activation and the storage-sharing check. They are correct and safe, and they are not friendly. Tests checked that the behavior was right. Nobody had walked the whole app as a first-time user until this walkthrough.
+
+## After: UI fixes
+
+I fixed four groups of findings from the walkthrough on one branch, `fix/ui-review-2026-10-26`. It has six commits over main and is not merged yet. Claude Opus agents wrote the fixes, GPT ran the browser checks, and GPT Sol reviewed the code in three rounds. On the final head, `pnpm verify` passed 206 test files and 2,314 tests.
+
+### Suggestions fit the dock they sit in
+
+84f1f88 sizes the Suggestions grid from the width of its dock, not the width of the window. The 359px side dock at desktop widths now gets one column. The full-width dock at 1024px gets three, and phones get one. The GPT browser check covered 1440, 1280, 1024 and 390 pixels. Every card showed a full name, a Queue button and an Ask why link, and DOM measurements found no clipped headings and no overlapping buttons.
+
+<BeforeAfter label="Suggestions dock" beforeLabel="Before, Oct 25" afterLabel="After"
+  before={{ ...screens.pairSuggestionsBefore, alt: "The Suggestions dock at 1440 pixels wide before the fix: three cards squeezed side by side, player names cut to one letter, and the Ask why link drawn over the Queue button." }}
+  after={{ ...screens.pairSuggestionsAfter, alt: "The Suggestions dock after the fix: one card per row, with the full name Puka Nacua, a two-line reason, the Queue button and the Ask why link side by side." }}
+>
+  The Suggestions dock at 1440×900, before and after 84f1f88.
+</BeforeAfter>
+
+### First run explains saving in plain language
+
+I kept the storage screen for fresh browsers instead of skipping it. A tab still running the old version cannot see the migration marker, so the "close other tabs" confirmation is the only thing that stops that tab from writing a pick the new store misses. 1de88d1 changed only the copy and the styling. The heading is now "Set up draft saving", the button says "Turn on draft saving", and the button stays muted until the box is checked. Activation works exactly as before.
+
+<BeforeAfter stack label="first-run screen" beforeLabel="Before, Oct 25" afterLabel="After"
+  before={{ ...screens.pairFirstRunBefore, alt: "The first-run screen before the fix: a Draft storage setup heading, Original v1 records (0), copy about an older cached tab racing the migration marker, and a bright Activate IndexedDB button." }}
+  after={{ ...screens.pairFirstRunAfter, alt: "The first-run screen after the fix: a Set up draft saving heading, one line saying picks and the queue survive reloads, a Close other draft tabs first box with a checkbox, and a muted Turn on draft saving button." }}
+>
+  The first-run screen at 1440×900, before and after 1de88d1.
+</BeforeAfter>
+
+### Phones lead with Best Pick
+
+ca483af moves the Best Pick bar above the board on phones and fits the player table into the screen, so Value and the next-pick odds no longer sit off to the right. 9166c41 makes the Assistant and pool copy match the data. Best Player mode no longer claims the Best Pick policy chose the player, and the pool's add button is labelled "Add Puka Nacua to queue" for screen readers instead of "local shortlist". The branch also moved the terminal commands in recovery text into a collapsed **Developer details** section.
+
+The first GPT browser run marked the phone table as passing. The review did not.
+
+### Review caught two layout bugs
+
+<Figure wide {...diagrams.solLoop} alt="Three columns, one per review round. Round 1 on 9166c41: CHANGES, finding S1, the Available next pick header rendered about 72 pixels wide in a 52-pixel phone column and its help icon covered Queue. Fix 2c8943f: wider phone columns and a short Next pick label. Round 2 on 2c8943f: CHANGES, S1 resolved, finding S2, long names clamped at two lines, 16 at 360 pixels and 2 at 390. Fix 101653c: a third line on phones. Round 3 on 101653c: APPROVE, 0 of 437 names truncated and every header fits its column." />
+
+In round 1, Sol returned CHANGES with one finding. On phones, the "Available next pick" header rendered about 72px wide in a 52px column, and its help icon covered "Queue". 2c8943f widened the phone columns and shows a short "Next pick" label. Screen readers still get the full name.
+
+<BeforeAfter label="phone table header" beforeLabel="Round 1, 9166c41" afterLabel="After, 101653c"
+  before={{ ...screens.pairPhoneHeaderBefore, alt: "The player table at 390 pixels wide in round 1: the Available next pick header wraps onto three lines and runs into the Queue header." }}
+  after={{ ...screens.pairPhoneHeaderAfter, alt: "The player table at 390 pixels wide after the fix: the header reads Next pick on two lines, and Value, Next pick and Queue each sit inside their own column." }}
+>
+  The phone table header at 390×844, in round 1 and after 2c8943f. The final GPT check measured Value at 51.89px in a 52px column, Next pick at 52px in 52px, and Queue at 38.08px in 40px.
+</BeforeAfter>
+
+Round 2 confirmed the header fix and found a new problem. The wider columns took their room from the Player column. At 360px in a mock draft, where the Draft buttons also need room, it fell from 90px to 78px. Long names were cut off after two lines. GPT then scrolled the whole pool and measured all 437 names. It found 16 cut off at 360px and 2 at 390px. 101653c allows a third line on phones. The list is virtualized, and the virtualizer measures each row's real height, so a three-line row is 71px and every other row stays 61px.
+
+<BeforeAfter label="long player names" beforeLabel="Round 2, 2c8943f" afterLabel="After, 101653c"
+  before={{ ...screens.pairLongNamesBefore, alt: "The player table at 360 pixels wide in round 2: a search for Jaxon Smith-Njigba shows the name cut to Jaxon Smith- with an ellipsis." }}
+  after={{ ...screens.pairLongNamesAfter, alt: "The player table at 360 pixels wide after the fix: in the unfiltered pool, Jaxon Smith-Njigba wraps onto three lines in a taller row, between Omarion Hampton and Jayden Daniels." }}
+>
+  Long names at 360×800 in a paused mock, in round 2 and after 101653c.
+</BeforeAfter>
+
+Round 3 approved. The final GPT check found 0 of 437 names cut off at 360px and 390px, with and without a mock. A fast scroll through the whole pool showed no visible jumps as three-line rows came into view. The 1440px layout was unchanged, and the console had 0 errors.
+
+### What I did not fix
+
+The browser run flagged the Roster tabs sliding under the header after a scroll. I declined it, because the tab strip is not sticky. It scrolls with the page like everything else.
+
+Two smaller issues are follow-ups. Between 640px and 720px, the player table still scrolls sideways, which predates this branch. At 360px in a mock, the team and bye line ends in an ellipsis, as the "SEA · B…" in the last screenshot shows.
+
+The side panel is out of scope for this branch. Opening `/sidepanel` outside the extension still shows the `StorageSharingError` from the walkthrough.
+
+### Two process lessons
+
+A laptop going to sleep cost me a run for the second time. After the first fixes, the headless browser gate failed 2 checks on the branch and passed on main. An agent read the `pmset` logs and found that the Mac had gone into idle sleep during that one run, which took 10 minutes instead of about 30 seconds. The gate then passed 11 of 11 runs with the Mac awake. I now wrap every long local gate in `caffeinate -i`.
+
+Rate limits hit mid-run again. The first agent finished all four groups before a limit cut it off. Its replacement was briefed as if no code existed yet. It was cancelled before it could overwrite the work. Before I re-brief an agent now, I check the state of the branch.
+
+## What I'd do differently
+
+**Spike the real environment before trusting the toy.** P9's toy prototype picked the wrong storage design with zero violations. The installed extension behaved differently. I now run the riskiest prototype in the real runtime first, even when it is slower to set up.
+
+**Set the testing tiers on day one.** Tiered testing came on day five, after repeated full matrices had drained usage. Each Tier 3 run took hours. A rule that every failure becomes a Tier 1 test first would have saved most of that.
+
+**Keep the root small from the start.** The biggest avoidable cost was a root thread that grew past 1,500 items while bots and owners woke it. Final-report-only owners, background CI waits and a size rule for reads should have been in the first brief, not added on day eight.
+
+**Do a user walkthrough per UI-facing PR, not after the stack.** The storage setup screen passed every functional gate. A short screenshot pass on #104 would have caught that it was the first thing new users see.
+
+**Plan the landing, not just the stack.** Merging 40 stacked PRs is its own task. Pinned top-down merges failed in a way I had not predicted. Next time I land through one consolidation PR from the start, or re-read each parent's head right before its merge.
+
+**Write the decision log from the first minute.** This is the one thing I would keep exactly as it was. Every number in this post traces back to `decisions.tsv`, a PR body, or a receipt, because the root logged each decision with its evidence as it went.
+
+<Callout title="What comes next">
+
+What comes next is merging the UI fix branch, then retiring the v1 writer (unit 11d), after a 14-day soak, a live-draft rehearsal, and enough time for the extension release to reach users.
+
+</Callout>
