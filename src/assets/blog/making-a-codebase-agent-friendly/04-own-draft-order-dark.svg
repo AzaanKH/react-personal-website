@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="fdv dark" viewBox="0 0 1200 636" width="1200" height="636" role="img" aria-labelledby="t d"><title id="t">One draft order owner</title><desc id="d">Before and after diagram. Before: 6 places each keep their own copy. After: 1 owner(s).</desc>
+<style>
+svg.fdv{--bg:#fcfcfb;--panel:#f3f2ee;--ink:#0b0b0b;--ink2:#52514e;--muted:#6f6d68;--grid:#e1e0d9;--axis:#c3c2b7;
+--line:#8a8882;--s1:#2a78d6;--s1w:rgba(42,120,214,.12);--s2:#eb6834;--s2w:rgba(235,104,52,.12);--s3:#1baf7a;--s3w:rgba(27,175,122,.14);
+--good:#0b7d0b;--goodw:rgba(12,163,12,.12);--bad:#c43333;--badw:rgba(208,59,59,.11);--warn:#9a6a00;--warnw:rgba(250,178,25,.18);
+--box:#ffffff;--border:rgba(11,11,11,.16)}
+@media (prefers-color-scheme: dark){svg.fdv:not(.light){--bg:#1a1a19;--panel:#232321;--ink:#f0efec;--ink2:#c3c2b7;--muted:#9a9890;--grid:#2c2c2a;--axis:#383835;
+--line:#7d7b74;--s1:#3987e5;--s1w:rgba(57,135,229,.18);--s2:#d95926;--s2w:rgba(217,89,38,.2);--s3:#199e70;--s3w:rgba(25,158,112,.2);
+--good:#3fbf3f;--goodw:rgba(12,163,12,.2);--bad:#ef6b6b;--badw:rgba(208,59,59,.22);--warn:#fab219;--warnw:rgba(250,178,25,.16);
+--box:#262624;--border:rgba(255,255,255,.14)}}
+svg.fdv.dark{--bg:#1a1a19;--panel:#232321;--ink:#f0efec;--ink2:#c3c2b7;--muted:#9a9890;--grid:#2c2c2a;--axis:#383835;
+--line:#7d7b74;--s1:#3987e5;--s1w:rgba(57,135,229,.18);--s2:#d95926;--s2w:rgba(217,89,38,.2);--s3:#199e70;--s3w:rgba(25,158,112,.2);
+--good:#3fbf3f;--goodw:rgba(12,163,12,.2);--bad:#ef6b6b;--badw:rgba(208,59,59,.22);--warn:#fab219;--warnw:rgba(250,178,25,.16);
+--box:#262624;--border:rgba(255,255,255,.14)}
+svg.fdv text{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--ink)}
+svg.fdv .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+svg.fdv .bg{fill:var(--bg)}
+svg.fdv .panel{fill:var(--panel)}
+svg.fdv .box{fill:var(--box);stroke:var(--border);stroke-width:1}
+svg.fdv .ink2{fill:var(--ink2)}
+svg.fdv .muted{fill:var(--muted)}
+svg.fdv .h1{font-size:22px;font-weight:650}
+svg.fdv .h2{font-size:16px;font-weight:650}
+svg.fdv .b{font-size:14px}
+svg.fdv .s{font-size:12.5px}
+svg.fdv .xs{font-size:11.5px}
+svg.fdv .bold{font-weight:650}
+svg.fdv .grid{stroke:var(--grid);stroke-width:1}
+svg.fdv .axis{stroke:var(--axis);stroke-width:1}
+svg.fdv .edge{stroke:var(--line);stroke-width:1.5;fill:none}
+svg.fdv .edge-s1{stroke:var(--s1);stroke-width:2;fill:none}
+svg.fdv .arrowhead{fill:var(--line)}
+svg.fdv .arrowhead-s1{fill:var(--s1)}
+svg.fdv .f-s1{fill:var(--s1)} svg.fdv .f-s2{fill:var(--s2)} svg.fdv .f-s3{fill:var(--s3)}
+svg.fdv .w-s1{fill:var(--s1w);stroke:var(--s1);stroke-width:1.5}
+svg.fdv .w-s2{fill:var(--s2w);stroke:var(--s2);stroke-width:1.5}
+svg.fdv .w-s3{fill:var(--s3w);stroke:var(--s3);stroke-width:1.5}
+svg.fdv .w-good{fill:var(--goodw);stroke:var(--good);stroke-width:1.2}
+svg.fdv .w-bad{fill:var(--badw);stroke:var(--bad);stroke-width:1.2}
+svg.fdv .w-warn{fill:var(--warnw);stroke:var(--warn);stroke-width:1.2}
+svg.fdv .t-good{fill:var(--good);font-weight:700} svg.fdv .t-bad{fill:var(--bad);font-weight:700} svg.fdv .t-warn{fill:var(--warn);font-weight:700}
+svg.fdv .l-s1{stroke:var(--s1);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+svg.fdv .l-muted{stroke:var(--muted);stroke-width:2;fill:none;stroke-linecap:round}
+svg.fdv .l-bad{stroke:var(--bad);stroke-width:1.5;fill:none}
+svg.fdv .ring{stroke:var(--bg);stroke-width:2}
+svg.fdv .hit:hover{opacity:.75}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="arrowhead"/></marker>
+<marker id="ah1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="arrowhead-s1"/></marker>
+</defs>
+<rect class="bg" x="0" y="0" width="1200" height="636"/>
+<text class="h1" x="32.0" y="44.0" text-anchor="start" >One draft order owner</text>
+<text class="b ink2" x="32.0" y="70.0" text-anchor="start" >Every pick-to-team question goes through one SlotSequence built from a required DraftFormat.</text>
+<rect class="panel" x="20.0" y="92.0" width="570.0" height="524.0" rx="12"></rect>
+<rect class="panel" x="610.0" y="92.0" width="570.0" height="524.0" rx="12"></rect>
+<text class="h2" x="40.0" y="120.0" text-anchor="start" >Before</text>
+<text class="h2" x="630.0" y="120.0" text-anchor="start" >After</text>
+<text class="s ink2" x="1160.0" y="120.0" text-anchor="end" >#78</text>
+<rect class="box" x="40.0" y="144.0" width="210.0" height="46.0" rx="8"></rect>
+<text class="s bold" x="52.0" y="172.0" text-anchor="start" >Mock draft engine</text>
+<rect class="w-s2" x="280.0" y="144.0" width="290.0" height="46.0" rx="8"></rect>
+<text class="s" x="292.0" y="172.0" text-anchor="start" >getTeamIndexForPick: snake only</text>
+<line class="edge" x1="250.0" y1="167.0" x2="278.0" y2="167.0" marker-end="url(#ah)"/>
+<rect class="box" x="40.0" y="208.0" width="210.0" height="46.0" rx="8"></rect>
+<text class="s bold" x="52.0" y="236.0" text-anchor="start" >ProvisionalPickDialog</text>
+<rect class="w-s2" x="280.0" y="208.0" width="290.0" height="46.0" rx="8"></rect>
+<text class="s" x="292.0" y="236.0" text-anchor="start" >snake math in linear drafts: bug</text>
+<line class="edge" x1="250.0" y1="231.0" x2="278.0" y2="231.0" marker-end="url(#ah)"/>
+<rect class="box" x="40.0" y="272.0" width="210.0" height="46.0" rx="8"></rect>
+<text class="s bold" x="52.0" y="300.0" text-anchor="start" >DraftDecisionBar</text>
+<rect class="w-s2" x="280.0" y="272.0" width="290.0" height="46.0" rx="8"></rect>
+<text class="s" x="292.0" y="300.0" text-anchor="start" >picks-until-turn as snake: bug</text>
+<line class="edge" x1="250.0" y1="295.0" x2="278.0" y2="295.0" marker-end="url(#ah)"/>
+<rect class="box" x="40.0" y="336.0" width="210.0" height="46.0" rx="8"></rect>
+<text class="s bold" x="52.0" y="364.0" text-anchor="start" >SidePanelPage</text>
+<rect class="w-s2" x="280.0" y="336.0" width="290.0" height="46.0" rx="8"></rect>
+<text class="s" x="292.0" y="364.0" text-anchor="start" >picks-until-turn as snake: bug</text>
+<line class="edge" x1="250.0" y1="359.0" x2="278.0" y2="359.0" marker-end="url(#ah)"/>
+<rect class="box" x="40.0" y="400.0" width="210.0" height="46.0" rx="8"></rect>
+<text class="s bold" x="52.0" y="428.0" text-anchor="start" >Yahoo and ESPN adapters</text>
+<rect class="w-s2" x="280.0" y="400.0" width="290.0" height="46.0" rx="8"></rect>
+<text class="s" x="292.0" y="428.0" text-anchor="start" >their own pick math</text>
+<line class="edge" x1="250.0" y1="423.0" x2="278.0" y2="423.0" marker-end="url(#ah)"/>
+<rect class="box" x="40.0" y="464.0" width="210.0" height="46.0" rx="8"></rect>
+<text class="s bold" x="52.0" y="492.0" text-anchor="start" >CLI context</text>
+<rect class="w-s2" x="280.0" y="464.0" width="290.0" height="46.0" rx="8"></rect>
+<text class="s" x="292.0" y="492.0" text-anchor="start" >its own pick math</text>
+<line class="edge" x1="250.0" y1="487.0" x2="278.0" y2="487.0" marker-end="url(#ah)"/>
+<text class="s ink2" x="40.0" y="550.0" text-anchor="start" >draftType was optional and defaulted to &#x27;snake&#x27; in 13 places.</text>
+<rect class="w-s1" x="900.0" y="290.0" width="260.0" height="74.0" rx="10"></rect>
+<text class="b bold mono" x="916.0" y="320.0" text-anchor="start" >createSlotSequence(format)</text>
+<text class="xs ink2" x="916.0" y="342.0" text-anchor="start" >shared/src/draft-order.ts · type required</text>
+<rect class="box" x="630.0" y="157.6" width="210.0" height="46.0" rx="8"></rect>
+<text class="s bold" x="642.0" y="185.6" text-anchor="start" >Draft room UI</text>
+<path class="edge-s1" d="M840 180.6C870 180.6 870 327.0 897 327.0" marker-end="url(#ah1)"/>
+<rect class="box" x="630.0" y="230.8" width="210.0" height="46.0" rx="8"></rect>
+<text class="s bold" x="642.0" y="258.8" text-anchor="start" >Mock engine, survival</text>
+<path class="edge-s1" d="M840 253.79999999999998C870 253.79999999999998 870 327.0 897 327.0" marker-end="url(#ah1)"/>
+<rect class="box" x="630.0" y="304.0" width="210.0" height="46.0" rx="8"></rect>
+<text class="s bold" x="642.0" y="332.0" text-anchor="start" >Keeper supply</text>
+<path class="edge-s1" d="M840 327.0C870 327.0 870 327.0 897 327.0" marker-end="url(#ah1)"/>
+<rect class="box" x="630.0" y="377.2" width="210.0" height="46.0" rx="8"></rect>
+<text class="s bold" x="642.0" y="405.2" text-anchor="start" >Server and extension</text>
+<path class="edge-s1" d="M840 400.20000000000005C870 400.20000000000005 870 327.0 897 327.0" marker-end="url(#ah1)"/>
+<rect class="box" x="630.0" y="450.4" width="210.0" height="46.0" rx="8"></rect>
+<text class="s bold" x="642.0" y="478.4" text-anchor="start" >CLI</text>
+<path class="edge-s1" d="M840 473.40000000000003C870 473.40000000000003 870 327.0 897 327.0" marker-end="url(#ah1)"/>
+<text class="s ink2" x="630.0" y="550.0" text-anchor="start" >Lint: &#x27;No snake fallback. Use createSlotSequence…&#x27;</text>
+<text class="s ink2" x="630.0" y="568.0" text-anchor="start" >12,825 slots and 262,827 turn checks: 0 mismatches.</text></svg>

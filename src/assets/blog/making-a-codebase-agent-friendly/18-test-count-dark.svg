@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="fdv dark" viewBox="0 0 1200 480" width="1200" height="480" role="img" aria-labelledby="t d"><title id="t">Passing tests more than doubled</title><desc id="d">Passing Vitest tests reported by pnpm verify, origin/main 8f1d26a to the final head.</desc>
+<style>
+svg.fdv{--bg:#fcfcfb;--panel:#f3f2ee;--ink:#0b0b0b;--ink2:#52514e;--muted:#6f6d68;--grid:#e1e0d9;--axis:#c3c2b7;
+--line:#8a8882;--s1:#2a78d6;--s1w:rgba(42,120,214,.12);--s2:#eb6834;--s2w:rgba(235,104,52,.12);--s3:#1baf7a;--s3w:rgba(27,175,122,.14);
+--good:#0b7d0b;--goodw:rgba(12,163,12,.12);--bad:#c43333;--badw:rgba(208,59,59,.11);--warn:#9a6a00;--warnw:rgba(250,178,25,.18);
+--box:#ffffff;--border:rgba(11,11,11,.16)}
+@media (prefers-color-scheme: dark){svg.fdv:not(.light){--bg:#1a1a19;--panel:#232321;--ink:#f0efec;--ink2:#c3c2b7;--muted:#9a9890;--grid:#2c2c2a;--axis:#383835;
+--line:#7d7b74;--s1:#3987e5;--s1w:rgba(57,135,229,.18);--s2:#d95926;--s2w:rgba(217,89,38,.2);--s3:#199e70;--s3w:rgba(25,158,112,.2);
+--good:#3fbf3f;--goodw:rgba(12,163,12,.2);--bad:#ef6b6b;--badw:rgba(208,59,59,.22);--warn:#fab219;--warnw:rgba(250,178,25,.16);
+--box:#262624;--border:rgba(255,255,255,.14)}}
+svg.fdv.dark{--bg:#1a1a19;--panel:#232321;--ink:#f0efec;--ink2:#c3c2b7;--muted:#9a9890;--grid:#2c2c2a;--axis:#383835;
+--line:#7d7b74;--s1:#3987e5;--s1w:rgba(57,135,229,.18);--s2:#d95926;--s2w:rgba(217,89,38,.2);--s3:#199e70;--s3w:rgba(25,158,112,.2);
+--good:#3fbf3f;--goodw:rgba(12,163,12,.2);--bad:#ef6b6b;--badw:rgba(208,59,59,.22);--warn:#fab219;--warnw:rgba(250,178,25,.16);
+--box:#262624;--border:rgba(255,255,255,.14)}
+svg.fdv text{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--ink)}
+svg.fdv .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+svg.fdv .bg{fill:var(--bg)}
+svg.fdv .panel{fill:var(--panel)}
+svg.fdv .box{fill:var(--box);stroke:var(--border);stroke-width:1}
+svg.fdv .ink2{fill:var(--ink2)}
+svg.fdv .muted{fill:var(--muted)}
+svg.fdv .h1{font-size:22px;font-weight:650}
+svg.fdv .h2{font-size:16px;font-weight:650}
+svg.fdv .b{font-size:14px}
+svg.fdv .s{font-size:12.5px}
+svg.fdv .xs{font-size:11.5px}
+svg.fdv .bold{font-weight:650}
+svg.fdv .grid{stroke:var(--grid);stroke-width:1}
+svg.fdv .axis{stroke:var(--axis);stroke-width:1}
+svg.fdv .edge{stroke:var(--line);stroke-width:1.5;fill:none}
+svg.fdv .edge-s1{stroke:var(--s1);stroke-width:2;fill:none}
+svg.fdv .arrowhead{fill:var(--line)}
+svg.fdv .arrowhead-s1{fill:var(--s1)}
+svg.fdv .f-s1{fill:var(--s1)} svg.fdv .f-s2{fill:var(--s2)} svg.fdv .f-s3{fill:var(--s3)}
+svg.fdv .w-s1{fill:var(--s1w);stroke:var(--s1);stroke-width:1.5}
+svg.fdv .w-s2{fill:var(--s2w);stroke:var(--s2);stroke-width:1.5}
+svg.fdv .w-s3{fill:var(--s3w);stroke:var(--s3);stroke-width:1.5}
+svg.fdv .w-good{fill:var(--goodw);stroke:var(--good);stroke-width:1.2}
+svg.fdv .w-bad{fill:var(--badw);stroke:var(--bad);stroke-width:1.2}
+svg.fdv .w-warn{fill:var(--warnw);stroke:var(--warn);stroke-width:1.2}
+svg.fdv .t-good{fill:var(--good);font-weight:700} svg.fdv .t-bad{fill:var(--bad);font-weight:700} svg.fdv .t-warn{fill:var(--warn);font-weight:700}
+svg.fdv .l-s1{stroke:var(--s1);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+svg.fdv .l-muted{stroke:var(--muted);stroke-width:2;fill:none;stroke-linecap:round}
+svg.fdv .l-bad{stroke:var(--bad);stroke-width:1.5;fill:none}
+svg.fdv .ring{stroke:var(--bg);stroke-width:2}
+svg.fdv .hit:hover{opacity:.75}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="arrowhead"/></marker>
+<marker id="ah1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="arrowhead-s1"/></marker>
+</defs>
+<rect class="bg" x="0" y="0" width="1200" height="480"/>
+<text class="h1" x="32.0" y="44.0" text-anchor="start" >Passing tests more than doubled</text>
+<text class="b ink2" x="32.0" y="70.0" text-anchor="start" >Passing Vitest tests reported by pnpm verify, origin/main 8f1d26a to the final head.</text>
+<line class="axis" x1="110.0" y1="400.0" x2="1050.0" y2="400.0"/>
+<text class="xs muted" x="100.0" y="404.0" text-anchor="end" >0</text>
+<line class="grid" x1="110.0" y1="342.0" x2="1050.0" y2="342.0"/>
+<text class="xs muted" x="100.0" y="346.0" text-anchor="end" >500</text>
+<line class="grid" x1="110.0" y1="284.0" x2="1050.0" y2="284.0"/>
+<text class="xs muted" x="100.0" y="288.0" text-anchor="end" >1,000</text>
+<line class="grid" x1="110.0" y1="226.0" x2="1050.0" y2="226.0"/>
+<text class="xs muted" x="100.0" y="230.0" text-anchor="end" >1,500</text>
+<line class="grid" x1="110.0" y1="168.0" x2="1050.0" y2="168.0"/>
+<text class="xs muted" x="100.0" y="172.0" text-anchor="end" >2,000</text>
+<line class="grid" x1="110.0" y1="110.0" x2="1050.0" y2="110.0"/>
+<text class="xs muted" x="100.0" y="114.0" text-anchor="end" >2,500</text>
+<path class="l-s1" d="M110.0 282.0 L177.1 277.4 L244.3 275.8 L311.4 275.6 L378.6 274.5 L445.7 255.8 L512.9 245.7 L580.0 236.6 L647.1 231.2 L714.3 221.7 L781.4 182.7 L848.6 179.9 L915.7 134.8 L982.9 133.9 L1050.0 133.0"/>
+<circle class="f-s1 ring hit" cx="110.0" cy="282.0" r="4.5"><title>base: 1,017</title></circle>
+<text class="xs muted" x="110.0" y="420.0" text-anchor="middle" >base</text>
+<circle class="f-s1 ring hit" cx="177.1" cy="277.4" r="4.5"><title>#79: 1,057</title></circle>
+<text class="xs muted" x="177.1" y="420.0" text-anchor="middle" >#79</text>
+<circle class="f-s1 ring hit" cx="244.3" cy="275.8" r="4.5"><title>#81: 1,071</title></circle>
+<text class="xs muted" x="244.3" y="420.0" text-anchor="middle" >#81</text>
+<circle class="f-s1 ring hit" cx="311.4" cy="275.6" r="4.5"><title>#82: 1,072</title></circle>
+<text class="xs muted" x="311.4" y="420.0" text-anchor="middle" >#82</text>
+<circle class="f-s1 ring hit" cx="378.6" cy="274.5" r="4.5"><title>#83: 1,082</title></circle>
+<text class="xs muted" x="378.6" y="420.0" text-anchor="middle" >#83</text>
+<circle class="f-s1 ring hit" cx="445.7" cy="255.8" r="4.5"><title>#88: 1,243</title></circle>
+<text class="xs muted" x="445.7" y="420.0" text-anchor="middle" >#88</text>
+<circle class="f-s1 ring hit" cx="512.9" cy="245.7" r="4.5"><title>#89: 1,330</title></circle>
+<text class="xs muted" x="512.9" y="420.0" text-anchor="middle" >#89</text>
+<circle class="f-s1 ring hit" cx="580.0" cy="236.6" r="4.5"><title>#90: 1,409</title></circle>
+<text class="xs muted" x="580.0" y="420.0" text-anchor="middle" >#90</text>
+<circle class="f-s1 ring hit" cx="647.1" cy="231.2" r="4.5"><title>#91: 1,455</title></circle>
+<text class="xs muted" x="647.1" y="420.0" text-anchor="middle" >#91</text>
+<circle class="f-s1 ring hit" cx="714.3" cy="221.7" r="4.5"><title>#100: 1,537</title></circle>
+<text class="xs muted" x="714.3" y="420.0" text-anchor="middle" >#100</text>
+<circle class="f-s1 ring hit" cx="781.4" cy="182.7" r="4.5"><title>#104: 1,873</title></circle>
+<text class="xs muted" x="781.4" y="420.0" text-anchor="middle" >#104</text>
+<circle class="f-s1 ring hit" cx="848.6" cy="179.9" r="4.5"><title>#105: 1,897</title></circle>
+<text class="xs muted" x="848.6" y="420.0" text-anchor="middle" >#105</text>
+<circle class="f-s1 ring hit" cx="915.7" cy="134.8" r="4.5"><title>#117: 2,286</title></circle>
+<text class="xs muted" x="915.7" y="420.0" text-anchor="middle" >#117</text>
+<circle class="f-s1 ring hit" cx="982.9" cy="133.9" r="4.5"><title>#118: 2,294</title></circle>
+<text class="xs muted" x="982.9" y="420.0" text-anchor="middle" >#118</text>
+<circle class="f-s1 ring hit" cx="1050.0" cy="133.0" r="4.5"><title>#119: 2,302</title></circle>
+<text class="xs muted" x="1050.0" y="420.0" text-anchor="middle" >#119</text>
+<text class="s bold" x="1060.0" y="123.0" text-anchor="start" >2,302</text>
+<text class="s ink2" x="120.0" y="306.0" text-anchor="start" >1,017</text>
+<text class="xs muted" x="110.0" y="96.0" text-anchor="start" >Passing tests</text>
+<text class="xs muted" x="32.0" y="462.0" text-anchor="start" >Base: sum of the six Vitest projects in the baseline verify log. Expected failures, skips and package contract tests are excluded.</text></svg>

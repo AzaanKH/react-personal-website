@@ -1,0 +1,135 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="fdv dark" viewBox="0 0 1200 678" width="1200" height="678" role="img" aria-labelledby="t d"><title id="t">Prototype verdict grid</title><desc id="d">Each prototype question and its verdicts: verified, not verified, or inconclusive.</desc>
+<style>
+svg.fdv{--bg:#fcfcfb;--panel:#f3f2ee;--ink:#0b0b0b;--ink2:#52514e;--muted:#6f6d68;--grid:#e1e0d9;--axis:#c3c2b7;
+--line:#8a8882;--s1:#2a78d6;--s1w:rgba(42,120,214,.12);--s2:#eb6834;--s2w:rgba(235,104,52,.12);--s3:#1baf7a;--s3w:rgba(27,175,122,.14);
+--good:#0b7d0b;--goodw:rgba(12,163,12,.12);--bad:#c43333;--badw:rgba(208,59,59,.11);--warn:#9a6a00;--warnw:rgba(250,178,25,.18);
+--box:#ffffff;--border:rgba(11,11,11,.16)}
+@media (prefers-color-scheme: dark){svg.fdv:not(.light){--bg:#1a1a19;--panel:#232321;--ink:#f0efec;--ink2:#c3c2b7;--muted:#9a9890;--grid:#2c2c2a;--axis:#383835;
+--line:#7d7b74;--s1:#3987e5;--s1w:rgba(57,135,229,.18);--s2:#d95926;--s2w:rgba(217,89,38,.2);--s3:#199e70;--s3w:rgba(25,158,112,.2);
+--good:#3fbf3f;--goodw:rgba(12,163,12,.2);--bad:#ef6b6b;--badw:rgba(208,59,59,.22);--warn:#fab219;--warnw:rgba(250,178,25,.16);
+--box:#262624;--border:rgba(255,255,255,.14)}}
+svg.fdv.dark{--bg:#1a1a19;--panel:#232321;--ink:#f0efec;--ink2:#c3c2b7;--muted:#9a9890;--grid:#2c2c2a;--axis:#383835;
+--line:#7d7b74;--s1:#3987e5;--s1w:rgba(57,135,229,.18);--s2:#d95926;--s2w:rgba(217,89,38,.2);--s3:#199e70;--s3w:rgba(25,158,112,.2);
+--good:#3fbf3f;--goodw:rgba(12,163,12,.2);--bad:#ef6b6b;--badw:rgba(208,59,59,.22);--warn:#fab219;--warnw:rgba(250,178,25,.16);
+--box:#262624;--border:rgba(255,255,255,.14)}
+svg.fdv text{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--ink)}
+svg.fdv .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+svg.fdv .bg{fill:var(--bg)}
+svg.fdv .panel{fill:var(--panel)}
+svg.fdv .box{fill:var(--box);stroke:var(--border);stroke-width:1}
+svg.fdv .ink2{fill:var(--ink2)}
+svg.fdv .muted{fill:var(--muted)}
+svg.fdv .h1{font-size:22px;font-weight:650}
+svg.fdv .h2{font-size:16px;font-weight:650}
+svg.fdv .b{font-size:14px}
+svg.fdv .s{font-size:12.5px}
+svg.fdv .xs{font-size:11.5px}
+svg.fdv .bold{font-weight:650}
+svg.fdv .grid{stroke:var(--grid);stroke-width:1}
+svg.fdv .axis{stroke:var(--axis);stroke-width:1}
+svg.fdv .edge{stroke:var(--line);stroke-width:1.5;fill:none}
+svg.fdv .edge-s1{stroke:var(--s1);stroke-width:2;fill:none}
+svg.fdv .arrowhead{fill:var(--line)}
+svg.fdv .arrowhead-s1{fill:var(--s1)}
+svg.fdv .f-s1{fill:var(--s1)} svg.fdv .f-s2{fill:var(--s2)} svg.fdv .f-s3{fill:var(--s3)}
+svg.fdv .w-s1{fill:var(--s1w);stroke:var(--s1);stroke-width:1.5}
+svg.fdv .w-s2{fill:var(--s2w);stroke:var(--s2);stroke-width:1.5}
+svg.fdv .w-s3{fill:var(--s3w);stroke:var(--s3);stroke-width:1.5}
+svg.fdv .w-good{fill:var(--goodw);stroke:var(--good);stroke-width:1.2}
+svg.fdv .w-bad{fill:var(--badw);stroke:var(--bad);stroke-width:1.2}
+svg.fdv .w-warn{fill:var(--warnw);stroke:var(--warn);stroke-width:1.2}
+svg.fdv .t-good{fill:var(--good);font-weight:700} svg.fdv .t-bad{fill:var(--bad);font-weight:700} svg.fdv .t-warn{fill:var(--warn);font-weight:700}
+svg.fdv .l-s1{stroke:var(--s1);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+svg.fdv .l-muted{stroke:var(--muted);stroke-width:2;fill:none;stroke-linecap:round}
+svg.fdv .l-bad{stroke:var(--bad);stroke-width:1.5;fill:none}
+svg.fdv .ring{stroke:var(--bg);stroke-width:2}
+svg.fdv .hit:hover{opacity:.75}
+</style>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="arrowhead"/></marker>
+<marker id="ah1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="arrowhead-s1"/></marker>
+</defs>
+<rect class="bg" x="0" y="0" width="1200" height="678"/>
+<text class="h1" x="32.0" y="44.0" text-anchor="start" >Every idea was prototyped before it was planned</text>
+<text class="b ink2" x="32.0" y="70.0" text-anchor="start" >Verdicts from the receipts. Unit 0 reversed the P9 persistence choice.</text>
+<rect class="w-good" x="32.0" y="90.0" width="22.0" height="22.0" rx="5"></rect>
+<text class="b t-good" x="43.0" y="106.0" text-anchor="middle" >✓</text>
+<text class="s ink2" x="62.0" y="106.0" text-anchor="start" >VERIFIED</text>
+<rect class="w-bad" x="202.0" y="90.0" width="22.0" height="22.0" rx="5"></rect>
+<text class="b t-bad" x="213.0" y="106.0" text-anchor="middle" >✗</text>
+<text class="s ink2" x="232.0" y="106.0" text-anchor="start" >NOT VERIFIED</text>
+<rect class="w-warn" x="372.0" y="90.0" width="22.0" height="22.0" rx="5"></rect>
+<text class="b t-warn" x="383.0" y="106.0" text-anchor="middle" >?</text>
+<text class="s ink2" x="402.0" y="106.0" text-anchor="start" >INCONCLUSIVE</text>
+<rect class="panel" x="20.0" y="144.0" width="1160.0" height="54.0" rx="6"></rect>
+<text class="h2" x="36.0" y="174.0" text-anchor="start" >P1</text>
+<text class="b" x="80.0" y="174.0" text-anchor="start" >Require draftType, delete the snake helper</text>
+<rect class="w-good" x="470.0" y="154.0" width="234.1" height="30.0" rx="6"></rect>
+<text class="b t-good" x="483.0" y="174.0" text-anchor="middle" >✓</text>
+<text class="s" x="496.0" y="174.0" text-anchor="start" >17 sites flagged, 3 live bugs</text>
+<text class="h2" x="36.0" y="232.0" text-anchor="start" >P2</text>
+<text class="b" x="80.0" y="232.0" text-anchor="start" >Extract the CLI&#x27;s web-app closure</text>
+<rect class="w-good" x="470.0" y="212.0" width="192.7" height="30.0" rx="6"></rect>
+<text class="b t-good" x="483.0" y="232.0" text-anchor="middle" >✓</text>
+<text class="s" x="496.0" y="232.0" text-anchor="start" >verify green, 149 files</text>
+<rect class="w-warn" x="672.7" y="212.0" width="144.4" height="30.0" rx="6"></rect>
+<text class="b t-warn" x="685.7" y="232.0" text-anchor="middle" >?</text>
+<text class="s" x="698.7" y="232.0" text-anchor="start" >verify-time cost</text>
+<rect class="panel" x="20.0" y="260.0" width="1160.0" height="54.0" rx="6"></rect>
+<text class="h2" x="36.0" y="290.0" text-anchor="start" >P3</text>
+<text class="b" x="80.0" y="290.0" text-anchor="start" >Lint errors that name the fix, replayed on past bugs</text>
+<rect class="w-good" x="470.0" y="270.0" width="254.8" height="30.0" rx="6"></rect>
+<text class="b t-good" x="483.0" y="290.0" text-anchor="middle" >✓</text>
+<text class="s" x="496.0" y="290.0" text-anchor="start" >json-cast, fetch, snake, imports</text>
+<rect class="w-bad" x="734.8" y="270.0" width="247.9" height="30.0" rx="6"></rect>
+<text class="b t-bad" x="747.8" y="290.0" text-anchor="middle" >✗</text>
+<text class="s" x="760.8" y="290.0" text-anchor="start" >sessionMode: bug was an absence</text>
+<text class="h2" x="36.0" y="348.0" text-anchor="start" >P5</text>
+<text class="b" x="80.0" y="348.0" text-anchor="start" >Recommendation cost and derived state</text>
+<rect class="w-good" x="470.0" y="328.0" width="137.5" height="30.0" rx="6"></rect>
+<text class="b t-good" x="483.0" y="348.0" text-anchor="middle" >✓</text>
+<text class="s" x="496.0" y="348.0" text-anchor="start" >derive 0.015 ms</text>
+<rect class="w-bad" x="617.5" y="328.0" width="130.6" height="30.0" rx="6"></rect>
+<text class="b t-bad" x="630.5" y="348.0" text-anchor="middle" >✗</text>
+<text class="s" x="643.5" y="348.0" text-anchor="start" >dedup gain &lt;1%</text>
+<rect class="w-warn" x="758.1" y="328.0" width="165.1" height="30.0" rx="6"></rect>
+<text class="b t-warn" x="771.1" y="348.0" text-anchor="middle" >?</text>
+<text class="s" x="784.1" y="348.0" text-anchor="start" >browser attribution</text>
+<rect class="panel" x="20.0" y="376.0" width="1160.0" height="54.0" rx="6"></rect>
+<text class="h2" x="36.0" y="406.0" text-anchor="start" >P7</text>
+<text class="b" x="80.0" y="406.0" text-anchor="start" >Effect Schema decoders</text>
+<rect class="w-good" x="470.0" y="386.0" width="192.7" height="30.0" rx="6"></rect>
+<text class="b t-good" x="483.0" y="406.0" text-anchor="middle" >✓</text>
+<text class="s" x="496.0" y="406.0" text-anchor="start" >+22 KB gzip, &lt;2 ms/file</text>
+<rect class="w-bad" x="672.7" y="386.0" width="213.4" height="30.0" rx="6"></rect>
+<text class="b t-bad" x="685.7" y="406.0" text-anchor="middle" >✗</text>
+<text class="s" x="698.7" y="406.0" text-anchor="start" >parity: 6 guards too loose</text>
+<text class="h2" x="36.0" y="464.0" text-anchor="start" >P8</text>
+<text class="b" x="80.0" y="464.0" text-anchor="start" >source export condition vs stale dist</text>
+<rect class="w-good" x="470.0" y="444.0" width="192.7" height="30.0" rx="6"></rect>
+<text class="b t-good" x="483.0" y="464.0" text-anchor="middle" >✓</text>
+<text class="s" x="496.0" y="464.0" text-anchor="start" >caught 21 hidden breaks</text>
+<rect class="panel" x="20.0" y="492.0" width="1160.0" height="54.0" rx="6"></rect>
+<text class="h2" x="36.0" y="522.0" text-anchor="start" >P9</text>
+<text class="b" x="80.0" y="522.0" text-anchor="start" >Multi-tab persistence, toy reducer, 37,800 cmds</text>
+<rect class="w-good" x="470.0" y="502.0" width="192.7" height="30.0" rx="6"></rect>
+<text class="b t-good" x="483.0" y="522.0" text-anchor="middle" >✓</text>
+<text class="s" x="496.0" y="522.0" text-anchor="start" >Web Lock + localStorage</text>
+<rect class="w-bad" x="672.7" y="502.0" width="199.6" height="30.0" rx="6"></rect>
+<text class="b t-bad" x="685.7" y="522.0" text-anchor="middle" >✗</text>
+<text class="s" x="698.7" y="522.0" text-anchor="start" >per-tab logs lost a pick</text>
+<rect class="w-bad" x="882.3" y="502.0" width="206.5" height="30.0" rx="6"></rect>
+<text class="b t-bad" x="895.3" y="522.0" text-anchor="middle" >✗</text>
+<text class="s" x="908.3" y="522.0" text-anchor="start" >IndexedDB missed a notice</text>
+<text class="h2" x="36.0" y="580.0" text-anchor="start" >U0</text>
+<text class="b" x="80.0" y="580.0" text-anchor="start" >Same harness inside the installed extension</text>
+<rect class="w-bad" x="470.0" y="560.0" width="206.5" height="30.0" rx="6"></rect>
+<text class="b t-bad" x="483.0" y="580.0" text-anchor="middle" >✗</text>
+<text class="s" x="496.0" y="580.0" text-anchor="start" >Web Lock lost acked picks</text>
+<rect class="w-good" x="686.5" y="560.0" width="213.4" height="30.0" rx="6"></rect>
+<text class="b t-good" x="699.5" y="580.0" text-anchor="middle" >✓</text>
+<text class="s" x="712.5" y="580.0" text-anchor="start" >IndexedDB kept 9,000/9,000</text>
+<rect class="w-warn" x="909.9" y="560.0" width="151.3" height="30.0" rx="6"></rect>
+<text class="b t-warn" x="922.9" y="580.0" text-anchor="middle" >?</text>
+<text class="s" x="935.9" y="580.0" text-anchor="start" >native visibility</text>
+<text class="xs muted" x="32.0" y="660.0" text-anchor="start" >Sources: PLAN.md section 4 and Amendment 1; receipts/*/RESULTS.md. Native visibility was proven later, before the IndexedDB flip (#117).</text></svg>

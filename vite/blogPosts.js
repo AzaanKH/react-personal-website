@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync } from 'node:fs'
+import { readdirSync, readFileSync, realpathSync } from 'node:fs'
 import path from 'node:path'
 import { parsePostMeta } from '../src/lib/postMeta.js'
 
@@ -76,11 +76,13 @@ export function blogPosts({ dir }) {
     },
     generateBundle(_options, bundle) {
       if (includeDrafts) return
-      const drafts = readPosts(dir).filter((post) => post.meta.draft)
+      // Module ids are real paths (Vite resolves symlinks), so compare against the real
+      // path too: on macOS a post dir under /var is really /private/var.
+      const drafts = readPosts(dir).filter((post) => post.meta.draft).map((post) => ({ ...post, real: realpathSync(post.file) }))
       for (const output of Object.values(bundle)) {
         if (output.type !== 'chunk') continue
         for (const id of output.moduleIds) {
-          const draft = drafts.find((post) => samePath(id.split('?')[0], post.file))
+          const draft = drafts.find((post) => samePath(id.split('?')[0], post.real))
           if (draft) {
             this.error(`Draft post ${path.basename(draft.file)} was bundled into ${output.fileName}. Drafts must not ship.`)
           }
