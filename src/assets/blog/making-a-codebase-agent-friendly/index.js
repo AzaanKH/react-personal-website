@@ -41,6 +41,8 @@ import testCountLight from './18-test-count-light.svg'
 import testCountDark from './18-test-count-dark.svg'
 import solLoopLight from './19-sol-loop-light.svg'
 import solLoopDark from './19-sol-loop-dark.svg'
+import codeStructureLight from './20-code-structure-light.svg'
+import codeStructureDark from './20-code-structure-dark.svg'
 import compact02Workspace from './compact-02-workspace.webp'
 import compact21Sidepanel from './compact-21-sidepanel.webp'
 import connectSleeper from './connect-sleeper.webp'
@@ -77,6 +79,7 @@ export const diagrams = {
   bundleBudget: { light: bundleBudgetLight, dark: bundleBudgetDark, width: 1200, height: 480 },
   testCount: { light: testCountLight, dark: testCountDark, width: 1200, height: 480 },
   solLoop: { light: solLoopLight, dark: solLoopDark, width: 1200, height: 444 },
+  codeStructure: { light: codeStructureLight, dark: codeStructureDark, width: 1200, height: 600 },
 }
 
 export const screens = {
