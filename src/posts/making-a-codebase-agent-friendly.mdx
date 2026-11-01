@@ -17,7 +17,7 @@ So some information on my [Fantasy Draft Assistant](https://github.com/AzaanKH/f
 
 To connect to ESPN and Yahoo you must use the draft extension.
 
-So the tool has a web app, a Chrome extension that is a side panel, a sync server, CLI and scripts to collect data for rankings. Most of it was written by coding agents, with me reviewing. There were issues that kept happening, so I decided to rebuild the codebase to break it up and bring correctness to the whole repo.
+So the tool has a web app, a Chrome extension that is a side panel, a sync server, CLI and scripts to collect data for rankings. The [architecture explorer on my projects page](/projects) traces how a pick moves through those parts. Most of it was written by coding agents, with me reviewing. There were issues that kept happening, so I decided to rebuild the codebase to break it up and bring correctness to the whole repo.
 
 By October 2026 the agents kept making the same mistakes. A fix would land, and two PRs later a different agent would reintroduce the bug from a different file. The code looked right from the file the agent had open. It was wrong for the repo.
 
@@ -370,6 +370,10 @@ Two follow-up rules came out of verification, not the plan. Effect stays at the 
 // scripts/agent-lint-rules.mjs on main
 root: 'The shared root is closed. Choose @fantasy-draft/shared/league for players, positions, scoring and rosters; /draft for draft order and recommendations; /catalog for data and readiness; /sync for providers and draft URLs; /units for limits; /node for local process configuration; /http for HTTP requests.',
 ```
+
+Put together, every package now gets its rules from one module in `shared`, imported by exact subpath:
+
+<Figure wide {...diagrams.codeStructure} alt="Code structure after the refactor. Five packages, web-app, server, extension, cli and scripts, each import from shared by exact subpath, with import counts on main. web-app imports draft 97 times, league 63, sync 53, catalog 23, units 11 and http 4. The shared modules are draft for draft order, the mock engine and advice; league for positions, FLEX and scoring; units for probabilities, ranks, VOR and one Clock; catalog for data decoders and readiness; sync for the sync engine and Provider Truth; http for one HTTP runner; and node for one process runner. Lint points to the owner for bare fetch, child_process, Date.now, new position lists and root imports." />
 
 ## The agent workflow
 

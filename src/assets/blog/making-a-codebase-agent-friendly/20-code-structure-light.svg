@@ -1,0 +1,152 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="fdv light" viewBox="0 0 1200 600" width="1200" height="600" role="img" aria-labelledby="t d"><title id="t">Where the rules live after the refactor</title><desc id="d">Five packages, web-app, server, extension, cli and scripts, each import from the shared package by exact subpath. Import counts on main: web-app uses draft 97, league 63, sync 53, catalog 23, units 11, http 4. server uses catalog 7, sync 5, league 5, node 2, draft 2, http 1. extension uses sync 8, and units, league, http and catalog 2 each, draft 1. cli uses catalog 12, league 11, draft 8, sync 7, units 3, node 1, http 1. scripts uses catalog 29, league 27, node 16, http 5, units 2, draft 2. The shared modules are draft, league, units, catalog, sync, http and node. Lint points to the owner for bare fetch, child_process, Date.now, new position lists and root imports.</desc><style>
+svg.fdv{--bg:#fcfcfb;--panel:#f3f2ee;--ink:#0b0b0b;--ink2:#52514e;--muted:#6f6d68;--grid:#e1e0d9;--axis:#c3c2b7;
+--line:#8a8882;--s1:#2a78d6;--s1w:rgba(42,120,214,.12);--s2:#eb6834;--s2w:rgba(235,104,52,.12);--s3:#1baf7a;--s3w:rgba(27,175,122,.14);
+--good:#0b7d0b;--goodw:rgba(12,163,12,.12);--bad:#c43333;--badw:rgba(208,59,59,.11);--warn:#9a6a00;--warnw:rgba(250,178,25,.18);
+--box:#ffffff;--border:rgba(11,11,11,.16)}
+@media (prefers-color-scheme: dark){svg.fdv:not(.light){--bg:#1a1a19;--panel:#232321;--ink:#f0efec;--ink2:#c3c2b7;--muted:#9a9890;--grid:#2c2c2a;--axis:#383835;
+--line:#7d7b74;--s1:#3987e5;--s1w:rgba(57,135,229,.18);--s2:#d95926;--s2w:rgba(217,89,38,.2);--s3:#199e70;--s3w:rgba(25,158,112,.2);
+--good:#3fbf3f;--goodw:rgba(12,163,12,.2);--bad:#ef6b6b;--badw:rgba(208,59,59,.22);--warn:#fab219;--warnw:rgba(250,178,25,.16);
+--box:#262624;--border:rgba(255,255,255,.14)}}
+svg.fdv.dark{--bg:#1a1a19;--panel:#232321;--ink:#f0efec;--ink2:#c3c2b7;--muted:#9a9890;--grid:#2c2c2a;--axis:#383835;
+--line:#7d7b74;--s1:#3987e5;--s1w:rgba(57,135,229,.18);--s2:#d95926;--s2w:rgba(217,89,38,.2);--s3:#199e70;--s3w:rgba(25,158,112,.2);
+--good:#3fbf3f;--goodw:rgba(12,163,12,.2);--bad:#ef6b6b;--badw:rgba(208,59,59,.22);--warn:#fab219;--warnw:rgba(250,178,25,.16);
+--box:#262624;--border:rgba(255,255,255,.14)}
+svg.fdv text{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--ink)}
+svg.fdv .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+svg.fdv .bg{fill:var(--bg)}
+svg.fdv .panel{fill:var(--panel)}
+svg.fdv .box{fill:var(--box);stroke:var(--border);stroke-width:1}
+svg.fdv .ink2{fill:var(--ink2)}
+svg.fdv .muted{fill:var(--muted)}
+svg.fdv .h1{font-size:22px;font-weight:650}
+svg.fdv .h2{font-size:16px;font-weight:650}
+svg.fdv .b{font-size:14px}
+svg.fdv .s{font-size:12.5px}
+svg.fdv .xs{font-size:11.5px}
+svg.fdv .bold{font-weight:650}
+svg.fdv .grid{stroke:var(--grid);stroke-width:1}
+svg.fdv .axis{stroke:var(--axis);stroke-width:1}
+svg.fdv .edge{stroke:var(--line);stroke-width:1.5;fill:none}
+svg.fdv .edge-s1{stroke:var(--s1);stroke-width:2;fill:none}
+svg.fdv .arrowhead{fill:var(--line)}
+svg.fdv .arrowhead-s1{fill:var(--s1)}
+svg.fdv .f-s1{fill:var(--s1)} svg.fdv .f-s2{fill:var(--s2)} svg.fdv .f-s3{fill:var(--s3)}
+svg.fdv .w-s1{fill:var(--s1w);stroke:var(--s1);stroke-width:1.5}
+svg.fdv .w-s2{fill:var(--s2w);stroke:var(--s2);stroke-width:1.5}
+svg.fdv .w-s3{fill:var(--s3w);stroke:var(--s3);stroke-width:1.5}
+svg.fdv .w-good{fill:var(--goodw);stroke:var(--good);stroke-width:1.2}
+svg.fdv .w-bad{fill:var(--badw);stroke:var(--bad);stroke-width:1.2}
+svg.fdv .w-warn{fill:var(--warnw);stroke:var(--warn);stroke-width:1.2}
+svg.fdv .t-good{fill:var(--good);font-weight:700} svg.fdv .t-bad{fill:var(--bad);font-weight:700} svg.fdv .t-warn{fill:var(--warn);font-weight:700}
+svg.fdv .l-s1{stroke:var(--s1);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+svg.fdv .l-muted{stroke:var(--muted);stroke-width:2;fill:none;stroke-linecap:round}
+svg.fdv .l-bad{stroke:var(--bad);stroke-width:1.5;fill:none}
+svg.fdv .ring{stroke:var(--bg);stroke-width:2}
+svg.fdv .hit:hover{opacity:.75}
+
+svg.fdv .pill{stroke-width:1.2}
+svg.fdv .p-n{fill:var(--box);stroke:var(--border)}
+svg.fdv .p-b{fill:var(--s1w);stroke:var(--s1)}
+svg.fdv .p-w{fill:var(--warnw);stroke:var(--warn)}
+svg.fdv .p-g{fill:var(--goodw);stroke:var(--good)}
+svg.fdv .p-r{fill:var(--badw);stroke:var(--bad)}
+svg.fdv .t-g{fill:var(--good)} svg.fdv .t-w{fill:var(--warn)} svg.fdv .t-r{fill:var(--bad)}
+svg.fdv .card{fill:var(--panel)}
+</style><rect x="0" y="0" width="1200" height="600" rx="0" class="bg"/>
+<text x="30" y="42" class="h1" text-anchor="start">Where the rules live after the refactor</text>
+<text x="30" y="66" class="s muted" text-anchor="start">Every package imports its rules from one shared module, by exact subpath. Counts are imports on main.</text>
+<rect x="30.0" y="90" width="215.2" height="168" rx="10" class="box"/>
+<text x="46.0" y="118" class="h2 mono" text-anchor="start">web-app</text>
+<text x="46.0" y="138" class="s ink2" text-anchor="start">Board, Assistant, workspace</text>
+<text x="46.0" y="166" class="xs muted" text-anchor="start">imports</text>
+<text x="46.0" y="186" class="xs mono ink2" text-anchor="start">draft 97</text>
+<text x="144.0" y="186" class="xs mono ink2" text-anchor="start">league 63</text>
+<text x="46.0" y="204" class="xs mono ink2" text-anchor="start">sync 53</text>
+<text x="144.0" y="204" class="xs mono ink2" text-anchor="start">catalog 23</text>
+<text x="46.0" y="222" class="xs mono ink2" text-anchor="start">units 11</text>
+<text x="144.0" y="222" class="xs mono ink2" text-anchor="start">http 4</text>
+<line x1="137.6" y1="260" x2="137.6" y2="300" class="edge"/>
+<polygon points="137.6,300.0 134.1,292.8 141.1,292.8" class="arrowhead"/>
+<rect x="261.2" y="90" width="215.2" height="168" rx="10" class="box"/>
+<text x="277.2" y="118" class="h2 mono" text-anchor="start">server</text>
+<text x="277.2" y="138" class="s ink2" text-anchor="start">Sync sessions and polling</text>
+<text x="277.2" y="166" class="xs muted" text-anchor="start">imports</text>
+<text x="277.2" y="186" class="xs mono ink2" text-anchor="start">catalog 7</text>
+<text x="375.2" y="186" class="xs mono ink2" text-anchor="start">sync 5</text>
+<text x="277.2" y="204" class="xs mono ink2" text-anchor="start">league 5</text>
+<text x="375.2" y="204" class="xs mono ink2" text-anchor="start">node 2</text>
+<text x="277.2" y="222" class="xs mono ink2" text-anchor="start">draft 2</text>
+<text x="375.2" y="222" class="xs mono ink2" text-anchor="start">http 1</text>
+<line x1="368.79999999999995" y1="260" x2="368.79999999999995" y2="300" class="edge"/>
+<polygon points="368.8,300.0 365.3,292.8 372.3,292.8" class="arrowhead"/>
+<rect x="492.4" y="90" width="215.2" height="168" rx="10" class="box"/>
+<text x="508.4" y="118" class="h2 mono" text-anchor="start">extension</text>
+<text x="508.4" y="138" class="s ink2" text-anchor="start">ESPN tab and side panel</text>
+<text x="508.4" y="166" class="xs muted" text-anchor="start">imports</text>
+<text x="508.4" y="186" class="xs mono ink2" text-anchor="start">sync 8</text>
+<text x="606.4" y="186" class="xs mono ink2" text-anchor="start">units 2</text>
+<text x="508.4" y="204" class="xs mono ink2" text-anchor="start">league 2</text>
+<text x="606.4" y="204" class="xs mono ink2" text-anchor="start">http 2</text>
+<text x="508.4" y="222" class="xs mono ink2" text-anchor="start">catalog 2</text>
+<text x="606.4" y="222" class="xs mono ink2" text-anchor="start">draft 1</text>
+<line x1="600.0" y1="260" x2="600.0" y2="300" class="edge"/>
+<polygon points="600.0,300.0 596.5,292.8 603.5,292.8" class="arrowhead"/>
+<rect x="723.5999999999999" y="90" width="215.2" height="168" rx="10" class="box"/>
+<text x="739.5999999999999" y="118" class="h2 mono" text-anchor="start">cli</text>
+<text x="739.5999999999999" y="138" class="s ink2" text-anchor="start">Advice in a terminal</text>
+<text x="739.5999999999999" y="166" class="xs muted" text-anchor="start">imports</text>
+<text x="739.5999999999999" y="186" class="xs mono ink2" text-anchor="start">catalog 12</text>
+<text x="837.5999999999999" y="186" class="xs mono ink2" text-anchor="start">league 11</text>
+<text x="739.5999999999999" y="204" class="xs mono ink2" text-anchor="start">draft 8</text>
+<text x="837.5999999999999" y="204" class="xs mono ink2" text-anchor="start">sync 7</text>
+<text x="739.5999999999999" y="222" class="xs mono ink2" text-anchor="start">units 3</text>
+<text x="837.5999999999999" y="222" class="xs mono ink2" text-anchor="start">node 1</text>
+<text x="739.5999999999999" y="240" class="xs mono ink2" text-anchor="start">http 1</text>
+<line x1="831.1999999999999" y1="260" x2="831.1999999999999" y2="300" class="edge"/>
+<polygon points="831.2,300.0 827.7,292.8 834.7,292.8" class="arrowhead"/>
+<rect x="954.8" y="90" width="215.2" height="168" rx="10" class="box"/>
+<text x="970.8" y="118" class="h2 mono" text-anchor="start">scripts</text>
+<text x="970.8" y="138" class="s ink2" text-anchor="start">Refresh and check data</text>
+<text x="970.8" y="166" class="xs muted" text-anchor="start">imports</text>
+<text x="970.8" y="186" class="xs mono ink2" text-anchor="start">catalog 29</text>
+<text x="1068.8" y="186" class="xs mono ink2" text-anchor="start">league 27</text>
+<text x="970.8" y="204" class="xs mono ink2" text-anchor="start">node 16</text>
+<text x="1068.8" y="204" class="xs mono ink2" text-anchor="start">http 5</text>
+<text x="970.8" y="222" class="xs mono ink2" text-anchor="start">units 2</text>
+<text x="1068.8" y="222" class="xs mono ink2" text-anchor="start">draft 2</text>
+<line x1="1062.3999999999999" y1="260" x2="1062.3999999999999" y2="300" class="edge"/>
+<polygon points="1062.4,300.0 1058.9,292.8 1065.9,292.8" class="arrowhead"/>
+<rect x="30" y="304" width="1140" height="176" rx="12" class="card"/>
+<text x="46" y="334" class="h2" text-anchor="start">shared/: one home for each rule</text>
+<text x="46" y="354" class="s muted" text-anchor="start">Importing the old root barrel is a lint error that names the subpath to use instead.</text>
+<rect x="46.0" y="370" width="149.71428571428572" height="92" rx="8" class="box pill p-b"/>
+<text x="58.0" y="394" class="b bold mono" text-anchor="start">draft</text>
+<text x="58.0" y="418" class="xs ink2" text-anchor="start">draft order,</text>
+<text x="58.0" y="436" class="xs ink2" text-anchor="start">mock engine, advice</text>
+<rect x="205.71428571428572" y="370" width="149.71428571428572" height="92" rx="8" class="box pill p-b"/>
+<text x="217.71428571428572" y="394" class="b bold mono" text-anchor="start">league</text>
+<text x="217.71428571428572" y="418" class="xs ink2" text-anchor="start">positions, FLEX,</text>
+<text x="217.71428571428572" y="436" class="xs ink2" text-anchor="start">scoring</text>
+<rect x="365.42857142857144" y="370" width="149.71428571428572" height="92" rx="8" class="box pill p-b"/>
+<text x="377.42857142857144" y="394" class="b bold mono" text-anchor="start">units</text>
+<text x="377.42857142857144" y="418" class="xs ink2" text-anchor="start">probabilities, ranks,</text>
+<text x="377.42857142857144" y="436" class="xs ink2" text-anchor="start">VOR, one Clock</text>
+<rect x="525.1428571428571" y="370" width="149.71428571428572" height="92" rx="8" class="box pill p-b"/>
+<text x="537.1428571428571" y="394" class="b bold mono" text-anchor="start">catalog</text>
+<text x="537.1428571428571" y="418" class="xs ink2" text-anchor="start">data decoders,</text>
+<text x="537.1428571428571" y="436" class="xs ink2" text-anchor="start">readiness</text>
+<rect x="684.8571428571429" y="370" width="149.71428571428572" height="92" rx="8" class="box pill p-b"/>
+<text x="696.8571428571429" y="394" class="b bold mono" text-anchor="start">sync</text>
+<text x="696.8571428571429" y="418" class="xs ink2" text-anchor="start">sync engine,</text>
+<text x="696.8571428571429" y="436" class="xs ink2" text-anchor="start">Provider Truth</text>
+<rect x="844.5714285714287" y="370" width="149.71428571428572" height="92" rx="8" class="box pill p-b"/>
+<text x="856.5714285714287" y="394" class="b bold mono" text-anchor="start">http</text>
+<text x="856.5714285714287" y="418" class="xs ink2" text-anchor="start">one HTTP</text>
+<text x="856.5714285714287" y="436" class="xs ink2" text-anchor="start">runner</text>
+<rect x="1004.2857142857143" y="370" width="149.71428571428572" height="92" rx="8" class="box pill p-b"/>
+<text x="1016.2857142857143" y="394" class="b bold mono" text-anchor="start">node</text>
+<text x="1016.2857142857143" y="418" class="xs ink2" text-anchor="start">one process</text>
+<text x="1016.2857142857143" y="436" class="xs ink2" text-anchor="start">runner</text>
+<text x="30" y="516" class="s bold" text-anchor="start">Lint points to the owner:</text>
+<text x="30" y="540" class="s ink2 mono" text-anchor="start">bare fetch → shared/http  ·  child_process → shared/node  ·  Date.now() in shared → Clock</text>
+<text x="30" y="562" class="s ink2 mono" text-anchor="start">new position lists → shared/league  ·  root import → exact subpath</text></svg>
