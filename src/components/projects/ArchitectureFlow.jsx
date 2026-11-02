@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useId, useState } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react'
+import { EASE_OUT } from '../../lib/motion'
 
 // Each trace step stays up long enough to read its description and example: a base
 // pause plus ~250 ms per word (about 240 wpm), clamped so short steps don't flash by.
@@ -84,7 +85,7 @@ export default function ArchitectureFlow({ flow, name }) {
                         className="md:min-w-0 md:flex-1"
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.05 + index * 0.05, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                        transition={{ delay: 0.05 + index * 0.05, duration: 0.3, ease: EASE_OUT }}
                       >
                         <button
                           type="button"

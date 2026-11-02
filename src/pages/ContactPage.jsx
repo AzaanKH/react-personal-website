@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react'
 import { Send, Check, Loader2, ArrowUpRight } from 'lucide-react'
 import Kicker from '../components/Kicker'
 import { CONTACT_LIMITS, validateContact } from '../lib/contactValidation'
+import { EASE_OUT } from '../lib/motion'
 import {
   resetStatus,
   showValidationError,
@@ -140,9 +141,9 @@ export default function ContactPage() {
               <motion.div
                 key={field.name}
                 className="space-y-2"
-                initial={{ y: 20, opacity: 0 }}
+                initial={{ y: 8, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: i * 0.1, duration: 0.4 }}
+                transition={{ delay: i * 0.05, duration: 0.3, ease: EASE_OUT }}
               >
                 <label
                   htmlFor={field.name}
@@ -193,9 +194,9 @@ export default function ContactPage() {
 
           <motion.div
             className="space-y-2"
-            initial={{ y: 20, opacity: 0 }}
+            initial={{ y: 8, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.2, duration: 0.4 }}
+            transition={{ delay: 0.1, duration: 0.3, ease: EASE_OUT }}
           >
             <label
               htmlFor="message"
@@ -242,9 +243,9 @@ export default function ContactPage() {
           </motion.div>
 
           <motion.div
-            initial={{ y: 20, opacity: 0 }}
+            initial={{ y: 8, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.3, duration: 0.4 }}
+            transition={{ delay: 0.15, duration: 0.3, ease: EASE_OUT }}
           >
             <button
               type="submit"
@@ -255,7 +256,7 @@ export default function ContactPage() {
               style={{
                 backgroundColor: 'var(--color-accent)',
                 color: 'var(--color-bg)',
-                transition: 'transform 0.15s, scale 0.15s, opacity 0.2s, background-color 0.2s',
+                transition: 'transform 0.15s var(--ease-out), scale 0.15s var(--ease-out), opacity 0.2s ease, background-color 0.2s ease',
                 boxShadow: 'var(--shadow-sm)',
               }}
             >
@@ -286,7 +287,7 @@ export default function ContactPage() {
                   <motion.span
                     key="success"
                     className="flex items-center gap-2"
-                    initial={{ opacity: 0, scale: 0.8 }}
+                    initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0 }}
                   >

@@ -4,6 +4,7 @@ import { ArrowRight, Mail, FileText } from 'lucide-react'
 import { GithubIcon, LinkedinIcon } from '../components/BrandIcons'
 import RouteLink from '../components/RouteLink'
 import StatusCorner from '../components/StatusCorner'
+import { EASE_OUT } from '../lib/motion'
 
 const MotionRouteLink = motion.create(RouteLink)
 
@@ -18,7 +19,7 @@ const reveal = (delay, playIntro, distance = 16) => ({
   initial: playIntro ? { opacity: 0, y: distance } : false,
   animate: { opacity: 1, y: 0 },
   transition: playIntro
-    ? { delay, duration: 0.55, ease: [0.16, 1, 0.3, 1] }
+    ? { delay, duration: 0.55, ease: EASE_OUT }
     : { duration: 0 },
 })
 
@@ -35,7 +36,7 @@ function AnimatedNameLine({ text, startDelay, playIntro }) {
             transition={playIntro ? {
               delay: startDelay + index * 0.035,
               duration: 0.62,
-              ease: [0.16, 1, 0.3, 1],
+              ease: EASE_OUT,
             } : { duration: 0 }}
           >
             {letter}
@@ -48,7 +49,7 @@ function AnimatedNameLine({ text, startDelay, playIntro }) {
 
 const socialMotion = {
   whileHover: { y: -3, scale: 1.06 },
-  whileTap: { scale: 0.94 },
+  whileTap: { scale: 0.96 },
   transition: { type: 'spring', stiffness: 360, damping: 22 },
 }
 
@@ -107,7 +108,7 @@ export default function HomePage({ onNavigate }) {
           style={{ backgroundColor: 'var(--color-accent)' }}
           initial={playIntro ? { opacity: 0, width: 0 } : false}
           animate={{ opacity: 1, width: 56 }}
-          transition={playIntro ? { delay: 0.7, duration: 0.55, ease: [0.16, 1, 0.3, 1] } : { duration: 0 }}
+          transition={playIntro ? { delay: 0.7, duration: 0.55, ease: EASE_OUT } : { duration: 0 }}
           aria-hidden="true"
         />
 
