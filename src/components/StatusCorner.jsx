@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import status from '../data/status.json'
 import useWeather from '../hooks/useWeather'
+import { EASE_OUT } from '../lib/motion'
 
 function useLocalTime(timezone) {
   const format = useCallback(() =>
@@ -64,7 +65,7 @@ export default function StatusCorner({ enterDelay = 1.6, animate: shouldAnimate 
   const transition = shouldAnimate ? {
     delay: enterDelay,
     duration: 0.5,
-    ease: [0.16, 1, 0.3, 1],
+    ease: EASE_OUT,
   } : { duration: 0 }
 
   const initialState = shouldAnimate ? { opacity: 0, y: 12 } : false

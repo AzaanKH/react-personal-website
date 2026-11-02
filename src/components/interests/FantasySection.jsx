@@ -6,6 +6,7 @@ import { loadNflPlayers } from '../../lib/nflPlayers'
 import { matchupResult, playerGameState } from '../../lib/sleeper'
 import Section, { UpdatedAt } from './Section'
 import VictoryBurst from './VictoryBurst'
+import { EASE_OUT } from '../../lib/motion'
 
 // Celebration state per "season-week" for this page load: undefined → 'playing' → 'done'.
 // Kept outside the card (like HomePage's hasPlayedIntro) so returning to the page, the
@@ -49,7 +50,7 @@ function ScoreRow({ label, points, highlighted, leading, celebrate, onCelebrated
         className="relative inline-block flex-shrink-0 origin-right font-semibold tabular-nums"
         style={{ fontSize: '1.5rem', color: leading ? 'var(--color-text)' : 'var(--color-text-secondary)' }}
         animate={celebrate ? { scale: [1, 1.18, 1] } : undefined}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        transition={{ duration: 0.6, ease: EASE_OUT }}
       >
         {formatPoints(points)}
         {/* Its own presence boundary; see VictoryBurst. */}
@@ -192,7 +193,7 @@ function Lineups({ matchup, teamName }) {
           size={13}
           strokeWidth={1.6}
           aria-hidden="true"
-          style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s ease' }}
+          style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.25s var(--ease-out)' }}
         />
       </button>
 
@@ -204,7 +205,7 @@ function Lineups({ matchup, teamName }) {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.3, ease: EASE_OUT }}
             className="overflow-hidden"
           >
             <div className="pt-6">

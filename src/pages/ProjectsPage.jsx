@@ -12,6 +12,7 @@ import {
 import { GithubIcon } from '../components/BrandIcons'
 import ArchitectureFlow from '../components/projects/ArchitectureFlow'
 import NotchDemo from '../components/projects/NotchDemo'
+import { EASE_OUT } from '../lib/motion'
 
 const projects = [
   {
@@ -796,7 +797,7 @@ function CaseStudy({ steps }) {
           className="relative grid gap-1 pb-5 pl-6 last:pb-0 md:grid-cols-[96px_minmax(0,1fr)] md:gap-6 md:pl-0"
           initial={{ opacity: 0, x: -8 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.05 + index * 0.07, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ delay: 0.05 + index * 0.07, duration: 0.3, ease: EASE_OUT }}
         >
           {index < steps.length - 1 && (
             <span
@@ -958,7 +959,7 @@ export default function ProjectsPage() {
               key={project.name}
               initial={{ y: 30, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: i * 0.08, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ delay: i * 0.08, duration: 0.4, ease: EASE_OUT }}
               className="relative overflow-hidden"
               style={{
                 backgroundColor: 'var(--color-surface)',
@@ -1013,7 +1014,7 @@ export default function ProjectsPage() {
                         </div>
                         <motion.span
                           animate={{ rotate: isExpanded ? 180 : 0 }}
-                          transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                          transition={{ duration: 0.25, ease: EASE_OUT }}
                           className="mt-2 flex h-9 w-9 shrink-0 items-center justify-center"
                           style={{
                             color: 'var(--color-text-secondary)',
@@ -1053,7 +1054,7 @@ export default function ProjectsPage() {
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                    transition={{ duration: 0.3, ease: EASE_OUT }}
                     className="overflow-hidden"
                   >
                     <div
@@ -1134,7 +1135,7 @@ export default function ProjectsPage() {
                               transition={{
                                 delay: 0.2 + ti * 0.04,
                                 duration: 0.25,
-                                ease: [0.16, 1, 0.3, 1],
+                                ease: EASE_OUT,
                               }}
                             >
                               {t}

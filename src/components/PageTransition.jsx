@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { motion } from 'motion/react'
+import { EASE_OUT } from '../lib/motion'
 
 export default function PageTransition({ children, focusHeading = false }) {
   const ref = useRef(null)
@@ -18,15 +19,18 @@ export default function PageTransition({ children, focusHeading = false }) {
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: 16 }}
+      // Navigation is the most frequent motion on the site, and mode="wait" runs exit then
+      // enter back to back, so both stay short: ~450ms door to door. The exit is ease-out
+      // too; an ease-in exit spends its first frames looking like nothing happened.
+      initial={{ opacity: 0, y: 10 }}
       animate={{
         opacity: 1,
         y: 0,
-        transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] },
+        transition: { duration: 0.3, ease: EASE_OUT },
       }}
       exit={{
         opacity: 0,
-        transition: { duration: 0.25, ease: [0.7, 0, 0.84, 0] },
+        transition: { duration: 0.15, ease: 'easeOut' },
       }}
       className="w-full"
       style={{ willChange: 'opacity, transform' }}

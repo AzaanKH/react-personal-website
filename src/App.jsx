@@ -91,7 +91,7 @@ export default function App() {
         className="relative h-dvh overflow-hidden"
         style={{
           backgroundColor: 'var(--color-bg)',
-          transition: 'background-color 0.6s ease',
+          transition: 'background-color 0.2s ease',
         }}
       >
         <a href="#main" className="skip-link">
@@ -103,7 +103,7 @@ export default function App() {
           className="fixed inset-0 -z-10 grain-overlay"
           style={{
             opacity: isDark ? 0.03 : 0.02,
-            transition: 'opacity 0.6s ease',
+            transition: 'opacity 0.2s ease',
           }}
         />
 
@@ -114,7 +114,7 @@ export default function App() {
             background: isDark
               ? 'radial-gradient(ellipse 60% 50% at 80% 10%, rgba(224, 122, 95, 0.06) 0%, transparent 70%)'
               : 'radial-gradient(ellipse 60% 50% at 80% 10%, rgba(196, 93, 62, 0.05) 0%, transparent 70%)',
-            transition: 'background 0.6s ease',
+            transition: 'background 0.2s ease',
           }}
         />
 

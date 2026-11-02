@@ -5,6 +5,7 @@
 @layer base {
   :root {
     color-scheme: light;
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1); /* = EASE_OUT in src/lib/motion.js */
     --color-bg: #f5f0eb;
     --color-surface: #ffffff;
     --color-surface-elevated: #faf8f5;
@@ -63,7 +64,10 @@
 
   body {
     @apply overflow-x-hidden;
-    transition: background-color 0.45s ease, color 0.45s ease;
+    /* Theme fades stay at 0.2s, the same as the color transitions on links and buttons:
+       inline var(--color-*) text has no transition, so a long background fade leaves
+       new-theme text on an old-theme background mid-switch. */
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 
   button, input, textarea { font: inherit; }
@@ -108,7 +112,7 @@
   /* Press feedback for primary actions. Uses `scale`, not `transform`, so it composes
      with any transform already on the element. Primary buttons also carry
      .hover-accent-bg, whose transition this rule replaces, so it lists both. */
-  .press { transition: scale 0.15s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease; }
+  .press { transition: scale 0.15s var(--ease-out), background-color 0.2s ease; }
   .press:active:not(:disabled) { scale: 0.97; }
   /* A 44px tap target around a smaller visual (good-css.com/#hit-area-larger-than-the-visual). */
   .hit-area { position: relative; }
