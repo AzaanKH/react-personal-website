@@ -43,9 +43,9 @@ export default function DarkModeToggle({ theme, setTheme, isHome, isScrolled = f
         <motion.div
           key={theme}
           className="[grid-area:1/1]"
-          initial={{ opacity: 0, scale: 0.25, filter: 'blur(4px)' }}
+          initial={{ opacity: 0, scale: 0.9, filter: 'blur(4px)' }}
           animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
-          exit={{ opacity: 0, scale: 0.25, filter: 'blur(4px)' }}
+          exit={{ opacity: 0, scale: 0.9, filter: 'blur(4px)' }}
           transition={{ type: 'spring', duration: 0.2, bounce: 0 }}
         >
           <Icon size={18} strokeWidth={1.5} />
