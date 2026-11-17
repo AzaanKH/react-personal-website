@@ -5,6 +5,7 @@ import {
   applyPageMetadata,
   getPageFromPath,
   getPostMetadata,
+  getProjectMetadata,
   locationPath,
   parseLocation,
   renderHead,
@@ -20,6 +21,8 @@ describe('getPageFromPath', () => {
     ['/interests//', 'interests'],
     ['/gaming', 'interests'],
     ['/contact', 'contact'],
+    ['/about', 'about'],
+    ['/projects/paxos', 'projects'],
     ['/blog', 'blog'],
     ['/blog/my-post', 'blog'],
     ['/blog/my-post/', 'blog'],
@@ -38,6 +41,8 @@ describe('parseLocation', () => {
     ['/blog/my-post', { page: 'blog', slug: 'my-post' }],
     ['/blog/my-post/', { page: 'blog', slug: 'my-post' }],
     ['/projects', { page: 'projects', slug: null }],
+    ['/projects/paxos', { page: 'projects', slug: 'paxos' }],
+    ['/projects/paxos/', { page: 'projects', slug: 'paxos' }],
   ])('parses %s', (path, location) => {
     expect(parseLocation(path)).toEqual(location)
   })
@@ -59,6 +64,7 @@ describe('parseLocation', () => {
   it('round-trips to the canonical path', () => {
     expect(locationPath(parseLocation('/blog/my-post/'))).toBe('/blog/my-post')
     expect(locationPath(parseLocation('/gaming'))).toBe('/interests')
+    expect(locationPath(parseLocation('/projects/paxos/'))).toBe('/projects/paxos')
   })
 })
 
@@ -69,6 +75,7 @@ describe('applyPageMetadata', () => {
       <link rel="canonical" href="">
       <meta property="og:url" content="">
       <meta property="og:title" content="">
+      <script type="application/ld+json">{}</script>
     `
 
     applyPageMetadata('projects')
@@ -82,6 +89,10 @@ describe('applyPageMetadata', () => {
       'https://azaankhalfe.netlify.app/projects',
     )
     expect(document.head.querySelector('meta[property="og:title"]').content).toBe(routes.projects.title)
+    expect(JSON.parse(document.head.querySelector('script[type="application/ld+json"]').textContent)).toMatchObject({
+      '@type': 'WebPage',
+      url: 'https://azaankhalfe.netlify.app/projects',
+    })
   })
 
   it('uses the bare site URL for home', () => {
@@ -109,8 +120,10 @@ describe('renderPageHead', () => {
       twitterDescription: attr('meta[name="twitter:description"]', 'content'),
     }
   }
+  const ogType = (html) => /property="og:type" content="([^"]*)"/.exec(html)[1]
+  const jsonLdOf = (html) => JSON.parse(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/.exec(html)[1])
 
-  it.each(['projects', 'interests', 'blog', 'contact'])('prerenders every %s head tag from the real index.html', (page) => {
+  it.each(['projects', 'interests', 'blog', 'about', 'contact'])('prerenders every %s head tag from the real index.html', (page) => {
     const { title, description } = routes[page]
     const url = `https://azaankhalfe.netlify.app${routes[page].path}`
 
@@ -148,6 +161,43 @@ describe('renderPageHead', () => {
     expect(head.title).toBe('My post | Azaan Khalfe')
     expect(head.ogDescription).toBe('About it')
     expect(head.canonical).toBe('https://azaankhalfe.netlify.app/blog/my-post')
+  })
+
+  it('marks a post as an article by the site owner, and pages as a website', () => {
+    const post = { slug: 'my-post', title: 'My </script> post', description: 'About it', date: '2026-10-09' }
+    const html = renderHead(indexHtml, getPostMetadata(post))
+    expect(ogType(html)).toBe('article')
+    // "<" is escaped, so a title can't close the script tag early.
+    expect(html).not.toContain('My </script> post')
+    expect(jsonLdOf(html)).toMatchObject({
+      '@type': 'BlogPosting',
+      headline: 'My </script> post',
+      datePublished: '2026-10-09',
+      author: { name: 'Azaan Khalfe' },
+    })
+
+    expect(ogType(renderPageHead(indexHtml, 'projects'))).toBe('website')
+    expect(jsonLdOf(renderPageHead(indexHtml, 'home'))).toMatchObject({ '@type': 'ProfilePage', mainEntity: { '@type': 'Person' } })
+  })
+
+  it('gives a post its own share image and other pages the site-wide one', () => {
+    const image = (html) => /property="og:image" content="([^"]*)"/.exec(html)[1]
+    const twitterImage = (html) => /name="twitter:image" content="([^"]*)"/.exec(html)[1]
+    const post = { slug: 'my-post', title: 'My post', description: 'About it', date: '2026-10-09' }
+    const html = renderHead(indexHtml, getPostMetadata(post))
+
+    expect(image(html)).toBe('https://azaankhalfe.netlify.app/og/blog/my-post.png')
+    expect(twitterImage(html)).toBe(image(html))
+    expect(html).toContain('property="og:image:alt" content="My post, a post by Azaan Khalfe"')
+    expect(image(renderPageHead(indexHtml, 'projects'))).toBe('https://azaankhalfe.netlify.app/og-image.png')
+  })
+
+  it('prerenders a project with its own title, description, and URL', () => {
+    const project = { slug: 'my-tool', name: 'My Tool', description: 'What it does' }
+    const head = headOf(renderHead(indexHtml, getProjectMetadata(project)))
+    expect(head.title).toBe('My Tool | Projects | Azaan Khalfe')
+    expect(head.description).toBe('What it does')
+    expect(head.canonical).toBe('https://azaankhalfe.netlify.app/projects/my-tool')
   })
 
   it('fails the build if index.html loses a tag', () => {

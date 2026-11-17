@@ -7,19 +7,23 @@ const TOP_OFFSET = 24
 const HOME_BOTTOM_OFFSET = 40
 const HOME_BOTTOM_OFFSET_WITH_STATUS = 136
 const STATUS_VISIBLE_MIN_WIDTH = 640
-const STATUS_CAN_SHARE_ROW_MIN_WIDTH = 1280
+// The six-item pill is ~624px wide and each status corner can reach 32px + 20rem, so
+// they only share Home's bottom row from here up.
+const STATUS_CAN_SHARE_ROW_MIN_WIDTH = 1360
+// Below that width the nav sits above the corners, which only fits under the hero in a
+// tall window. In a shorter one the corners are hidden instead and the nav stays at the
+// bottom. Keep these in sync with the .status-corner media query in index.css.
+const STATUS_MIN_HEIGHT = 721
+const STATUS_STACKED_MIN_HEIGHT = 890
 
 function getHomeBottomOffset() {
   if (typeof window === 'undefined') return HOME_BOTTOM_OFFSET
 
-  if (window.innerHeight <= 720) return HOME_BOTTOM_OFFSET
+  const { innerWidth: width, innerHeight: height } = window
+  if (width >= STATUS_CAN_SHARE_ROW_MIN_WIDTH || width < STATUS_VISIBLE_MIN_WIDTH) return HOME_BOTTOM_OFFSET
+  if (height < STATUS_MIN_HEIGHT) return HOME_BOTTOM_OFFSET
 
-  const statusCornersVisible = window.innerWidth >= STATUS_VISIBLE_MIN_WIDTH
-  const statusCanShareBottomRow = window.innerWidth >= STATUS_CAN_SHARE_ROW_MIN_WIDTH
-
-  return statusCornersVisible && !statusCanShareBottomRow
-    ? HOME_BOTTOM_OFFSET_WITH_STATUS
-    : HOME_BOTTOM_OFFSET
+  return height >= STATUS_STACKED_MIN_HEIGHT ? HOME_BOTTOM_OFFSET_WITH_STATUS : HOME_BOTTOM_OFFSET
 }
 
 export default function Navigation({ activePage, onNavigate }) {
@@ -41,13 +45,9 @@ export default function Navigation({ activePage, onNavigate }) {
   }, [])
 
   const measureIndicator = useCallback(() => {
+    // A link hidden at this width (About on phones) measures 0 wide: nothing to underline.
     const btn = linkRefs.current[activePage]
-    if (btn) {
-      setIndicator({
-        left: btn.offsetLeft,
-        width: btn.offsetWidth,
-      })
-    }
+    setIndicator(btn ? { left: btn.offsetLeft, width: btn.offsetWidth } : null)
   }, [activePage])
 
   useEffect(() => {
@@ -60,7 +60,7 @@ export default function Navigation({ activePage, onNavigate }) {
   }, [measureIndicator])
 
   const getTargetY = useCallback(() => {
-    if (isHome) {
+    if (isHome && typeof window !== 'undefined') {
       return window.innerHeight - navHeight - getHomeBottomOffset()
     }
     return TOP_OFFSET
@@ -112,6 +112,9 @@ export default function Navigation({ activePage, onNavigate }) {
         y: springY,
         x: '-50%',
         scale,
+        // In the prerendered HTML there is no viewport to place Home's bottom nav by, so
+        // it stays hidden until the app mounts (Home's intro starts hidden too).
+        visibility: isHome && typeof window === 'undefined' ? 'hidden' : undefined,
       }}
     >
       <div className="relative">
@@ -160,7 +163,7 @@ export default function Navigation({ activePage, onNavigate }) {
               onNavigate={onNavigate}
               ref={(el) => { linkRefs.current[id] = el }}
               aria-current={activePage === id ? 'page' : undefined}
-              className={`hit-area z-10 min-w-0 rounded-full px-1.5 py-2 text-center text-[0.68rem] font-medium uppercase md:px-5 md:py-2.5 md:text-[0.8rem] md:tracking-[0.12em] ${activePage !== id ? 'hover-text' : ''}`}
+              className={`hit-area z-10 min-w-0 rounded-full px-1.5 py-2 text-center text-[0.68rem] font-medium uppercase md:px-4 md:py-2.5 md:text-[0.8rem] md:tracking-[0.12em] lg:px-5 ${routes[id].navDesktopOnly ? 'hidden md:block' : ''} ${activePage !== id ? 'hover-text' : ''}`}
               style={{
                 color: activePage === id ? 'var(--color-text)' : 'var(--color-text-secondary)',
                 transition: 'color 0.2s ease',

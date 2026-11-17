@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import interests from '../data/interests.json'
+import ErrorBoundary from '../components/ErrorBoundary'
 import FantasySection from '../components/interests/FantasySection'
 import GamingSection from '../components/interests/GamingSection'
 import MediaSection from '../components/interests/MediaSection'
@@ -80,19 +81,22 @@ export default function InterestsPage() {
         </ul>
       </nav>
 
-      <FantasySection number={numberOf('football')} />
-      <GamingSection number={numberOf('gaming')} />
+      {/* Each section has its own boundary: Sleeper or Steam failing must not take the
+          shelves down with it. */}
+      <ErrorBoundary compact><FantasySection number={numberOf('football')} /></ErrorBoundary>
+      <ErrorBoundary compact><GamingSection number={numberOf('gaming')} /></ErrorBoundary>
       {MEDIA_SECTIONS.map(({ id, label, tmdbType, title }, index) => (
-        <MediaSection
-          key={id}
-          id={id}
-          number={numberOf(id)}
-          kicker={label}
-          title={title}
-          tmdbType={tmdbType}
-          entries={interests[id]}
-          reverse={index % 2 === 1}
-        />
+        <ErrorBoundary key={id} compact>
+          <MediaSection
+            id={id}
+            number={numberOf(id)}
+            kicker={label}
+            title={title}
+            tmdbType={tmdbType}
+            entries={interests[id]}
+            reverse={index % 2 === 1}
+          />
+        </ErrorBoundary>
       ))}
 
       {MEDIA_SECTIONS.length > 0 && (

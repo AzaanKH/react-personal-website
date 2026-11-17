@@ -23,7 +23,8 @@ function useLocalTime(timezone) {
       timeZone: timezone,
     }), [timezone])
 
-  const [time, setTime] = useState(format)
+  // Empty in the prerendered HTML: a build-time clock would be wrong for every visitor.
+  const [time, setTime] = useState(() => (typeof window === 'undefined' ? '' : format()))
 
   useEffect(() => {
     const id = setInterval(() => setTime(format()), 30_000)
@@ -59,7 +60,7 @@ export default function StatusCorner({ enterDelay = 1.6, animate: shouldAnimate 
 
   const locationParts = [status.location.city]
   if (temp != null) locationParts.push(`${temp}°F`)
-  locationParts.push(time)
+  if (time) locationParts.push(time)
   const locationLine = locationParts.join(' · ')
 
   const transition = shouldAnimate ? {

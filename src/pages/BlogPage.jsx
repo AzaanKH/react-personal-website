@@ -1,4 +1,4 @@
-import { ArrowUpRight } from 'lucide-react'
+import { ArrowUpRight, Rss } from 'lucide-react'
 import RouteLink from '../components/RouteLink'
 import { formatPostDate, posts } from '../lib/posts'
 
@@ -9,9 +9,15 @@ export default function BlogPage({ onNavigate }) {
         <h1 className="display-heading page-title" style={{ color: 'var(--color-text)' }}>
           Blog
         </h1>
-        <p className="max-w-[360px] text-sm leading-6 md:text-right" style={{ color: 'var(--color-text-secondary)' }}>
-          Notes on things I build, with demos you can poke at right in the post.
-        </p>
+        <div className="flex max-w-[360px] flex-col gap-3 md:items-end">
+          <p className="text-sm leading-6 md:text-right" style={{ color: 'var(--color-text-secondary)' }}>
+            Notes on things I build, with demos you can poke at right in the post.
+          </p>
+          {/* Written by the build (vite.config.js); a plain link, since it isn't an app route. */}
+          <a href="/rss.xml" className="eyebrow hover-accent inline-flex items-center gap-1.5" style={{ color: 'var(--color-text-secondary)' }}>
+            <Rss size={12} aria-hidden="true" /> RSS feed
+          </a>
+        </div>
       </div>
 
       {posts.length === 0 ? (

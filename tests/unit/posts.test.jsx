@@ -16,5 +16,7 @@ describe('posts', () => {
     const { container } = render(<Content components={mdxComponents} />)
     expect(container.textContent.trim()).not.toBe('')
     expect(screen.queryByRole('heading', { level: 1 })).toBeNull()
+    // Every "In this post" link has its section: the listed ids are the rendered h2 ids.
+    expect([...container.querySelectorAll('h2')].map((h2) => h2.id)).toEqual(post.headings.map((h) => h.id))
   })
 })

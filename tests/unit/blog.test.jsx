@@ -14,8 +14,8 @@ vi.mock('../../src/lib/posts', async (importOriginal) => {
     </>
   )
   const posts = [
-    { slug: 'newer-post', title: 'Newer post', description: 'The newer one', date: '2026-10-09', readingMinutes: 3, draft: false, load: () => {}, Content },
-    { slug: 'older-post', title: 'Older post', description: 'The older one', date: '2026-01-02', readingMinutes: 1, draft: false, load: () => {}, Content },
+    { slug: 'newer-post', title: 'Newer post', description: 'The newer one', date: '2026-10-09', readingMinutes: 3, draft: false, headings: [], load: () => {}, Content },
+    { slug: 'older-post', title: 'Older post', description: 'The older one', date: '2026-01-02', readingMinutes: 1, draft: false, headings: ['One', 'Two', 'Inside the post'].map((text) => ({ id: text.toLowerCase().replaceAll(' ', '-'), text })), load: () => {}, Content },
   ]
   return { posts, formatPostDate, getPost: (slug) => posts.find((p) => p.slug === slug) }
 })
@@ -49,6 +49,8 @@ describe('blog', () => {
     expect(window.location.pathname).toBe('/blog/older-post')
     expect(document.title).toBe('Older post | Azaan Khalfe')
     expect(screen.getByRole('heading', { level: 2, name: 'Inside the post' })).toBeInTheDocument()
+    const contents = within(screen.getByRole('navigation', { name: 'In this post' })).getAllByRole('link')
+    expect(contents.map((link) => link.getAttribute('href'))).toEqual(['#one', '#two', '#inside-the-post'])
     expect(screen.getByText('Rendered via the components map.')).toBeInTheDocument()
     expect(within(nav()).getByRole('link', { name: 'Blog' })).toHaveAttribute('aria-current', 'page')
     await waitFor(() => expect(heading).toHaveFocus())
