@@ -27,7 +27,8 @@ function readStoredTheme() {
 
 export function useDarkMode() {
   const [theme, setThemeState] = useState(readStoredTheme)
-  const systemTheme = useSyncExternalStore(subscribeToSystemTheme, getSystemTheme)
+  // The third argument is the prerender's value (no matchMedia at build time).
+  const systemTheme = useSyncExternalStore(subscribeToSystemTheme, getSystemTheme, () => 'light')
   const resolvedTheme = theme === 'system' ? systemTheme : theme
 
   useEffect(() => {

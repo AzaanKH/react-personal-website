@@ -13,7 +13,20 @@ describe('parsePostMeta', () => {
       date: '2026-10-09',
       draft: false,
       readingMinutes: 1,
+      headings: [],
     })
+  })
+
+  it('lists the sections, skipping subsections, code fences, and inline markdown', () => {
+    const body = '## The `Clock` and [its](https://x.dev) *owner*\n\ntext\n\n### A subsection\n\n```md\n## Not a heading\n```\n\n#91 is a PR, not a heading\n\n# Results\n'
+    expect(parsePostMeta(post(valid, body), 'a.mdx').headings).toEqual([
+      { id: 'the-clock-and-its-owner', text: 'The Clock and its owner' },
+      { id: 'results', text: 'Results' },
+    ])
+  })
+
+  it('rejects two sections that would share an id', () => {
+    expect(() => parsePostMeta(post(valid, '## Results\n\n## Results!\n'), 'a.mdx')).toThrow(/share the id "results"/)
   })
 
   it('accepts CRLF line endings and draft: true', () => {

@@ -263,7 +263,7 @@ function FantasyCard({ summary }) {
   const inView = useInView(cardRef, { once: true, amount: 0.4 })
   const prefersReducedMotion = useReducedMotion()
   const weekKey = matchup ? `${summary.season}-${matchup.week}` : null
-  const celebration = useSyncExternalStore(subscribeToCelebrations, () => celebrations.get(weekKey))
+  const celebration = useSyncExternalStore(subscribeToCelebrations, () => celebrations.get(weekKey), () => undefined)
   const canCelebrate = result === 'won' && inView && !prefersReducedMotion
   // Also true in the render before the effect below records 'playing', so the badge
   // mounts with its stamp.

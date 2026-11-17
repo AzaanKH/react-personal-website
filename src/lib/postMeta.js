@@ -2,6 +2,7 @@
 // the result as JSON via the `?meta` import in lib/posts.js, never this module or `yaml`.
 import path from 'node:path'
 import { parse } from 'yaml'
+import { headingId } from './headingId.js'
 
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 const DATE = /^\d{4}-\d{2}-\d{2}$/
@@ -28,14 +29,36 @@ export function parsePostMeta(source, file) {
   if (!isCalendarDate(data.date)) fail(`"date" ${data.date} is not a real calendar date`)
   if (data.draft !== undefined && typeof data.draft !== 'boolean') fail('"draft" must be true or false')
 
+  const body = source.slice(match[0].length)
+  const headings = sectionHeadings(body)
+  const ids = headings.map((heading) => heading.id)
+  const repeated = ids.find((id, index) => ids.indexOf(id) !== index)
+  if (repeated) fail(`two sections would share the id "${repeated}"; reword one heading`)
+
   return {
     slug,
     title: data.title.trim(),
     description: data.description.trim(),
     date: data.date,
     draft: data.draft ?? false,
-    readingMinutes: readingMinutes(source.slice(match[0].length)),
+    readingMinutes: readingMinutes(body),
+    headings,
   }
+}
+
+// The post's sections, for the "In this post" list: `#` and `##` headings (both render
+// as h2), skipping code fences. Inline markdown is reduced to its text, which is also
+// what the rendered heading's id is made from.
+function sectionHeadings(body) {
+  return body
+    .replace(/```[\s\S]*?```/g, '')
+    .split(/\r?\n/)
+    .map((line) => /^#{1,2}\s+(.+?)\s*#*$/.exec(line)?.[1])
+    .filter(Boolean)
+    .map((raw) => {
+      const text = raw.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1').replace(/[`*_]/g, '')
+      return { id: headingId(text), text }
+    })
 }
 
 // Date.UTC rolls overflow forward (2026-02-31 → March 3), so a real date is one that

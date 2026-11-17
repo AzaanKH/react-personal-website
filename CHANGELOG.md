@@ -4,6 +4,29 @@ All notable changes and improvements to this project are documented in this file
 
 ---
 
+## [Unreleased] - Crawlable pages, project links, About
+
+### Added
+- Every page, published post, and project is prerendered to real HTML at build time (not just its head tags), so crawlers and link previews that don't run JavaScript see the content. The build also writes `sitemap.xml` and `rss.xml`, and `robots.txt` points at the sitemap.
+- Project links: `/projects/<slug>` opens the Projects page with that case study expanded and has its own title and share preview. Opening a card updates the address.
+- About page (`/about`): experience, education, and skills, following the résumé. It's in the nav from tablet width up; on phones, where a sixth label doesn't fit the pill, Home's icon row links to it instead.
+- Each blog post gets its own share image (title, date, reading time), drawn at build time.
+- Blog posts: an "In this post" section list on longer posts, build-time syntax highlighting for code blocks, and an RSS link on the blog index.
+- Error boundaries around each page and each Interests section, so a render error stays local instead of blanking the app.
+- Security headers on every response, including a Content-Security-Policy (scripts from this site only, the inline theme script by hash). Checked in a browser against every page with no violations.
+
+### Changed
+- Posts are marked up as articles (`og:type`, `BlogPosting` JSON-LD); other pages no longer inherit the home page's profile data.
+- Site description and Projects intro now describe the work (developer tools, intelligent systems, web) instead of "React" and the page layout.
+- Paxos project card rewritten from the DSLabs lab's public spec and test suite (27 tests, 3- and 5-server clusters, 20% message loss, 2-second wait bound), replacing figures that couldn't be sourced; links the lab spec, since the coursework itself can't be published.
+- React and Motion ship as a separate `vendor` file, so content updates don't make returning visitors re-download them.
+- `public/404.html` uses the current accent and secondary colours. README project structure brought up to date.
+
+### Fixed
+- Home: at window widths between 640 and 1279px and heights between 721 and ~890px (tablet landscape, small laptop windows), the nav pill covered the GitHub/LinkedIn/Résumé row. The status corners now hide in those windows and the nav stays at the bottom.
+
+---
+
 ## [Unreleased] - Interests page
 
 ### Changed

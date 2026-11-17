@@ -3,18 +3,22 @@ import { AnimatePresence, MotionConfig } from 'motion/react'
 import { useDarkMode } from './hooks/useDarkMode'
 import Navigation from './components/Navigation'
 import DarkModeToggle from './components/DarkModeToggle'
+import ErrorBoundary from './components/ErrorBoundary'
 import PageTransition from './components/PageTransition'
 import HomePage from './pages/HomePage'
 import ProjectsPage from './pages/ProjectsPage'
 import InterestsPage from './pages/InterestsPage'
 import BlogPage from './pages/BlogPage'
 import BlogPostPage from './pages/BlogPostPage'
+import AboutPage from './pages/AboutPage'
 import ContactPage from './pages/ContactPage'
 import { getPost } from './lib/posts'
+import { getProject } from './data/projects'
 import {
   applyMetadata,
   applyPageMetadata,
   getPostMetadata,
+  getProjectMetadata,
   locationPath,
   parseLocation,
 } from './lib/routes'
@@ -24,13 +28,17 @@ const pages = {
   projects: ProjectsPage,
   interests: InterestsPage,
   blog: BlogPage,
+  about: AboutPage,
   contact: ContactPage,
 }
 
-export default function App() {
-  // { page, slug }: slug is set only on /blog/<slug>.
-  const [route, setRoute] = useState(() => parseLocation(window.location.pathname))
-  const { page: activePage, slug: postSlug } = route
+// `initialPath` is set only by the build-time prerender (entry-server.jsx), where there
+// is no window; in the browser the route comes from the address bar.
+export default function App({ initialPath }) {
+  // { page, slug }: slug is set on /blog/<slug> (a post) and /projects/<slug> (an open card).
+  const [route, setRoute] = useState(() => parseLocation(initialPath ?? window.location.pathname))
+  const { page: activePage, slug } = route
+  const postSlug = activePage === 'blog' ? slug : null
   const { theme, resolvedTheme, setTheme } = useDarkMode()
 
   const mainRef = useRef(null)
@@ -62,9 +70,11 @@ export default function App() {
 
   useEffect(() => {
     const post = postSlug && getPost(postSlug)
+    const project = activePage === 'projects' && slug && getProject(slug)
     if (post) applyMetadata(getPostMetadata(post))
+    else if (project) applyMetadata(getProjectMetadata(project))
     else applyPageMetadata(activePage)
-  }, [activePage, postSlug])
+  }, [activePage, slug, postSlug])
 
   useEffect(() => {
     const handlePopState = () => {
@@ -76,14 +86,20 @@ export default function App() {
     return () => window.removeEventListener('popstate', handlePopState)
   }, [])
 
-  const navigateToPage = useCallback((page, slug = null) => {
-    if (!pages[page] || (page === activePage && slug === postSlug)) return
+  // `replace` swaps the URL without a history entry or a focus move: opening a project
+  // card changes the address to /projects/<slug>, but the visitor hasn't left the page.
+  const navigateToPage = useCallback((page, nextSlug = null, { replace = false } = {}) => {
+    if (!pages[page] || (page === activePage && nextSlug === slug)) return
 
-    const next = { page, slug }
-    window.history.pushState(next, '', locationPath(next))
-    setHasNavigated(true)
+    const next = { page, slug: nextSlug }
+    if (replace) {
+      window.history.replaceState(next, '', locationPath(next))
+    } else {
+      window.history.pushState(next, '', locationPath(next))
+      setHasNavigated(true)
+    }
     setRoute(next)
-  }, [activePage, postSlug])
+  }, [activePage, slug])
 
   return (
     <MotionConfig reducedMotion="user">
@@ -143,7 +159,11 @@ export default function App() {
             if (mainRef.current) mainRef.current.scrollTop = 0
           }}>
             <PageTransition key={postSlug ? `post:${postSlug}` : activePage} focusHeading={hasNavigated}>
-              <PageComponent onNavigate={navigateToPage} slug={postSlug} />
+              {/* Keyed by the transition's key (its parent), so a page that threw gets a
+                  fresh start on the next navigation. */}
+              <ErrorBoundary>
+                <PageComponent onNavigate={navigateToPage} slug={slug} />
+              </ErrorBoundary>
             </PageTransition>
           </AnimatePresence>
         </main>

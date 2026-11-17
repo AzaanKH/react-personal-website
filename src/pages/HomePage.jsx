@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { motion, useAnimate, useReducedMotion } from 'motion/react'
-import { ArrowRight, Mail, FileText } from 'lucide-react'
+import { ArrowRight, Mail, FileText, User } from 'lucide-react'
 import { GithubIcon, LinkedinIcon } from '../components/BrandIcons'
 import RouteLink from '../components/RouteLink'
 import StatusCorner from '../components/StatusCorner'
@@ -83,7 +83,7 @@ export default function HomePage({ onNavigate }) {
 
   return (
     <div
-      className="page-shell relative flex min-h-[calc(100dvh-5rem)] flex-col items-center justify-center overflow-hidden px-1 pb-32 pt-8 text-center lg:pb-24"
+      className="page-shell relative flex min-h-[calc(100dvh-5rem)] flex-col items-center justify-center overflow-hidden px-1 pb-32 pt-8 text-center min-[1360px]:pb-24"
     >
       <div className="relative z-10 flex w-full flex-col items-center">
         <h1
@@ -163,11 +163,25 @@ export default function HomePage({ onNavigate }) {
             </motion.a>
           ))}
 
+          {/* The fourth icon is whichever page the nav pill doesn't offer at this width:
+              About on phones (the pill has no room for a sixth label), Contact from md up
+              (where About is in the pill). Same size, so the row never grows or wraps. */}
+          <MotionRouteLink
+            to="about"
+            onNavigate={onNavigate}
+            aria-label="About me"
+            className="hover-accent grid size-11 place-items-center rounded-full md:hidden"
+            style={{ color: 'var(--color-text-secondary)' }}
+            {...socialMotion}
+          >
+            <User size={19} strokeWidth={1.5} aria-hidden="true" />
+          </MotionRouteLink>
+
           <MotionRouteLink
             to="contact"
             onNavigate={onNavigate}
             aria-label="Contact me"
-            className="hover-accent grid size-11 place-items-center rounded-full"
+            className="hover-accent hidden size-11 place-items-center rounded-full md:grid"
             style={{ color: 'var(--color-text-secondary)' }}
             {...socialMotion}
           >

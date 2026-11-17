@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import App from '../../src/App'
-import { routes } from '../../src/lib/routes'
+import { pageIds, routes } from '../../src/lib/routes'
 
 function stubNetwork() {
   vi.stubGlobal('fetch', vi.fn(async () => Response.json({ temp: 60, condition: 'Clear', icon: 'sun', text: 'Sunny' })))
@@ -19,8 +19,8 @@ describe('navigation', () => {
     render(<App />)
     // jsdom loads no CSS, so Home's name includes the mobile monogram (WCAG label in name).
     const homeName = 'AK Home'
-    for (const [id, route] of Object.entries(routes)) {
-      expect(navLink(id === 'home' ? homeName : route.label)).toHaveAttribute('href', route.path)
+    for (const id of pageIds) {
+      expect(navLink(id === 'home' ? homeName : routes[id].label)).toHaveAttribute('href', routes[id].path)
     }
     expect(navLink(homeName)).toHaveAttribute('aria-current', 'page')
   })
@@ -74,6 +74,30 @@ describe('navigation', () => {
 
     expect(notPrevented).toBe(true)
     expect(window.location.pathname).toBe('/')
+  })
+
+  // Six labels don't fit the phone pill, so About is a desktop nav item and Home swaps
+  // its Contact icon for an About icon on phones. jsdom has no CSS, so both are present
+  // here; the classes are what hide one or the other.
+  it('shows About in the nav from md up and on Home below that', () => {
+    render(<App />)
+
+    expect(navLink('About')).toHaveClass('hidden', 'md:block')
+    expect(navLink('Contact')).not.toHaveClass('hidden')
+    expect(screen.getByRole('link', { name: 'About me' })).toHaveClass('md:hidden')
+    expect(screen.getByRole('link', { name: 'Contact me' })).toHaveClass('hidden', 'md:grid')
+  })
+
+  it('links to the About page from the home page', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await user.click(screen.getByRole('link', { name: 'About me' }))
+    expect(await screen.findByRole('heading', { level: 1, name: /the short version/i })).toBeInTheDocument()
+    expect(window.location.pathname).toBe('/about')
+    expect(document.title).toBe(routes.about.title)
+    expect(screen.getByRole('heading', { level: 2, name: 'Experience' })).toBeInTheDocument()
+    expect(navLink('About')).toHaveAttribute('aria-current', 'page')
   })
 
   it('links to projects from the home page', async () => {

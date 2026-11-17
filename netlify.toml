@@ -21,6 +21,14 @@
   to = "/index.html"
   status = 200
 
+# Each project is served from its prerendered dist/projects/<slug>.html. Unknown slugs
+# reach the app, which shows the projects list with nothing open. Screenshots under
+# /projects/<folder>/ are real files, so they are served before this rewrite applies.
+[[redirects]]
+  from = "/projects/*"
+  to = "/index.html"
+  status = 200
+
 # Gaming moved into Interests. Listed before the SPA routes; must match `aliases` in routes.js.
 [[redirects]]
   from = "/gaming"
@@ -45,9 +53,33 @@
   status = 200
 
 [[redirects]]
+  from = "/about"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
   from = "/contact"
   to = "/index.html"
   status = 200
+
+# Content-Security-Policy, in plain terms:
+#   script-src   our own bundles, plus the one inline script in index.html (the theme
+#                script), allowed by its hash. If that script changes, the build fails
+#                until the hash here is updated (vite.config.js checks it and prints the
+#                new one). JSON-LD is data, not script, so it needs no entry.
+#   style-src    'unsafe-inline' is required: Motion and React set style attributes.
+#   img-src      any https host: posters and avatars come from TMDB, IGDB, Steam's CDNs
+#                (several hostnames), and Sleeper.
+#   connect-src  our own functions, plus Sleeper, which the browser calls directly.
+# Netlify's deploy-preview toolbar is not allowed for, so it won't appear on previews.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    X-Frame-Options = "DENY"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(), interest-cohort=()"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'sha256-+KrUQ185eqFs9ix2M8x2gzErPWXG2bjE20f7KHUIqHY='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.sleeper.app; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
 
 [[headers]]
   for = "/assets/*"

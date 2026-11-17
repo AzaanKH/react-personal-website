@@ -17,6 +17,46 @@ function BackLink({ onNavigate }) {
   )
 }
 
+// Scrolls without touching the URL: a hash change fires `popstate`, which App treats as
+// navigation. Focus follows, so keyboard and screen reader users land in the section.
+function scrollToHeading(event, id) {
+  event.preventDefault()
+  const target = document.getElementById(id)
+  if (!target) return
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' })
+  target.setAttribute('tabindex', '-1')
+  target.focus({ preventScroll: true })
+}
+
+// Shown on posts long enough to need it. The list comes from the post's frontmatter
+// pass (lib/postMeta.js), so it renders with the header, before the body has loaded.
+function PostContents({ headings }) {
+  if (headings.length < 3) return null
+  return (
+    <nav aria-labelledby="post-contents" className="mx-auto mt-8 max-w-[42rem]">
+      <p id="post-contents" className="eyebrow mb-4" style={{ color: 'var(--color-text-secondary)' }}>
+        In this post
+      </p>
+      <ol className="grid gap-x-8 gap-y-2 sm:grid-cols-2">
+        {headings.map(({ id, text }, index) => (
+          <li key={id} className="flex items-baseline gap-3 text-sm leading-6">
+            <span className="kicker-number text-[0.65rem]" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+            <a
+              href={`#${id}`}
+              onClick={(event) => scrollToHeading(event, id)}
+              className="hover-accent"
+              style={{ color: 'var(--color-text-secondary)' }}
+            >
+              {text}
+            </a>
+          </li>
+        ))}
+      </ol>
+    </nav>
+  )
+}
+
 export default function BlogPostPage({ slug, onNavigate }) {
   const post = getPost(slug)
 
@@ -56,6 +96,8 @@ export default function BlogPostPage({ slug, onNavigate }) {
           {post.description}
         </p>
       </header>
+
+      <PostContents headings={post.headings} />
 
       <Suspense fallback={<p className="post-prose mx-auto mt-10 eyebrow" style={{ color: 'var(--color-text-secondary)' }}>Loading…</p>}>
         <div className="post-prose mx-auto mt-10">
