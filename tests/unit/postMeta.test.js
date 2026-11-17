@@ -25,6 +25,15 @@ describe('parsePostMeta', () => {
     ])
   })
 
+  it('keeps literal underscores and asterisks, in code and in words', () => {
+    const body = '## Calling `my_function`\n\n## The snake_case __rule__\n\n## 2 * 3 and `a*b`\n'
+    expect(parsePostMeta(post(valid, body), 'a.mdx').headings).toEqual([
+      { id: 'calling-my-function', text: 'Calling my_function' },
+      { id: 'the-snake-case-rule', text: 'The snake_case rule' },
+      { id: '2-3-and-a-b', text: '2 * 3 and a*b' },
+    ])
+  })
+
   it('rejects two sections that would share an id', () => {
     expect(() => parsePostMeta(post(valid, '## Results\n\n## Results!\n'), 'a.mdx')).toThrow(/share the id "results"/)
   })

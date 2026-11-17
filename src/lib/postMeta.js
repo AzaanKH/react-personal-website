@@ -56,10 +56,22 @@ function sectionHeadings(body) {
     .map((line) => /^#{1,2}\s+(.+?)\s*#*$/.exec(line)?.[1])
     .filter(Boolean)
     .map((raw) => {
-      const text = raw.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1').replace(/[`*_]/g, '')
+      const text = raw
+        .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+        .split(/(`[^`]*`)/)
+        .map((part) => (part.startsWith('`') ? part.slice(1, -1) : withoutEmphasis(part)))
+        .join('')
       return { id: headingId(text), text }
     })
 }
+
+// Drops `*` and `_` only where they mark emphasis, as markdown does: a pair around text,
+// and for `_` not inside a word. `my_function` and a lone `*` are literal characters (and
+// so is everything in inline code, which never reaches here).
+const withoutEmphasis = (text) =>
+  text
+    .replace(/(\*{1,3})(?=\S)(.+?)(?<=\S)\1/g, '$2')
+    .replace(/(?<![\p{L}\p{N}])(_{1,3})(?=\S)(.+?)(?<=\S)\1(?![\p{L}\p{N}])/gu, '$2')
 
 // Date.UTC rolls overflow forward (2026-02-31 → March 3), so a real date is one that
 // survives the round trip unchanged. This also covers leap years.
